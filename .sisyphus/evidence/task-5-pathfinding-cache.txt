@@ -1,0 +1,8 @@
+Command: pnpm dlx tsx -e '...route cache hit scenario...'
+Scenario: route-cache-hit
+Result: PASS
+First call ns: 821833
+Second call ns: 11792
+Cache size: 1
+Path equality: true
+Note: Repeated query reused cached route (LRU), producing significantly lower second-call latency.

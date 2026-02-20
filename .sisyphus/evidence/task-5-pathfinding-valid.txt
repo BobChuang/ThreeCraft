@@ -1,0 +1,7 @@
+Command: pnpm dlx tsx -e '...flat terrain valid scenario...'
+Scenario: flat-terrain-valid-path
+Result: PASS
+Path length: 21
+Start node: {"x":0,"y":1,"z":0}
+End node: {"x":10,"y":1,"z":10}
+Note: Returned non-empty route and every node stayed on walkable cells (air with solid below).

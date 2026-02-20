@@ -1,0 +1,5 @@
+Command: pnpm dlx tsx -e '...enclosed start unreachable scenario...'
+Scenario: enclosed-start-unreachable
+Result: PASS
+Path output: null
+Note: Start cell surrounded by two-block-high walls; solver correctly returned null.
