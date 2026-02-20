@@ -115,20 +115,20 @@
   # 注册PM2监视
   > pm2 start --watch ./dist/index.js
 
-  # 如需反向代理, 请将 /socket.io 代理到 localhost:9000 并配置同源策略
+  # 如需反向代理, 请将 /socket.io 代理到 localhost:9912 并配置同源策略
   ```
 
   程序运行后会输出如下提示
 
   ```
   ThreeCraft v1.0.2 game server running at:
-  > Local:        http://localhost:9000
-  > Network:      http://xxx.xxx.xxx.xxx:9000
+  > Local:        http://localhost:9912
+  > Network:      http://xxx.xxx.xxx.xxx:9912
 
-  YOU MUST ENTER THE ADDRESS LIKE http://xxx.xxx.xxx.xxx:9000 IN GAME, NO PART CAN BE OMITTED!
+  YOU MUST ENTER THE ADDRESS LIKE http://xxx.xxx.xxx.xxx:9912 IN GAME, NO PART CAN BE OMITTED!
   ```
 
-  在游戏中连接服务器时候请务必输全`http://xxx.xxx.xxx.xxx:9000`, 不要省略`http://`或`:9000`
+  在游戏中连接服务器时候请务必输全`http://xxx.xxx.xxx.xxx:9912`, 不要省略`http://`或`:9912`
 
   如果前端运行在 https 上, 那么后端也应该运行在 https 上. 可能需要一些反向代理工具实现 https
 

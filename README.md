@@ -114,20 +114,20 @@
   # Sign up for PM2 monitoring
   > pm2 start --watch ./dist/index.js
 
-  # For reverse proxy, proxy /socket.io to localhost:9000 and configure same-origin policy
+  # For reverse proxy, proxy /socket.io to localhost:9912 and configure same-origin policy
   ```
 
   After the program runs, the following prompt will be output
 
   ```
   ThreeCraft v1.0.2 game server running at:
-  > Local:        http://localhost:9000
-  > Network:      http://xxx.xxx.xxx.xxx:9000
+  > Local:        http://localhost:9912
+  > Network:      http://xxx.xxx.xxx.xxx:9912
 
-  YOU MUST ENTER THE ADDRESS LIKE http://xxx.xxx.xxx.xxx:9000 IN GAME, NO PART CAN BE OMITTED!
+  YOU MUST ENTER THE ADDRESS LIKE http://xxx.xxx.xxx.xxx:9912 IN GAME, NO PART CAN BE OMITTED!
   ```
 
-  When connecting to the server, be sure to enter all `http://xxx.xxx.xxx.xxx:9000`, do not omit `http://` or `:9000`
+  When connecting to the server, be sure to enter all `http://xxx.xxx.xxx.xxx:9912`, do not omit `http://` or `:9912`
 
   If the frontend runs on https, then the backend should also runs on https. Some reverse proxy tools may be needed to implement https
 
