@@ -1,8 +1,8 @@
 import { ISimulationBridge, SimulationVector3 } from './contracts/simulation-bridge';
 import { SimulationEvent, SimulationEventPayloadMap, SimulationEventType, toBridgeEvent } from './events';
 import { createInitialNPCRegistry, SimulationNPCState } from './npc-state';
-import { getStubBrainDecision } from './stub-brain';
 import { SimulationDroppedItem, SimulationInventoryAddResult, SimulationInventoryManager, SimulationInventorySlot } from './inventory';
+import { NPCDecisionLoop, ConversationMessage } from './npc-ai';
 
 const calculateDistance = (a: SimulationVector3, b: SimulationVector3): number => {
 	const dx = a.x - b.x;
@@ -11,17 +11,9 @@ const calculateDistance = (a: SimulationVector3, b: SimulationVector3): number =
 	return Math.sqrt(dx * dx + dy * dy + dz * dz);
 };
 
-const extractActionFromLLMContent = (content: string): string => {
-	const lowered = content.toLowerCase();
-	if (lowered.includes('move')) return 'move';
-	if (lowered.includes('build')) return 'build';
-	if (lowered.includes('gather')) return 'gather';
-	if (lowered.includes('dialogue')) return 'dialogue';
-	return 'idle';
-};
-
 export interface SimulationEngineOptions {
 	tickIntervalMs?: number;
+	decisionIntervalMs?: number;
 	observerSleepDistance?: number;
 	useStubBrain?: boolean;
 	initialObservers?: SimulationVector3[];
@@ -36,6 +28,8 @@ export class SimulationEngine {
 
 	private readonly useStubBrain: boolean;
 
+	private readonly decisionLoop: NPCDecisionLoop;
+
 	private tickHandle: ReturnType<typeof setInterval> | null;
 
 	private observers: SimulationVector3[];
@@ -48,10 +42,24 @@ export class SimulationEngine {
 		this.bridge = bridge;
 		this.tickIntervalMs = options.tickIntervalMs ?? 500;
 		this.observerSleepDistance = options.observerSleepDistance ?? 128;
-		this.useStubBrain = options.useStubBrain ?? true;
+		this.useStubBrain = options.useStubBrain ?? false;
 		this.tickHandle = null;
 		this.observers = options.initialObservers ?? [];
 		this.npcRegistry = createInitialNPCRegistry();
+		this.decisionLoop = new NPCDecisionLoop(bridge, {
+			useStubBrain: this.useStubBrain,
+			decisionIntervalMs: options.decisionIntervalMs ?? 5_000,
+			onThinkingState: (npc, state) => {
+				npc.thinkingState = state;
+				this.emit('thinking:state', { npcId: npc.id, state });
+			},
+			onLifecycle: (eventType, payload) => {
+				this.emit('simulation:lifecycle', {
+					status: eventType,
+					...payload,
+				});
+			},
+		});
 		this.inventory = new SimulationInventoryManager();
 		this.inventory.registerEntity('player-local');
 		[...this.npcRegistry.values()].forEach(npc => {
@@ -105,6 +113,10 @@ export class SimulationEngine {
 		return this.inventory.getWorldDrops();
 	}
 
+	getNPCConversationHistory(npcId: string): ConversationMessage[] {
+		return this.decisionLoop.getHistory(npcId);
+	}
+
 	addInventoryItem(entityId: string, type: string, quantity: number, maxStack?: number): SimulationInventoryAddResult {
 		const result = this.inventory.addItem(entityId, type, quantity, maxStack);
 		if (entityId.startsWith('npc-')) {
@@ -145,7 +157,7 @@ export class SimulationEngine {
 			this.emit('simulation:npc-tick', { npcId: npc.id, tickCount: npc.tickCount, sleeping });
 			if (!sleeping) activeNPCs.push(npc);
 		});
-		await Promise.all(activeNPCs.map(npc => this.processNPCDecision(npc)));
+		await Promise.all(activeNPCs.map(npc => this.processNPCDecision(npc, npcs)));
 	}
 
 	private shouldSleepByObserverDistance(position: SimulationVector3): boolean {
@@ -153,42 +165,36 @@ export class SimulationEngine {
 		return this.observers.every(observer => calculateDistance(position, observer) > this.observerSleepDistance);
 	}
 
-	private async processNPCDecision(npc: SimulationNPCState) {
-		this.setThinkingState(npc, 'requesting');
-		await this.bridge.getWorldState(npc.position, 16);
-		let decisionAction = 'idle';
-		if (this.useStubBrain) {
-			const decision = getStubBrainDecision(npc);
-			decisionAction = decision.action;
-			if (decision.delta) {
-				npc.position = {
-					x: npc.position.x + decision.delta.x,
-					y: npc.position.y + decision.delta.y,
-					z: npc.position.z + decision.delta.z,
-				};
-			}
-		} else {
-			const llmResult = await this.bridge.callLLM(`NPC ${npc.name} choose next action in JSON.`, { npcId: npc.id, timeoutMs: this.tickIntervalMs });
-			decisionAction = extractActionFromLLMContent(llmResult.content);
+	private async processNPCDecision(npc: SimulationNPCState, allNPCs: SimulationNPCState[]) {
+		const result = await this.decisionLoop.runDecision(npc, allNPCs);
+		if (result.status === 'skipped') {
+			this.emit('simulation:lifecycle', {
+				status: 'npc:decision-skipped',
+				npcId: npc.id,
+				reason: result.reason,
+			});
+			return;
 		}
-		this.setThinkingState(npc, 'executing');
-		npc.lastAction = decisionAction;
+		npc.lastAction = result.action?.action ?? npc.lastAction;
 		this.emit('npc:action', {
 			npcId: npc.id,
-			action: decisionAction,
+			action: npc.lastAction,
 			position: { ...npc.position },
+			reasoning: result.action?.reasoning,
+			nextGoal: result.action?.nextGoal,
 		});
+		if (result.action?.action === 'dialogue' && result.action.dialogue) {
+			this.emit('npc:dialogue', {
+				npcId: npc.id,
+				dialogue: result.action.dialogue,
+				targetNpcId: result.action.target?.npcId,
+			});
+		}
 		this.emit('survival:update', {
 			entityId: npc.id,
 			hp: npc.survival.hp,
 			hunger: npc.survival.hunger,
 		});
-		this.setThinkingState(npc, 'idle');
-	}
-
-	private setThinkingState(npc: SimulationNPCState, state: SimulationNPCState['thinkingState']) {
-		npc.thinkingState = state;
-		this.emit('thinking:state', { npcId: npc.id, state });
 	}
 
 	private emit<T extends SimulationEventType>(type: T, payload: SimulationEventPayloadMap[T]) {

@@ -11,6 +11,14 @@ export interface NPCActionPayload {
 	npcId: string;
 	action: string;
 	position: SimulationNPCState['position'];
+	reasoning?: string;
+	nextGoal?: string;
+}
+
+export interface NPCDialoguePayload {
+	npcId: string;
+	dialogue: string;
+	targetNpcId?: string;
 }
 
 export interface SurvivalUpdatePayload {
@@ -27,11 +35,12 @@ export interface NPCTickPayload {
 
 export type InventoryDropPayload = SimulationDroppedItem;
 
-export type SimulationEventType = 'thinking:state' | 'npc:action' | 'survival:update' | 'simulation:npc-tick' | 'simulation:lifecycle' | 'inventory:drop';
+export type SimulationEventType = 'thinking:state' | 'npc:action' | 'npc:dialogue' | 'survival:update' | 'simulation:npc-tick' | 'simulation:lifecycle' | 'inventory:drop';
 
 export type SimulationEventPayloadMap = {
 	'thinking:state': ThinkingStateChangePayload;
 	'npc:action': NPCActionPayload;
+	'npc:dialogue': NPCDialoguePayload;
 	'survival:update': SurvivalUpdatePayload;
 	'simulation:npc-tick': NPCTickPayload;
 	'simulation:lifecycle': Record<string, unknown>;

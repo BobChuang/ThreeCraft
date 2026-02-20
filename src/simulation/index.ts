@@ -4,7 +4,9 @@ export { SimulationInventoryManager, addItemToInventory, createInventorySlots } 
 export type { SimulationDroppedItem, SimulationInventoryAddResult, SimulationInventorySlot } from './inventory';
 export { ClientSimulationBridge } from './bridges/client-bridge';
 export { GLM5Service, extractJsonFromLLMText, LLMServiceError } from './llm';
+export { NPCDecisionLoop, parseAndValidateNPCAction, executeNPCAction } from './npc-ai';
 export type { LLMServiceConfig, LLMServiceResult, LLMRequestOptions, LLMRuntimeMode, ThinkingLifecycleEvent, ThinkingLifecycleEventType } from './llm';
+export type { NPCDecisionLoopOptions, NPCDecisionResult, NPCActionExecutionResult, ConversationMessage } from './npc-ai';
 export type {
 	ISimulationBridge,
 	SimulationBlockAction,

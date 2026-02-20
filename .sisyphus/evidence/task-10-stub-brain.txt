@@ -1,0 +1,17 @@
+Task 10 QA Evidence - Stub Brain Deterministic Loop
+
+Preparation command:
+`pnpm exec tsc --noEmit false --skipLibCheck true --module commonjs --target es2020 --moduleResolution node --outDir .sisyphus/tmp/task10-sim src/simulation/**/*.ts src/utils/types/npc.ts`
+
+Verification command:
+`node .sisyphus/evidence/scripts/task-10-stub-brain-check.js`
+
+Observed output:
+command: node .sisyphus/evidence/scripts/task-10-stub-brain-check.js
+llm_calls=0
+wrench_actions=move,move,move,move,move
+stub_mode_ok=true
+
+Expected outcome:
+- Stub brain mode executes deterministic NPC actions without requiring API keys.
+- LLM request count stays at zero while actions continue to execute.

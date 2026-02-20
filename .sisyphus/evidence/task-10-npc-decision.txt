@@ -1,0 +1,21 @@
+Task 10 QA Evidence - NPC Decision Loop
+
+Preparation command:
+`pnpm exec tsc --noEmit false --skipLibCheck true --module commonjs --target es2020 --moduleResolution node --outDir .sisyphus/tmp/task10-sim src/simulation/**/*.ts src/utils/types/npc.ts`
+
+Verification command:
+`node .sisyphus/evidence/scripts/task-10-npc-decision-check.js`
+
+Observed output:
+command: node .sisyphus/evidence/scripts/task-10-npc-decision-check.js
+wrench_lifecycle=npc:decision-observe>npc:decision-prompt>npc:decision-call>npc:decision-validate>npc:decision-execute
+wrench_action_count=4
+wrench_last_action=dialogue
+llm_calls=40
+history_size=8
+history_cap_ok=true
+
+Expected outcome:
+- Wrench completes at least one full cycle: observe -> prompt -> call -> validate -> execute.
+- LLM service is called while active observers exist.
+- Per-NPC conversation history remains capped to <= 10 messages.

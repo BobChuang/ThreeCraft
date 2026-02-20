@@ -1,0 +1,17 @@
+Task 10 QA Evidence - Sleep Mode
+
+Preparation command:
+`pnpm exec tsc --noEmit false --skipLibCheck true --module commonjs --target es2020 --moduleResolution node --outDir .sisyphus/tmp/task10-sim src/simulation/**/*.ts src/utils/types/npc.ts`
+
+Verification command:
+`node .sisyphus/evidence/scripts/task-10-sleep-mode-check.js`
+
+Observed output:
+command: node .sisyphus/evidence/scripts/task-10-sleep-mode-check.js
+llm_calls=0
+sleep_ticks=110
+sleep_mode_ok=true
+
+Expected outcome:
+- With all observers beyond 128 blocks, NPC ticks are marked sleeping.
+- No GLM-5 requests are issued while sleep mode is active.

@@ -53,3 +53,9 @@
 - The GLM service is easier to keep environment-agnostic by splitting concerns into focused modules (`minute-limiter`, `circuit-breaker`, `json-extract`, `sse-parser`) and only handling API key source differences in a small resolver.
 - Emitting lifecycle events from the LLM service and forwarding them through `ClientSimulationBridge` preserves the `SimulationBridge.callLLM` contract while exposing `thinking-start/stream/complete/error` to higher layers.
 - Deterministic Node-based QA can validate streaming parsing, global limiter behavior, and circuit-breaker cooldown without network flakiness by compiling `src/simulation/llm/*.ts` to a temp CommonJS folder and running mock fetch scripts.
+
+## 2026-02-21 Task 10
+
+- Moving decision orchestration into `src/simulation/npc-ai/` keeps `SimulationEngine` focused on scheduling and event forwarding while the AI loop handles observe/prompt/call/validate/execute details.
+- A per-NPC gate (`inFlightByNpc` + `nextDecisionAt`) cleanly enforces both "skip while request in-flight" and configurable decision cadence defaults (5s) without blocking simulation ticks.
+- Keeping a capped per-NPC conversation buffer (`role/content/timestamp`, max 10) is enough for short-term context and can be validated deterministically through compiled Node QA scripts.
