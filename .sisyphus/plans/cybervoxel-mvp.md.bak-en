@@ -1,0 +1,2082 @@
+# CyberVoxel MVP — AI-Driven Cyberpunk Voxel Game (Built on ThreeCraft)
+
+## TL;DR
+
+> **Quick Summary**: Extend the existing ThreeCraft Minecraft clone with a cyberpunk scene type, 10 AI NPCs driven by GLM-5 (Zhipu AI), NPC possession/observer modes, survival mechanics (HP/hunger), 2 monster types, and world persistence. Builds on top of existing Three.js rendering, Socket.io multiplayer, terrain generation, player controls, and 50+ block types.
+> 
+> **Deliverables**:
+> - Cyberpunk scene type (new weather variant with unique blocks + terrain)
+> - 10 unique NPC personas with GLM-5 autonomous behavior
+> - Portable game simulation module (runs client-side for single-player, server-side for multiplayer)
+> - NPC possession & observer/god modes
+> - Survival system (HP, hunger, death/respawn)
+> - 2 monster types (Mutants, Corrupted Bots)
+> - Thinking visualization (bubble + sidebar log)
+> - Server-side world persistence (multiplayer)
+> 
+> **Estimated Effort**: XL
+> **Parallel Execution**: YES — 6 waves
+> **Critical Path**: T1 (types+blocks) → T5 (NPC entities) → T8 (GLM-5 service) → T9 (NPC AI loop) → T13 (possession) → T20 (integration) → Final verification
+
+---
+
+## Context
+
+### Original Request
+Build a Minecraft-style, AI-driven cyberpunk open world game. Web-based (Three.js), infinite world generation, 10 unique NPCs fully controlled by GLM-5 LLM. Player can possess any NPC. Multiplayer from day one.
+
+### ThreeCraft Existing Codebase (CRITICAL)
+This project builds ON TOP of ThreeCraft v1.0.2, a fully functional Minecraft clone with:
+
+| Existing Feature | Location | Status |
+|-----------------|----------|--------|
+| Three.js rendering (InstancedMesh + Web Workers) | `src/core/` | Complete |
+| 50+ block types with textures, materials, sounds | `src/core/loader/index.ts` | Complete |
+| Procedural terrain gen (noise + seed) | `src/core/terrain/` | Complete |
+| 5 weather/scene types (12 weighted variants) | `src/core/weather/index.ts` | Complete |
+| First-person WASD + collision + gravity + jumping | `src/controller/game-controller/` | Complete |
+| Block place/destroy with raycast | `src/core/block-action/`, `src/controller/game-controller/block-controller/` | Complete |
+| Socket.io multiplayer (rooms, player sync) | `src/controller/MultiPlay/`, `server/src/controller/` | Complete |
+| 30 character skins + player entity rendering | `src/core/player/`, `src/core/loader/index.ts` | Complete |
+| Inventory/Bag system (PC/Mobile/Xbox/PS) | `src/ui/bag/` | Complete |
+| Crosshair, FPS counter, Menu system | `src/ui/` | Complete |
+| Audio system (break/step sounds) | `src/core/audio/` | Complete |
+| Multi-platform controls (PC/Mobile/VR/Xbox/PS) | `src/ui/action/`, `src/controller/` | Complete |
+| PWA support | `vite.config.ts` | Complete |
+| i18n (Chinese + English) | `src/controller/config/lang/` | Complete |
+
+### Interview Summary
+**Key Decisions**:
+- **Server Authority**: HYBRID — NPC AI + survival server-side, player movement/blocks stay client-trusted
+- **Theme**: Cyberpunk added as 6th scene type (new `weatherName[5]` + new weather tuples with `nameIndex=5`)
+- **Project Structure**: Keep flat (`src/` + `server/`), add types to `src/utils/types/`
+- **Dual Mode**: NPC/survival works in BOTH single-player (client-side) and multiplayer (server-side)
+- **New UI**: PC-only for MVP (no mobile/VR/gamepad adaptation)
+- **Testing**: No automated tests for MVP; agent-executed QA only
+- **AI Architecture**: Every NPC action decided by GLM-5, accepting high cost/latency
+
+### Metis Review
+**Identified Gaps** (addressed):
+- **Weather System Nuance**: `src/core/weather/index.ts` has 12 weighted tuples mapping to 5 `nameIndex` values. Cyberpunk = new tuples with `nameIndex=5`.
+- **Dual-Mode Architecture**: NPC simulation must be environment-agnostic — same logic runs client-side (single-player) or server-side (multiplayer).
+- **Authority Contract**: Explicitly defined which fields are server-managed vs client-trusted.
+- **LLM Blocking Risk**: LLM calls must never block game tick — async queue + timeouts + fallbacks.
+- **Late Joiners**: Need snapshot mechanism for current NPC/survival state when players join mid-game.
+- **Path Invalidation**: Players modifying blocks can invalidate NPC paths — need stuck detection + repathing.
+- **Room Cleanup**: NPC loop must clean up on room dissolve/owner disconnect.
+- **Stub Brain Mode**: Deterministic NPC fallback for testing without LLM API.
+
+---
+
+## Work Objectives
+
+### Core Objective
+Extend ThreeCraft with a playable cyberpunk scene featuring 10 unique AI NPCs autonomously living, building, gathering, and conversing — all driven by GLM-5 — with player possession and survival mechanics.
+
+### Concrete Deliverables
+- New cyberpunk weather/scene type in `src/core/weather/index.ts`
+- 8+ new cyberpunk block types in `src/core/loader/index.ts`
+- Portable game simulation module in `src/simulation/`
+- NPC entity rendering extended from existing `src/core/player/`
+- GLM-5 API integration (dual-mode: client direct or server-proxied)
+- 10 NPC persona definitions in `src/simulation/personas/`
+- Possession + Observer mode UI
+- Survival HUD (HP/hunger bars) — PC only
+- Thinking visualization (bubbles + sidebar) — PC only
+- Server-side world persistence for multiplayer
+
+### Definition of Done
+- [ ] `pnpm dev` starts client; existing game works unchanged
+- [ ] Cyberpunk scene selectable/randomizable; terrain uses cyberpunk blocks
+- [ ] 10 NPCs visibly perform autonomous actions in cyberpunk scene
+- [ ] NPC thinking bubbles and sidebar log show LLM request lifecycle
+- [ ] Player can possess any NPC and control in first person
+- [ ] Player can switch to observer/god mode and back
+- [ ] Multiple browser tabs can connect as different players simultaneously (with NPCs)
+- [ ] HP/Hunger bars visible; gathering restores hunger; monster attacks reduce HP
+- [ ] Death respawns at Revival Spring; items drop at death location
+- [ ] Server restart preserves world state (blocks, NPC positions, inventories) in multiplayer mode
+
+### Must Have
+- Dual-mode simulation: same NPC logic works client-side (single-player) and server-side (multiplayer)
+- Strict LLM→Action JSON schema contract with validation
+- Per-NPC rate limiting (max 1 LLM call per 3 seconds per NPC)
+- Global budget cap (configurable max requests/min and tokens/min)
+- Circuit breaker: on repeated LLM failures, NPCs enter idle fallback mode
+- Stub brain mode: deterministic NPC behavior without LLM for testing
+- Streaming LLM responses with visible thinking states
+- All 10 NPCs with distinct persona prompts and backstories
+- Existing ThreeCraft features remain fully functional (backward compatible)
+
+### Must NOT Have (Guardrails)
+- ❌ LLM doing pathfinding math — use A* or grid-based; LLM only decides destination
+- ❌ LLM doing physics calculations — game simulation only
+- ❌ LLM deciding frame-level movement — LLM outputs high-level actions only
+- ❌ NPC memory/RAG/knowledge graphs — MVP uses only session-scoped conversation history (last N messages)
+- ❌ Trading/economy/crafting systems — post-MVP
+- ❌ Quest system — post-MVP
+- ❌ More than 2 monster types — post-MVP
+- ❌ Day/night cycle — post-MVP
+- ❌ Replacing existing textures/blocks/scenes — ADD cyberpunk alongside existing
+- ❌ Replacing Socket.io with raw WebSocket — extend existing Socket.io
+- ❌ Monorepo restructuring — keep flat project structure
+- ❌ Texture atlas — keep individual PNG per block pattern
+- ❌ Divine Voxel Engine — keep existing custom Three.js rendering
+- ❌ New UI adaptations for mobile/VR/gamepad — PC only for new UI
+- ❌ Over-engineered abstractions — keep it working, not perfect
+- ❌ Excessive code comments — code should be self-documenting
+
+### Authority Contract (Hybrid Model)
+
+| Field | Owner | Validation |
+|-------|-------|------------|
+| Player position/movement | CLIENT | No server validation (existing model) |
+| Player block place/destroy | CLIENT | No server validation (existing model) |
+| NPC position/movement | SIMULATION | Server-side in MP, client-side in SP |
+| NPC AI decisions | SIMULATION | Schema validation on LLM output |
+| NPC inventory | SIMULATION | Simulation manages |
+| Player HP/Hunger | SIMULATION | Simulation ticks |
+| NPC HP/Hunger | SIMULATION | Simulation ticks |
+| Monster AI/position | SIMULATION | Simulation manages |
+| World persistence | SERVER | JSON files per room (MP only) |
+| Possession state | SIMULATION | First-come-first-served, broadcast to all |
+
+---
+
+## Verification Strategy (MANDATORY)
+
+> **ZERO HUMAN INTERVENTION** — ALL verification is agent-executed. No exceptions.
+
+### Test Decision
+- **Infrastructure exists**: NO (MVP, no test framework)
+- **Automated tests**: NONE (MVP fast iteration)
+- **Framework**: N/A
+
+### QA Policy
+Every task MUST include agent-executed QA scenarios.
+Evidence saved to `.sisyphus/evidence/task-{N}-{scenario-slug}.{ext}`.
+
+| Deliverable Type | Verification Tool | Method |
+|------------------|-------------------|--------|
+| Web UI / 3D Rendering | Playwright (playwright skill) | Navigate, interact, screenshot, assert DOM |
+| Socket.io Server | Bash (compiled server `node dist/index.js` + Playwright as socket.io client) | Start server, use Playwright to open game client, verify Socket.io events via game behavior |
+| Game Logic / Simulation | Bash (`pnpm exec tsc --noEmit` + Playwright runtime) | Compile-check with tsc, then verify behavior via Playwright in running dev server |
+| Multiplayer | Playwright (multiple tabs) | Open 2+ browser tabs, verify sync |
+| LLM Integration | Bash (curl/node) | Call API, assert response format |
+
+---
+
+## LLM→Action Contract (CRITICAL ARCHITECTURE)
+
+### NPC Action Schema (GLM-5 must output this JSON)
+
+```typescript
+interface NPCAction {
+  action: "move" | "gather" | "build" | "dialogue" | "idle";
+  target?: {
+    position?: { x: number; y: number; z: number };
+    blockType?: string;
+    npcId?: string;
+  };
+  dialogue?: string;       // spoken text (for "dialogue" action)
+  reasoning?: string;      // brief explanation (shown in sidebar log)
+  nextGoal?: string;       // what NPC plans to do after this action
+}
+```
+
+### Decision Cadence
+- Each NPC runs an async decision loop: **every 3-5 seconds** (configurable)
+- Loop: Observe surroundings → Build prompt → Call GLM-5 → Validate → Execute
+- If LLM is still processing previous request: skip this tick (no queue stacking)
+
+### Prompt Structure (per NPC)
+```
+[System] You are {name}, a {profession} in a cyberpunk world. {backstory}
+[World State] Nearby blocks: {...}, Nearby NPCs: {...}, Your inventory: {...}, HP: X, Hunger: Y
+[Recent History] Last 5 actions and their results
+[Task List] Your current goals: [...]
+[Instruction] Decide your next action. Respond with valid JSON only.
+```
+
+### Failure Handling
+| Failure | Response |
+|---------|----------|
+| Timeout (>10s) | Cancel, NPC plays idle animation, retry next tick |
+| HTTP 429 (rate limit) | Exponential backoff (5s, 10s, 20s), NPC idles |
+| HTTP 5xx | Retry once after 3s, then idle for 30s |
+| Invalid JSON | Retry once with "respond with valid JSON only" appended; then idle |
+| Action validation fail | Log warning, NPC idles, retry next tick with corrective prompt |
+
+### Dual-Mode Architecture
+
+```
+SINGLE-PLAYER:
+  Browser → SimulationEngine (client-side)
+         → GLM-5 API (direct from browser, user provides API key)
+         → NPC decisions → Game state updates
+
+MULTIPLAYER:
+  Browser ←Socket.io→ Server → SimulationEngine (server-side)
+                             → GLM-5 API (server-side, server API key)
+                             → NPC decisions → Broadcast to all clients
+```
+
+---
+
+## Execution Strategy
+
+### Parallel Execution Waves
+
+```
+Wave 1 (Foundation — Start Immediately, 5 parallel):
+├── T1:  Cyberpunk types, blocks & scene registration [quick]
+├── T2:  NPC persona definitions (10 characters) [writing]
+├── T3:  Simulation engine scaffold (dual-mode) [deep]
+├── T4:  A* pathfinding module [deep]
+├── T5:  NPC entity system (extend Player class) [unspecified-high]
+
+Wave 2 (Core AI — After Wave 1, 6 parallel):
+├── T6:  Inventory system (items, stacking, drop) [unspecified-high]
+├── T7:  Survival system (HP, hunger, food) [unspecified-high]
+├── T8:  GLM-5 API service (streaming, rate limit, circuit breaker) [deep]
+├── T9:  NPC AI decision loop (observe→prompt→call→validate→execute) [deep]
+├── T10: NPC build & gather behaviors [unspecified-high]
+├── T11: NPC dialogue system (P2NPC + NPC2NPC, chat bubbles) [visual-engineering]
+
+Wave 3 (Modes + Combat — After Wave 2, 6 parallel):
+├── T12: Action validation & fallback system [unspecified-high]
+├── T13: Possession system (possess/release NPC, mode switching) [deep]
+├── T14: Observer/God mode (overhead camera, NPC selection) [visual-engineering]
+├── T15: Monster system (Mutants + Corrupted Bots) [deep]
+├── T16: Death & respawn system (Revival Spring, item drop) [unspecified-high]
+├── T17: Socket.io NPC events (extend multiplayer for NPC sync) [unspecified-high]
+
+Wave 4 (Visualization + Persistence — After Wave 3, 5 parallel):
+├── T18: Thinking visualization — NPC head bubbles [visual-engineering]
+├── T19: Thinking visualization — Sidebar log panel [visual-engineering]
+├── T20: NPC task list UI (visible during possession) [visual-engineering]
+├── T21: HUD polish (HP/hunger bars, mode indicator) [visual-engineering]
+├── T22: World persistence (server-side save/load) [deep]
+
+Wave 5 (Integration + Polish — After Wave 4, 4 parallel):
+├── T23: Full integration: all systems working together [deep]
+├── T24: Multiplayer sync verification [unspecified-high]
+├── T25: Performance optimization (NPC sleep, render distance) [deep]
+├── T26: Game start flow (spawn point, NPC placement, Revival Spring) [unspecified-high]
+
+Wave FINAL (Verification — After ALL tasks, 4 parallel):
+├── F1: Plan compliance audit [oracle]
+├── F2: Code quality review [unspecified-high]
+├── F3: Real manual QA (Playwright full playthrough) [unspecified-high]
+├── F4: Scope fidelity check [deep]
+
+Critical Path: T1 → T3 → T8 → T9 → T13 → T23 → F1-F4
+Parallel Speedup: ~65% faster than sequential
+Max Concurrent: 6 (Waves 2 & 3)
+```
+
+### Dependency Matrix
+
+| Task | Depends On | Blocks | Wave |
+|------|------------|--------|------|
+| T1 | — | T3, T5, T6, T7, T10, T15 | 1 |
+| T2 | — | T9 | 1 |
+| T3 | T1 | T7, T8, T9, T15, T17, T22 | 1 |
+| T4 | — | T9, T10, T15 | 1 |
+| T5 | T1 | T9, T10, T11, T13, T14, T17 | 1 |
+| T6 | T1 | T7, T10, T16 | 2 |
+| T7 | T1, T3, T6 | T15, T16, T21 | 2 |
+| T8 | T3 | T9 | 2 |
+| T9 | T2, T3, T4, T5, T8 | T10, T11, T12, T18, T19 | 2 |
+| T10 | T1, T4, T5, T6, T9 | T23 | 2 |
+| T11 | T5, T9 | T18, T20 | 2 |
+| T12 | T9 | T23 | 3 |
+| T13 | T5, T9 | T20, T23 | 3 |
+| T14 | T5 | T23 | 3 |
+| T15 | T1, T3, T4, T7 | T16, T23 | 3 |
+| T16 | T6, T7, T15 | T23 | 3 |
+| T17 | T3, T5 | T22, T24 | 3 |
+| T18 | T9, T11 | T23 | 4 |
+| T19 | T9 | T23 | 4 |
+| T20 | T11, T13 | T23 | 4 |
+| T21 | T7 | T23 | 4 |
+| T22 | T3, T17 | T23, T26 | 4 |
+| T23 | T10, T12-T16, T18-T22 | T24, T25, T26 | 5 |
+| T24 | T17, T23 | F1-F4 | 5 |
+| T25 | T23 | F1-F4 | 5 |
+| T26 | T22, T23 | F1-F4 | 5 |
+| F1-F4 | T23-T26 | — | FINAL |
+
+### Agent Dispatch Summary
+
+| Wave | # Parallel | Tasks → Agent Category |
+|------|------------|----------------------|
+| 1 | **5** | T1 → `quick`, T2 → `writing`, T3 → `deep`, T4 → `deep`, T5 → `unspecified-high` |
+| 2 | **6** | T6 → `unspecified-high`, T7 → `unspecified-high`, T8 → `deep`, T9 → `deep`, T10 → `unspecified-high`, T11 → `visual-engineering` |
+| 3 | **6** | T12 → `unspecified-high`, T13 → `deep`, T14 → `visual-engineering`, T15 → `deep`, T16 → `unspecified-high`, T17 → `unspecified-high` |
+| 4 | **5** | T18 → `visual-engineering`, T19 → `visual-engineering`, T20 → `visual-engineering`, T21 → `visual-engineering`, T22 → `deep` |
+| 5 | **4** | T23 → `deep`, T24 → `unspecified-high`, T25 → `deep`, T26 → `unspecified-high` |
+| FINAL | **4** | F1 → `oracle`, F2 → `unspecified-high`, F3 → `unspecified-high`, F4 → `deep` |
+
+---
+
+## TODOs
+
+- [ ] 1. Cyberpunk Types, Blocks & Scene Registration
+
+  **What to do**:
+  - Define new TypeScript types in `src/utils/types/npc.ts`:
+    - `NPCAction` interface (action: move|gather|build|dialogue|idle, target, dialogue, reasoning, nextGoal)
+    - `NPCProfile` interface (id, name, profession, personality, backstory, taskList)
+    - `SurvivalStats` interface (hp, maxHp, hunger, maxHunger)
+    - `ThinkingState` type (idle, requesting, received, executing)
+    - `MonsterType` enum (Mutant, CorruptedBot)
+    - `ActionValidationResult` type
+    - `isValidNPCAction()` runtime validator function
+  - Add 8+ cyberpunk block textures to `src/assets/textures/blocks-clipped/`:
+    - Neon Block, Circuit Block, Dark Concrete, Steel, Hologram, Dark Glass, Data Core, Rust Metal, LED Strip, Revival Spring
+    - Each as individual 16x16 PNG (matching existing texture pattern)
+  - Register new blocks in `src/core/loader/index.ts`:
+    - Add imports for new textures
+    - Add entries to `blockTypes` array
+    - Add entries to `blockLoader` object with name, textures, material, sound mappings
+  - Add cyberpunk weather/scene entries to `src/core/weather/index.ts`:
+    - Add 2-3 new tuples with `nameIndex=5` (cyberpunk), referencing new cyberpunk block indices
+    - **CRITICAL tuple ordering**: `[waterBlock, surfaceBlock, baseBlock, nameIndex]` — the worker (`src/core/terrain/generate/worker.ts:48`) destructures as `const [water, surface, base] = weatherTypes[weather]`, where index 0 = liquid/filler above terrain, index 1 = top surface block, index 2 = underground base block, index 3 = `nameIndex` for scene name lookup
+  - Update language files `src/controller/config/lang/en_us.ts` and `src/controller/config/lang/zh_cn.ts`:
+    - Add `'Cyberpunk'` to `weatherName` array at index 5
+  - Update terrain generation worker `src/core/terrain/generate/worker.ts` if needed:
+    - Ensure new block indices work in the generation pipeline
+
+  **Must NOT do**:
+  - No changes to existing block types or textures
+  - No changes to existing weather/scene entries
+  - No texture atlas — individual PNGs only
+  - No game logic — types and assets only
+
+  **Recommended Agent Profile**:
+  - **Category**: `quick`
+    - Reason: Asset creation, type definitions, config registration — well-defined pattern to follow
+  - **Skills**: []
+  - **Skills Evaluated but Omitted**:
+    - `frontend-ui-ux`: Not needed for type definitions and texture registration
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T2, T3, T4, T5)
+  - **Parallel Group**: Wave 1
+  - **Blocks**: T3, T5, T6, T7, T10, T15
+  - **Blocked By**: None
+
+  **References**:
+
+  **Pattern References** (existing code to follow):
+  - `src/core/loader/index.ts:378-429` — `blockTypes` array pattern; add new block names at end
+  - `src/core/loader/index.ts:432-786` — `blockLoader` object pattern; each block has name, block3d, textureTypes, textureImg, material, step, break
+  - `src/core/weather/index.ts:1-15` — Weather tuple format: `[waterBlockIdx, surfaceBlockIdx, baseBlockIdx, nameIndex]`. **CAUTION**: Worker destructures as `const [water, surface, base] = weatherTypes[weather]` (line 48 of worker.ts). Index 0 = liquid/filler (fills terrain above horizon), index 1 = top surface block, index 2 = underground base block, index 3 = scene `nameIndex`
+  - `src/controller/config/lang/en_us.ts:81` — `weatherName` array: `['Classic', 'Ice', 'Beach Melon Field', 'Pumpkin Field', 'Bizarre?']`
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+
+  ```
+  Scenario: New block types registered and compile
+    Tool: Bash
+    Preconditions: Project dependencies installed (`pnpm install`)
+    Steps:
+      1. Run `pnpm exec tsc --noEmit` — verify zero type errors
+      2. Run `grep -c 'neonBlock\|circuitBlock\|darkConcrete\|steelBlock' src/core/loader/index.ts` — verify ≥4 new blocks registered
+      3. Run `pnpm build` — verify Vite production build succeeds with 0 errors
+    Expected Result: tsc passes (exit 0), grep finds ≥4 matches, build succeeds
+    Failure Indicators: Type errors in tsc, grep returns 0, build fails
+    Evidence: .sisyphus/evidence/task-1-block-types.txt
+
+  Scenario: Cyberpunk scene appears in weather system
+    Tool: Playwright (playwright skill)
+    Preconditions: Dev server running
+    Steps:
+      1. Navigate to http://localhost:5173
+      2. Start single-player game multiple times until cyberpunk scene loads (or modify seed)
+      3. Verify cyberpunk terrain blocks are visibly different from classic scene
+    Expected Result: Cyberpunk blocks (neon, circuit, steel) visible in generated terrain
+    Failure Indicators: Only classic blocks appear, scene name not in language
+    Evidence: .sisyphus/evidence/task-1-cyberpunk-scene.png
+
+  Scenario: NPC types compile and validate correctly
+    Tool: Bash
+    Preconditions: Types defined in `src/utils/types/`
+    Steps:
+      1. Run `pnpm exec tsc --noEmit` — verify all new types compile without errors
+      2. Run `grep -c 'isValidNPCAction' src/utils/types/npc-action.ts` — verify validator function exists
+      3. Run `grep 'action.*move\|action.*gather\|action.*build\|action.*dialogue\|action.*idle' src/utils/types/npc-action.ts` — verify all 5 action types defined
+    Expected Result: tsc passes, isValidNPCAction found, all 5 action types defined
+    Failure Indicators: Type errors, missing function, missing action types
+    Evidence: .sisyphus/evidence/task-1-npc-types.txt
+  ```
+
+  **Commit**: YES
+  - Message: `feat(cyberpunk): add cyberpunk blocks, types, and scene registration`
+  - Files: `src/utils/types/npc.ts`, `src/core/loader/index.ts`, `src/core/weather/index.ts`, `src/controller/config/lang/*.ts`, `src/assets/textures/blocks-clipped/*.png`
+
+---
+
+- [ ] 2. NPC Persona Definitions (10 Characters)
+
+  **What to do**:
+  - Create persona definition files in `src/simulation/personas/`:
+    1. **Neon (黑客/Hacker)**: Introverted genius, speaks in tech jargon, obsessed with cracking encrypted data cores
+    2. **Blaze (街头小贩/Street Vendor)**: Charismatic hustler, always looking for deals
+    3. **Wrench (机械师/Mechanic)**: Practical, no-nonsense builder
+    4. **Viper (赏金猎人/Bounty Hunter)**: Cold, efficient, few words
+    5. **Doc (医生/Medic)**: Warm, caring, always worried about health
+    6. **Drill (矿工/Miner)**: Tough, superstitious, tells underground stories
+    7. **Skyline (建筑师/Architect)**: Visionary, talks about grand designs
+    8. **Flash (信使/Courier)**: Hyperactive, knows everyone, gossip machine
+    9. **Rust (拾荒者/Scavenger)**: Quiet, observant, values old-world artifacts
+    10. **Nix (酒吧老板/Bartender)**: Philosophical, good listener
+  - Each persona file includes:
+    - System prompt template for GLM-5
+    - Personality traits, speech patterns
+    - Default goals/task list
+    - Preferred actions and relationships
+  - Create `src/simulation/personas/index.ts` barrel export
+
+  **Must NOT do**:
+  - No dynamic persona generation
+  - No RAG/memory system
+  - No quest content
+
+  **Recommended Agent Profile**:
+  - **Category**: `writing`
+    - Reason: Creative writing, character development, persona design
+  - **Skills**: []
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T1, T3, T4, T5)
+  - **Parallel Group**: Wave 1
+  - **Blocks**: T9
+  - **Blocked By**: None
+
+  **References**:
+
+  **External References**:
+  - LLM→Action Contract section of this plan — prompt structure template
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+
+  ```
+  Scenario: All 10 persona files exist with required fields
+    Tool: Bash
+    Preconditions: Files created
+    Steps:
+      1. List persona files in src/simulation/personas/
+      2. Verify each exports: name, profession, backstory, systemPrompt, traits, defaultGoals, preferredActions
+      3. Count total persona files
+    Expected Result: 10 persona files, each with all required fields populated
+    Evidence: .sisyphus/evidence/task-2-persona-files.txt
+
+  Scenario: System prompts are well-formed for GLM-5
+    Tool: Bash
+    Preconditions: Persona files exist
+    Steps:
+      1. Load each persona's systemPrompt
+      2. Verify each is >200 characters
+      3. Verify each mentions the NPC's name and profession
+      4. Verify no two personas have identical prompts
+    Expected Result: 10 unique, substantive system prompts
+    Evidence: .sisyphus/evidence/task-2-system-prompts.txt
+  ```
+
+  **Commit**: YES
+  - Message: `feat(personas): create 10 unique cyberpunk NPC persona definitions`
+  - Files: `src/simulation/personas/**`
+
+---
+
+- [ ] 3. Simulation Engine Scaffold (Dual-Mode)
+
+  **What to do**:
+  - Create `src/simulation/` directory as the portable game simulation module
+  - Implement `SimulationEngine` class that manages:
+    - NPC registry (10 NPCs with state: position, inventory, HP, hunger, AI loop status)
+    - Game tick loop (configurable interval, default 500ms / 2 ticks per second)
+    - Event emitter for UI updates (thinking state changes, NPC actions, survival stat changes)
+    - NPC sleep/wake based on distance from any observer (128 blocks)
+  - Environment-agnostic design:
+    - No direct DOM/window references
+    - No direct Socket.io references
+    - Accepts an `ISimulationBridge` interface for I/O:
+      - `getWorldState(position, radius)` — query nearby blocks
+      - `callLLM(prompt, options)` — call GLM-5 (implementation differs per mode)
+      - `emitEvent(event)` — notify UI of state changes
+      - `modifyBlock(position, blockType, action)` — place/destroy block
+  - Client-side bridge: `src/simulation/bridges/client-bridge.ts` — direct DOM integration for single-player
+  - Server-side bridge: `src/simulation/bridges/server-bridge.ts` — Socket.io integration for multiplayer
+  - Stub brain: `src/simulation/stub-brain.ts` — deterministic NPC behavior without LLM (for testing)
+  - Integration points:
+    - Single-player: `src/controller/index.ts` imports and starts `SimulationEngine` with client bridge
+    - Multiplayer: `server/src/controller/game.ts` imports and starts `SimulationEngine` with server bridge
+
+  **Must NOT do**:
+  - No actual LLM calls (T8)
+  - No actual NPC rendering (T5)
+  - No pathfinding implementation (T4)
+  - No survival logic (T7)
+
+  **Recommended Agent Profile**:
+  - **Category**: `deep`
+    - Reason: Core architecture design, dual-mode abstraction, event-driven system, complex async orchestration
+  - **Skills**: []
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T1, T2, T4, T5)
+  - **Parallel Group**: Wave 1
+  - **Blocks**: T7, T8, T9, T15, T17, T22
+  - **Blocked By**: T1 (needs NPC types)
+
+  **References**:
+
+  **Pattern References**:
+  - `src/controller/index.ts:107-126` — Game loop pattern (tryRender / runGame) to understand how to hook simulation into existing loop
+  - `src/controller/MultiPlay/index.ts:93-121` — Socket.io event binding pattern for game state
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+
+  ```
+  Scenario: SimulationEngine initializes with 10 NPCs using stub brain
+    Tool: Bash
+    Preconditions: Simulation module created
+    Steps:
+      1. Import SimulationEngine and StubBrain
+      2. Create engine with stub bridge and start tick loop
+      3. After 5 seconds, query NPC registry
+    Expected Result: 10 NPCs registered with initial state; stub brain produces deterministic idle actions
+    Failure Indicators: Import errors, missing NPCs, tick loop doesn't run
+    Evidence: .sisyphus/evidence/task-3-simulation-engine.txt
+
+  Scenario: Simulation runs in both environments
+    Tool: Bash
+    Preconditions: Both bridges implemented
+    Steps:
+      1. Create SimulationEngine with client bridge (mock DOM)
+      2. Create SimulationEngine with server bridge (mock Socket.io)
+      3. Both should initialize and tick without errors
+    Expected Result: No environment-specific errors in either mode
+    Evidence: .sisyphus/evidence/task-3-dual-mode.txt
+  ```
+
+  **Commit**: YES
+  - Message: `feat(simulation): scaffold dual-mode game simulation engine`
+  - Files: `src/simulation/**`
+
+---
+
+- [ ] 4. A* Pathfinding Module
+
+  **What to do**:
+  - Implement A* pathfinding in `src/simulation/pathfinding/`:
+    - `findPath(start, target, worldQuery)` → waypoint array or null
+    - Navigable cells: air blocks with solid block below (walkable surface)
+    - Support jumping up 1 block (like Minecraft)
+    - Performance limit: max 200 nodes per search to prevent lag
+    - Cache recently computed paths for repeated routes (LRU cache, 50 entries)
+  - Input: start `{x,y,z}`, target `{x,y,z}`, world query function `(x,y,z) => blockType`
+  - Output: array of waypoints `{x,y,z}[]` or `null` if unreachable
+  - Environment-agnostic: no DOM/server references, pure algorithm
+  - Stuck detection: if NPC hasn't moved for 3 ticks despite having a path, repath
+
+  **Must NOT do**:
+  - No flying/swimming pathfinding
+  - No dynamic obstacle avoidance between NPCs
+  - No LLM involvement in pathfinding
+
+  **Recommended Agent Profile**:
+  - **Category**: `deep`
+    - Reason: A* algorithm on 3D voxel grid, performance optimization, cache management
+  - **Skills**: []
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T1, T2, T3, T5)
+  - **Parallel Group**: Wave 1
+  - **Blocks**: T9, T10, T15
+  - **Blocked By**: None
+
+  **References**:
+
+  **External References**:
+  - A* pathfinding reference: `https://www.redblobgames.com/pathfinding/a-star/introduction.html`
+
+  **Pattern References**:
+  - `src/core/terrain/index.ts:225-231` — `getFloorHeight(x, z)` shows how terrain height is computed using noise; pathfinder needs similar terrain awareness
+  - `src/core/terrain/index.ts:234-237` — `hasBlock(x, z, y)` shows how to check if a block exists at a position
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+
+  ```
+  Scenario: Pathfinding finds valid path on flat terrain
+    Tool: Bash
+    Preconditions: Pathfinding module available
+    Steps:
+      1. Create mock world query returning solid ground at y=0
+      2. Call findPath({x:0,y:1,z:0}, {x:10,y:1,z:10})
+      3. Verify returned waypoints array is non-empty
+      4. Verify each waypoint is on walkable surface
+    Expected Result: Array of waypoints from start to target, all on valid ground
+    Evidence: .sisyphus/evidence/task-4-pathfinding-valid.txt
+
+  Scenario: Pathfinding returns null for unreachable target
+    Tool: Bash
+    Preconditions: Mock world with enclosed room
+    Steps:
+      1. Create world query with walls surrounding start position
+      2. Call findPath from inside to outside
+    Expected Result: Returns null (no path found)
+    Evidence: .sisyphus/evidence/task-4-pathfinding-unreachable.txt
+
+  Scenario: Path cache returns same result for repeated queries
+    Tool: Bash
+    Steps:
+      1. Call findPath with same start/end twice
+      2. Verify second call returns faster (cache hit)
+    Expected Result: Cache hit on second call
+    Evidence: .sisyphus/evidence/task-4-pathfinding-cache.txt
+  ```
+
+  **Commit**: YES
+  - Message: `feat(pathfinding): implement A* grid-based pathfinding for NPC navigation`
+  - Files: `src/simulation/pathfinding/**`
+
+---
+
+- [ ] 5. NPC Entity System (Extend Player Class)
+
+  **What to do**:
+  - Create `src/core/npc/` module extending existing `Player` class from `src/core/player/`:
+    - `NPCEntity` class extends or wraps `Player` with:
+      - Profession-specific skin selection (map 10 NPC personas to existing 30 skins)
+      - Floating name tag above head (HTML overlay using CSS2DRenderer or canvas text sprite)
+      - Profession label below name
+      - Animation state: idle, walking, mining, building, talking (reuse existing arm/leg animation from Player)
+  - NPC registry for client-side rendering:
+    - `NPCRenderer` class manages all 10 NPC entities in the scene
+    - Receives state updates from simulation (position, rotation, animation state)
+    - Interpolates movement between updates for smooth motion
+    - Visibility culling: hide NPCs outside render distance
+  - Server→Client NPC state format:
+    - `{id, position: {x,y,z}, rotation: {y}, animationState, thinkingState, name, profession}`
+  - Spawn NPCs at predefined positions near world origin (0, surface_y, 0)
+
+  **Must NOT do**:
+  - No NPC AI logic (T9)
+  - No pathfinding (T4)
+  - No complex skeletal animations
+  - No new skin textures — reuse existing 30 skins
+
+  **Recommended Agent Profile**:
+  - **Category**: `unspecified-high`
+    - Reason: Entity system extending existing Player, name tag rendering, animation state machine
+  - **Skills**: [`frontend-ui-ux`]
+    - `frontend-ui-ux`: Name tag rendering, billboard text, visual entity design
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T1, T2, T3, T4)
+  - **Parallel Group**: Wave 1
+  - **Blocks**: T9, T10, T11, T13, T14, T17
+  - **Blocked By**: T1 (needs NPC types)
+
+  **References**:
+
+  **Pattern References**:
+  - `src/core/player/index.ts:1-98` — Full Player class with position interpolation, rotation, animation (arm/leg swing). NPCEntity should extend or wrap this.
+  - `src/core/player/playerObject.ts` — PlayerObject with body parts (head, body, arms, legs). NPC can reuse this.
+  - `src/controller/MultiPlay/players.ts:1-74` — PlayersController manages multiple Player instances, adds/removes from scene. NPCRenderer should follow same pattern.
+  - `src/core/loader/index.ts:814-845` — `skinsMap` array of 30 skin textures. NPCs pick from these.
+
+  **External References**:
+  - Three.js CSS2DRenderer for name tags: `https://threejs.org/docs/#examples/en/renderers/CSS2DRenderer`
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+
+  ```
+  Scenario: 10 NPCs render in the world with name tags
+    Tool: Playwright (playwright skill)
+    Preconditions: Dev server running, cyberpunk scene loaded
+    Steps:
+      1. Navigate to http://localhost:5173
+      2. Start single-player game
+      3. Look toward spawn area (world origin)
+      4. Take screenshot
+    Expected Result: Multiple NPC entities visible with floating name tags showing name + profession
+    Evidence: .sisyphus/evidence/task-5-npc-rendering.png
+
+  Scenario: NPC animation state changes visually
+    Tool: Playwright (playwright skill)
+    Preconditions: NPCs spawned, one set to "walking" state
+    Steps:
+      1. Trigger NPC walking state via simulation
+      2. Observe NPC for 2 seconds
+      3. Take screenshot showing walking animation
+    Expected Result: NPC shows arm/leg swing animation while walking (position changes + body animation)
+    Evidence: .sisyphus/evidence/task-5-npc-animation.png
+  ```
+
+  **Commit**: YES
+  - Message: `feat(npc): implement NPC entity system extending Player class`
+  - Files: `src/core/npc/**`
+
+---
+
+- [ ] 6. Inventory System (Items, Stacking, Drop)
+
+  **What to do**:
+  - Create `src/simulation/inventory/` module:
+    - Inventory data structure: array of 20 slots `{type, quantity, maxStack}`
+    - Each NPC and player-in-simulation has an inventory
+    - Items: block types (can place), food items (Synth-Ration +30 hunger, Energy Bar +15 hunger)
+    - Pickup: when entity mines a block, item added to inventory
+    - Drop: items drop as world entities at a position
+    - Death drop: all inventory items spawn at death position
+    - Full inventory handling: item rejected / dropped on ground
+  - Environment-agnostic: works in simulation for both SP and MP
+  - Integration with existing bag system: when player possesses NPC, NPC inventory maps to bag display
+
+  **Must NOT do**:
+  - No crafting, no equipment slots, no item durability
+  - No UI rendering (T21 / existing bag handles display)
+
+  **Recommended Agent Profile**:
+  - **Category**: `unspecified-high`
+  - **Skills**: []
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T7-T11)
+  - **Parallel Group**: Wave 2
+  - **Blocks**: T7, T10, T16
+  - **Blocked By**: T1
+
+  **References**:
+  - `src/ui/bag/index.ts` — Existing bag/inventory UI pattern (for future integration)
+  - `src/controller/config/index.ts:12-14` — Bag config structure: `bagItem`, `activeIndex`
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+  ```
+  Scenario: Item added to inventory
+    Tool: Bash
+    Steps:
+      1. Create inventory, add item "neonBlock" qty 1
+      2. Query inventory
+    Expected Result: Inventory contains 1x neonBlock
+    Evidence: .sisyphus/evidence/task-6-inventory-add.txt
+
+  Scenario: Full inventory rejects new items
+    Tool: Bash
+    Steps:
+      1. Fill all 20 slots
+      2. Attempt to add another item
+    Expected Result: Returns false/overflow; inventory stays at 20 slots
+    Evidence: .sisyphus/evidence/task-6-inventory-full.txt
+  ```
+
+  **Commit**: YES
+  - Message: `feat(inventory): implement slot-based inventory for NPCs`
+  - Files: `src/simulation/inventory/**`
+
+---
+
+- [ ] 7. Survival System (HP, Hunger, Food Consumption)
+
+  **What to do**:
+  - Create `src/simulation/survival/` module:
+    - HP system: max 100 HP
+    - Hunger system: max 100, decreases by 1 every 30 seconds
+    - When hunger=0: HP decreases by 1 every 10 seconds (starvation)
+    - When hunger>80: HP regenerates +1 every 10 seconds
+    - Food consumption: use food from inventory to restore hunger
+    - Apply to both player (when in simulation) and autonomous NPCs
+  - Runs inside SimulationEngine tick loop
+  - Emits events for UI: `survival:update {entityId, hp, hunger}`
+
+  **Must NOT do**:
+  - No status effects, no food cooking, no per-NPC variation
+
+  **Recommended Agent Profile**:
+  - **Category**: `unspecified-high`
+  - **Skills**: []
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T6, T8-T11)
+  - **Parallel Group**: Wave 2
+  - **Blocks**: T15, T16, T21
+  - **Blocked By**: T1, T3, T6
+
+  **References**:
+  - `src/simulation/` — SimulationEngine tick loop (from T3)
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+  ```
+  Scenario: Hunger decreases over time
+    Tool: Bash
+    Steps:
+      1. Create entity with hunger=100, run 2 hunger ticks (60s simulated)
+      2. Query hunger value
+    Expected Result: Hunger = 98
+    Evidence: .sisyphus/evidence/task-7-hunger-decrease.txt
+
+  Scenario: Starvation damages HP
+    Tool: Bash
+    Steps:
+      1. Set hunger=0, HP=100, run 2 starvation ticks (20s simulated)
+    Expected Result: HP = 98
+    Evidence: .sisyphus/evidence/task-7-starvation.txt
+
+  Scenario: Eating food restores hunger
+    Tool: Bash
+    Steps:
+      1. Set hunger=50, add Synth-Ration to inventory, consume it
+    Expected Result: Hunger = 80, Synth-Ration removed
+    Evidence: .sisyphus/evidence/task-7-food.txt
+  ```
+
+  **Commit**: YES
+  - Message: `feat(survival): implement HP and hunger system`
+  - Files: `src/simulation/survival/**`
+
+---
+
+- [ ] 8. GLM-5 API Service (Streaming, Rate Limit, Circuit Breaker)
+
+  **What to do**:
+  - Create `src/simulation/llm/` module:
+    - GLM-5 API client with streaming response handling (SSE)
+    - Per-NPC request queue: max 1 concurrent request per NPC
+    - Global rate limiter: configurable max requests/minute (default: 30)
+    - Token budget tracker: configurable max tokens/minute (default: 50,000)
+    - Circuit breaker: after 3 consecutive failures per NPC, cooldown 30 seconds
+    - Request lifecycle events: `thinking-start`, `thinking-stream`, `thinking-complete`, `thinking-error`
+    - Response parsing: extract JSON from LLM response (handle markdown code blocks)
+    - Retry logic: 1 retry on parse failure with "respond with valid JSON only" nudge
+    - API key from: `ZHIPU_API_KEY` env var (server) or user-provided config (client)
+  - Dual-mode compatible:
+    - Client-side: direct fetch to `https://open.bigmodel.cn/api/paas/v4/chat/completions`
+    - Server-side: same API, but key from env var
+  - Implement `ILLMService` interface matching `SimulationBridge.callLLM`
+
+  **Must NOT do**:
+  - No semantic caching, no model fallback chain, no prompt optimization
+
+  **Recommended Agent Profile**:
+  - **Category**: `deep`
+    - Reason: Streaming API, queue management, circuit breaker, rate limiting
+  - **Skills**: []
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T6, T7, T9-T11)
+  - **Parallel Group**: Wave 2
+  - **Blocks**: T9
+  - **Blocked By**: T3
+
+  **References**:
+  - `src/simulation/` — SimulationBridge interface (from T3)
+  - Zhipu AI GLM API: `https://open.bigmodel.cn/dev/api`
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+  ```
+  Scenario: GLM-5 API returns valid streaming response
+    Tool: Bash
+    Preconditions: ZHIPU_API_KEY env var set
+    Steps:
+      1. Call GLM-5 with test prompt: "You are a test NPC. Respond with JSON: {\"action\":\"idle\"}"
+      2. Collect streaming tokens, parse final response
+    Expected Result: Receives streaming tokens; parsed JSON contains valid action field
+    Evidence: .sisyphus/evidence/task-8-glm5-streaming.txt
+
+  Scenario: Rate limiter blocks excess requests
+    Tool: Bash
+    Preconditions: Rate limit set to 5/min for testing
+    Steps:
+      1. Send 6 rapid requests
+    Expected Result: 6th request is queued/delayed
+    Evidence: .sisyphus/evidence/task-8-rate-limiter.txt
+
+  Scenario: Circuit breaker activates after failures
+    Tool: Bash
+    Preconditions: Mock endpoint returning 500
+    Steps:
+      1. Send 3 requests for same NPC, all fail
+    Expected Result: Circuit breaker OPEN; subsequent requests return fallback immediately
+    Evidence: .sisyphus/evidence/task-8-circuit-breaker.txt
+  ```
+
+  **Commit**: YES
+  - Message: `feat(llm): implement GLM-5 streaming service with rate limiting`
+  - Files: `src/simulation/llm/**`
+
+---
+
+- [ ] 9. NPC AI Decision Loop (Observe → Prompt → Call → Validate → Execute)
+
+  **What to do**:
+  - Implement core NPC AI loop in `src/simulation/npc-ai/`:
+    1. **Observe**: Gather nearby world state (blocks, NPCs, monsters within 16-block radius) via SimulationBridge
+    2. **Build Prompt**: Construct GLM-5 prompt using NPC persona (T2) + world state + conversation history (last 10) + task list
+    3. **Call LLM**: Send to GLM-5 service (T8) with streaming
+    4. **Validate**: Parse JSON, validate against NPCAction schema (T1 types)
+    5. **Execute**: Translate action to simulation commands (move via pathfinding T4, place/destroy block, speak dialogue)
+  - Decision cadence: configurable per NPC (default 5 seconds)
+  - Skip tick if previous LLM call still in-flight
+  - Sleep mode: NPCs outside all observer radius (128 blocks) stop LLM calls
+  - Conversation history: per-NPC rolling window of last 10 messages
+  - Emit thinking state events for visualization
+
+  **Must NOT do**:
+  - No long-term memory / RAG
+  - No complex planning (one action at a time)
+
+  **Recommended Agent Profile**:
+  - **Category**: `deep`
+    - Reason: Core game architecture, LLM integration, complex async orchestration
+  - **Skills**: []
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T6, T7, T10, T11)
+  - **Parallel Group**: Wave 2
+  - **Blocks**: T10, T11, T12, T18, T19
+  - **Blocked By**: T2, T3, T4, T5, T8
+
+  **References**:
+  - LLM→Action Contract section of this plan
+  - `src/simulation/personas/` — NPC persona definitions (T2)
+  - `src/simulation/llm/` — LLM service (T8)
+  - `src/simulation/pathfinding/` — A* pathfinding (T4)
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+  ```
+  Scenario: NPC autonomously decides an action
+    Tool: Bash
+    Preconditions: ZHIPU_API_KEY set, simulation running with 1 NPC
+    Steps:
+      1. Start simulation with NPC "Wrench"
+      2. Wait 10 seconds for decision cycle
+      3. Query action log
+    Expected Result: At least 1 completed cycle: observe → prompt → response → validated action
+    Evidence: .sisyphus/evidence/task-9-npc-decision.txt
+
+  Scenario: NPC enters sleep mode when no observers
+    Tool: Bash
+    Steps:
+      1. Remove all observers from NPC radius
+      2. Wait 30 seconds
+    Expected Result: Zero GLM-5 API calls made
+    Evidence: .sisyphus/evidence/task-9-sleep-mode.txt
+
+  Scenario: Stub brain produces deterministic actions (no LLM needed)
+    Tool: Bash
+    Steps:
+      1. Start simulation with stub brain (no API key needed)
+      2. Wait 10 seconds
+      3. Query NPC action log
+    Expected Result: NPCs perform idle/wander actions deterministically
+    Evidence: .sisyphus/evidence/task-9-stub-brain.txt
+  ```
+
+  **Commit**: YES
+  - Message: `feat(ai): implement NPC decision loop with GLM-5`
+  - Files: `src/simulation/npc-ai/**`
+
+---
+
+- [ ] 10. NPC Build & Gather Behaviors
+
+  **What to do**:
+  - Implement NPC action executors in `src/simulation/npc-ai/behaviors/`:
+    - **Gather**: NPC pathfinds to target → mining animation state → 2s delay → block destroyed → item to inventory
+    - **Build**: NPC pathfinds to target → building animation state → 1s delay → block placed from inventory
+    - **Move**: NPC pathfinds to target → walking animation state → follows waypoints
+  - Use SimulationBridge.modifyBlock for block operations
+  - Update NPC inventory via T6 inventory module
+  - Visual feedback via animation state changes (T5 NPCEntity)
+
+  **Must NOT do**:
+  - No tool-dependent mining speed
+  - No complex building patterns
+
+  **Recommended Agent Profile**:
+  - **Category**: `unspecified-high`
+  - **Skills**: []
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T6-T9, T11)
+  - **Parallel Group**: Wave 2
+  - **Blocks**: T23
+  - **Blocked By**: T1, T4, T5, T6, T9
+
+  **References**:
+  - `src/core/block-action/index.ts:16-44` — Existing block place/remove logic (for SimulationBridge to call)
+  - `src/simulation/pathfinding/` — A* pathfinding (T4)
+  - `src/simulation/inventory/` — Inventory module (T6)
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+  ```
+  Scenario: NPC gathers a block
+    Tool: Bash
+    Steps:
+      1. Force NPC gather action at known block position
+      2. Wait 3s, query inventory and world state
+    Expected Result: Block removed from world; item in NPC inventory
+    Evidence: .sisyphus/evidence/task-10-gather.txt
+
+  Scenario: NPC builds a block
+    Tool: Bash
+    Steps:
+      1. Give NPC neonBlock in inventory
+      2. Force build action at empty position
+      3. Wait 2s, query world and inventory
+    Expected Result: Block placed; item removed from inventory
+    Evidence: .sisyphus/evidence/task-10-build.txt
+  ```
+
+  **Commit**: YES
+  - Message: `feat(npc-behavior): implement build and gather actions`
+  - Files: `src/simulation/npc-ai/behaviors/**`
+
+---
+
+- [ ] 11. NPC Dialogue System (P2NPC + NPC2NPC, Chat Bubbles)
+
+  **What to do**:
+  - Player-to-NPC dialogue in `src/ui/dialogue/`:
+    - Press E near NPC to initiate conversation (PC only)
+    - Chat input field at bottom of screen
+    - Player message → simulation → injected into NPC's LLM prompt → NPC responds via dialogue action
+  - NPC-to-NPC dialogue in simulation:
+    - When LLM decides "dialogue" action targeting another NPC
+    - Target NPC receives message in next observation context
+  - Chat bubble rendering in `src/core/npc/`:
+    - Speech text appears above NPC head for 5 seconds, then fades
+    - Uses CSS2DRenderer or canvas text sprite (same approach as T5 name tags)
+  - Dialogue history: last 10 exchanges per NPC pair, stored in simulation
+
+  **Must NOT do**:
+  - No dialogue trees, no voice synthesis, no translation
+
+  **Recommended Agent Profile**:
+  - **Category**: `visual-engineering`
+  - **Skills**: [`frontend-ui-ux`]
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T6-T10)
+  - **Parallel Group**: Wave 2
+  - **Blocks**: T18, T20
+  - **Blocked By**: T5, T9
+
+  **References**:
+  - `src/core/npc/` — NPC entity with name tag overlay (T5)
+  - `src/ui/action/` — Existing action control UI pattern for keybinding
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+  ```
+  Scenario: Player sends message to NPC and gets response
+    Tool: Playwright (playwright skill)
+    Preconditions: Game running, player near NPC
+    Steps:
+      1. Press E key near NPC
+      2. Type "Hello, what are you doing?" and press Enter
+      3. Wait 8 seconds for LLM response
+      4. Look for chat bubble above NPC
+    Expected Result: Chat bubble appears with NPC's response text
+    Evidence: .sisyphus/evidence/task-11-dialogue.png
+
+  Scenario: NPC-to-NPC dialogue occurs autonomously
+    Tool: Bash
+    Preconditions: Two NPCs in range, AI active
+    Steps:
+      1. Run simulation for 60 seconds
+      2. Check dialogue log
+    Expected Result: At least 1 NPC-to-NPC dialogue recorded
+    Evidence: .sisyphus/evidence/task-11-npc-npc-dialogue.txt
+  ```
+
+  **Commit**: YES
+  - Message: `feat(dialogue): implement P2NPC + NPC2NPC dialogue with bubbles`
+  - Files: `src/ui/dialogue/**`, `src/core/npc/` (bubble rendering)
+
+---
+
+- [ ] 12. Action Validation & Fallback System
+
+  **What to do**:
+  - Implement in `src/simulation/npc-ai/validation/`:
+    - Validate LLM JSON output against NPCAction schema
+    - Feasibility checks: is target reachable? Does NPC have block in inventory? Is position valid?
+    - Fallback: log warning, NPC idles, next tick gets corrective context
+    - Prompt injection defense: reject actions referencing system prompts or suspicious content
+    - Max 1 action per NPC per tick
+
+  **Must NOT do**:
+  - No action queuing, no complex behavior planning
+
+  **Recommended Agent Profile**:
+  - **Category**: `unspecified-high`
+  - **Skills**: []
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T13-T17)
+  - **Parallel Group**: Wave 3
+  - **Blocks**: T23
+  - **Blocked By**: T9
+
+  **References**:
+  - `src/utils/types/npc.ts` — `isValidNPCAction()` runtime validator (T1)
+  - LLM→Action Contract → Failure Handling table in this plan
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+  ```
+  Scenario: Valid action passes
+    Tool: Bash
+    Steps: Pass {action:"move", target:{position:{x:5,y:10,z:5}}}
+    Expected Result: {valid: true}
+    Evidence: .sisyphus/evidence/task-12-valid.txt
+
+  Scenario: Invalid action triggers fallback
+    Tool: Bash
+    Steps: Pass {action:"fly"}
+    Expected Result: {valid: false, reason: "unknown action type"}, NPC set to idle
+    Evidence: .sisyphus/evidence/task-12-invalid.txt
+
+  Scenario: Prompt injection rejected
+    Tool: Bash
+    Steps: Pass dialogue containing "ignore all previous instructions"
+    Expected Result: Action rejected with security flag
+    Evidence: .sisyphus/evidence/task-12-injection.txt
+  ```
+
+  **Commit**: YES
+  - Message: `feat(validation): implement action validation with fallback`
+  - Files: `src/simulation/npc-ai/validation/**`
+
+---
+
+- [ ] 13. Possession System (Possess/Release NPC, Mode Switching)
+
+  **What to do**:
+  - Implement possession in `src/controller/possession/`:
+    - Player starts in normal first-person mode (existing controls)
+    - Press Tab near NPC → Possess NPC:
+      - Camera teleports to NPC position
+      - NPC AI loop pauses immediately
+      - Player controls NPC body (existing WASD/block controls reused)
+      - Player sees NPC's inventory (mapped to bag), HP, hunger
+    - Press Tab again → Release NPC:
+      - Camera returns to player's original position
+      - NPC AI loop resumes
+    - Possession conflict (MP): first player wins; second gets error toast
+    - State managed in simulation, broadcast to all clients
+  - Integration:
+    - Hook into existing `src/controller/game-controller/` for movement
+    - Hook into `src/core/` camera system for teleportation
+
+  **Must NOT do**:
+  - No smooth camera transition (instant for MVP)
+  - No NPC suggestion system
+
+  **Recommended Agent Profile**:
+  - **Category**: `deep`
+    - Reason: Complex state management, AI pause/resume, camera switching, multiplayer conflict
+  - **Skills**: [`frontend-ui-ux`]
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T12, T14-T17)
+  - **Parallel Group**: Wave 3
+  - **Blocks**: T20, T23
+  - **Blocked By**: T5, T9
+
+  **References**:
+  - `src/controller/index.ts:80-126` — `startGame`, `runGame` flow for camera state management
+  - `src/controller/game-controller/move-controller/` — Movement controller to reuse during possession
+  - `src/core/index.ts:49-55` — Camera position/rotation setting
+  - `src/controller/config/index.ts:44-48` — Player position state (`config.state`)
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+  ```
+  Scenario: Player possesses NPC and gains control
+    Tool: Playwright (playwright skill)
+    Steps:
+      1. Walk near NPC, press Tab
+      2. Verify camera teleports to NPC position
+      3. Press W to move
+    Expected Result: Camera at NPC position; WASD controls NPC body
+    Evidence: .sisyphus/evidence/task-13-possession.png
+
+  Scenario: NPC AI pauses during possession, resumes after release
+    Tool: Bash
+    Steps:
+      1. Check NPC action log (actions happening)
+      2. Possess NPC, wait 15s, check log (no new AI actions)
+      3. Release, wait 10s, check log (AI resumed)
+    Expected Result: Zero AI actions during possession; resumes within 10s of release
+    Evidence: .sisyphus/evidence/task-13-pause-resume.txt
+  ```
+
+  **Commit**: YES
+  - Message: `feat(possession): implement NPC possession system`
+  - Files: `src/controller/possession/**`
+
+---
+
+- [ ] 14. Observer/God Mode (Overhead Camera + NPC Selection)
+
+  **What to do**:
+  - Implement observer mode in `src/controller/observer/`:
+    - Toggle with G key: normal first-person ↔ observer overhead camera
+    - Observer camera: free-flying with WASD pan, scroll zoom, middle-click rotate
+    - NPC markers: show all NPC positions as colored labels
+    - Click NPC marker → show info panel (name, profession, current action, HP, hunger)
+    - Double-click NPC → possess (triggers T13)
+    - Mode indicator text: "OBSERVER MODE" / "POSSESSING: {NPC name}" / "NORMAL"
+  - Use Three.js OrbitControls for observer camera
+
+  **Must NOT do**:
+  - No terrain editing from observer mode
+  - No minimap (post-MVP)
+
+  **Recommended Agent Profile**:
+  - **Category**: `visual-engineering`
+  - **Skills**: [`frontend-ui-ux`]
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T12, T13, T15-T17)
+  - **Parallel Group**: Wave 3
+  - **Blocks**: T23
+  - **Blocked By**: T5
+
+  **References**:
+  - Three.js OrbitControls: `https://threejs.org/docs/#examples/en/controls/OrbitControls`
+  - `src/core/npc/` — NPC entity positions and name tags (T5)
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+  ```
+  Scenario: Observer mode shows overhead view
+    Tool: Playwright (playwright skill)
+    Steps:
+      1. Press G to enter observer mode
+      2. Take screenshot showing overhead view with NPC markers
+    Expected Result: Overhead view with NPC position markers visible
+    Evidence: .sisyphus/evidence/task-14-observer.png
+
+  Scenario: Clicking NPC shows info panel
+    Tool: Playwright (playwright skill)
+    Steps:
+      1. In observer mode, click an NPC marker
+      2. Verify info panel with name, profession, HP, hunger
+    Expected Result: Info panel displayed with correct NPC data
+    Evidence: .sisyphus/evidence/task-14-info-panel.png
+  ```
+
+  **Commit**: YES
+  - Message: `feat(observer): implement god mode with NPC selection`
+  - Files: `src/controller/observer/**`
+
+---
+
+- [ ] 15. Monster System (Mutants + Corrupted Bots)
+
+  **What to do**:
+  - Implement in `src/simulation/monsters/`:
+    - **Mutant**: 50 HP, 10 damage, speed 0.8x player, surface spawn (green voxel model)
+    - **Corrupted Bot**: 80 HP, 15 damage, speed 0.6x player, ruin spawn (grey voxel model)
+    - Simple AI (NOT LLM): idle/wander → aggro within 12 blocks → chase → melee attack (2-block range, 2s cooldown) → de-aggro at 20+ blocks
+    - Spawning: server/simulation controls based on distance from origin (more monsters further out)
+    - Max 20 active monsters
+    - Death: 50% chance drop Synth-Ration
+  - Client-side rendering: extend NPC entity system for monster entities
+  - Runs in SimulationEngine like NPCs
+
+  **Must NOT do**:
+  - No LLM monster behavior, no boss, no ranged attacks, no spawners
+
+  **Recommended Agent Profile**:
+  - **Category**: `deep`
+  - **Skills**: []
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T12-T14, T16, T17)
+  - **Parallel Group**: Wave 3
+  - **Blocks**: T16, T23
+  - **Blocked By**: T1, T3, T4, T7
+
+  **References**:
+  - `src/core/npc/` — NPC entity rendering (T5) — monsters reuse similar rendering
+  - `src/simulation/pathfinding/` — A* for monster chase (T4)
+  - `src/simulation/survival/` — HP/damage system (T7)
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+  ```
+  Scenario: Monsters spawn in the world
+    Tool: Playwright (playwright skill)
+    Steps:
+      1. Move player 50+ blocks from origin
+      2. Wait 10s, take screenshot
+    Expected Result: At least 1 monster visible as colored voxel entity
+    Evidence: .sisyphus/evidence/task-15-spawn.png
+
+  Scenario: Monster attacks and reduces HP
+    Tool: Bash
+    Steps:
+      1. Place player within 2 blocks of monster, query HP before and after 5s
+    Expected Result: HP decreased by monster damage
+    Evidence: .sisyphus/evidence/task-15-attack.txt
+  ```
+
+  **Commit**: YES
+  - Message: `feat(monsters): implement Mutant and Corrupted Bot`
+  - Files: `src/simulation/monsters/**`, `src/core/npc/` (monster rendering)
+
+---
+
+- [ ] 16. Death & Respawn System
+
+  **What to do**:
+  - Implement in `src/simulation/death/`:
+    - When HP reaches 0: all inventory drops at death position, death event emitted
+    - Player death: "You died" overlay + "Respawn" button → teleport to Revival Spring (0, surface_y, 0), HP=100, hunger=50, empty inventory
+    - NPC death: same drop logic, respawn at Revival Spring after 10s delay, AI resumes with empty inventory, death added to conversation history
+    - Dropped items persist 5 minutes then despawn
+    - Other entities can pick up dropped items
+  - Death screen UI in `src/ui/death/` (PC only)
+
+  **Must NOT do**:
+  - No death penalty beyond inventory loss, no death animation, no grave markers
+
+  **Recommended Agent Profile**:
+  - **Category**: `unspecified-high`
+  - **Skills**: [`frontend-ui-ux`]
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T12-T15, T17)
+  - **Parallel Group**: Wave 3
+  - **Blocks**: T23
+  - **Blocked By**: T6, T7, T15
+
+  **References**:
+  - `src/simulation/survival/` — HP system (T7)
+  - `src/simulation/inventory/` — Drop logic (T6)
+  - `src/core/terrain/index.ts:225-231` — `getFloorHeight` for Revival Spring surface_y
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+  ```
+  Scenario: Player dies and respawns
+    Tool: Bash
+    Steps:
+      1. Set HP to 0, trigger death
+      2. Trigger respawn, query position/HP/hunger/inventory
+    Expected Result: Position at origin, HP=100, hunger=50, inventory empty
+    Evidence: .sisyphus/evidence/task-16-respawn.txt
+
+  Scenario: Items drop at death location
+    Tool: Bash
+    Steps:
+      1. Give entity items, kill it
+      2. Query dropped items at death position
+    Expected Result: Dropped items present at death location
+    Evidence: .sisyphus/evidence/task-16-drop.txt
+  ```
+
+  **Commit**: YES
+  - Message: `feat(death): implement respawn at Revival Spring`
+  - Files: `src/simulation/death/**`, `src/ui/death/**`
+
+---
+
+- [ ] 17. Socket.io NPC Events (Extend Multiplayer for NPC Sync)
+
+  **What to do**:
+  - Extend existing Socket.io server in `server/src/controller/` with NPC events:
+    - New server events: `NPC_STATE_UPDATE` (batch NPC positions/states), `NPC_ACTION` (individual NPC action), `NPC_DIALOGUE` (chat message), `SURVIVAL_UPDATE` (HP/hunger changes)
+    - New client events: `PLAYER_DIALOGUE` (player sends chat to NPC), `POSSESS_NPC` (request possession), `RELEASE_NPC` (release possession)
+    - Server runs SimulationEngine with server bridge when game starts (extend `gameStart` function)
+    - NPC state delta broadcasting: only send changes, not full state
+    - AOI (Area of Interest): only broadcast NPC updates to players within range
+    - Late joiner support: send full NPC snapshot on player join
+  - Extend `server/src/types/` with new event type definitions
+  - Extend client-side `src/controller/MultiPlay/index.ts` to handle new events
+
+  **Must NOT do**:
+  - No changes to existing room/player events
+  - No replacing Socket.io
+
+  **Recommended Agent Profile**:
+  - **Category**: `unspecified-high`
+  - **Skills**: []
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T12-T16)
+  - **Parallel Group**: Wave 3
+  - **Blocks**: T22, T24
+  - **Blocked By**: T3, T5
+
+  **References**:
+  - `server/src/index.ts:17-29` — Socket.io connection/event handling pattern
+  - `server/src/controller/game.ts:1-53` — Game controller with `gameStart` and `logPush` — extend this
+  - `server/src/controller/room.ts:1-120` — Room management pattern
+  - `src/controller/MultiPlay/index.ts:93-121` — Client-side Socket.io event binding pattern (`bindGame`)
+  - `server/src/types/` — Server-side type definitions
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+  ```
+  Scenario: Server emits NPC state updates to connected clients
+    Tool: Bash
+    Preconditions: Server running with simulation
+    Steps:
+      1. Connect via socket.io-client script
+      2. Join room, start game
+      3. Listen for NPC_STATE_UPDATE events for 10 seconds
+    Expected Result: Receives NPC state updates with position/animation data
+    Evidence: .sisyphus/evidence/task-17-npc-sync.txt
+
+  Scenario: Two clients see same NPC state
+    Tool: Bash
+    Steps:
+      1. Connect two clients to same room
+      2. Compare NPC_STATE_UPDATE data from both
+    Expected Result: Both clients receive identical NPC states
+    Evidence: .sisyphus/evidence/task-17-sync-consistency.txt
+  ```
+
+  **Commit**: YES
+  - Message: `feat(multiplayer): extend Socket.io with NPC sync events`
+  - Files: `server/src/controller/npc-events.ts`, `server/src/types/`, `src/controller/MultiPlay/`
+
+---
+
+- [ ] 18. Thinking Visualization — NPC Head Bubbles
+
+  **What to do**:
+  - Implement in `src/core/npc/thinking-bubble/`:
+    - Floating bubble above NPC head showing thinking state:
+      - **Idle**: No bubble
+      - **Requesting**: "Thinking..." with animated dots
+      - **Received**: "{reasoning}" text from LLM response
+      - **Executing**: Action icon + text (Mining / Building / Moving / Talking)
+    - Rendered as HTML overlay using CSS2DRenderer (same as name tags from T5)
+    - Auto-hides after 3 seconds
+    - Streaming text: partial reasoning updates in real-time during LLM streaming
+    - Visible to all players in range
+
+  **Must NOT do**:
+  - No complex animations, no bubble interaction
+
+  **Recommended Agent Profile**:
+  - **Category**: `visual-engineering`
+  - **Skills**: [`frontend-ui-ux`]
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T19-T22)
+  - **Parallel Group**: Wave 4
+  - **Blocks**: T23
+  - **Blocked By**: T9, T11
+
+  **References**:
+  - `src/core/npc/` — NPC entity with name tag overlay (T5) — bubbles extend same approach
+  - Three.js CSS2DRenderer: `https://threejs.org/docs/#examples/en/renderers/CSS2DRenderer`
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+  ```
+  Scenario: Thinking bubble appears during LLM request
+    Tool: Playwright (playwright skill)
+    Steps:
+      1. Wait for NPC's next decision cycle
+      2. Screenshot during "requesting" phase
+      3. Screenshot during "received" phase
+    Expected Result: Bubble transitions: "Thinking..." → "{reasoning}" → action text
+    Evidence: .sisyphus/evidence/task-18-thinking-bubble.png
+  ```
+
+  **Commit**: YES
+  - Message: `feat(ui): implement NPC thinking bubbles`
+  - Files: `src/core/npc/thinking-bubble/**`
+
+---
+
+- [ ] 19. Thinking Visualization — Sidebar Log Panel
+
+  **What to do**:
+  - Implement in `src/ui/sidebar-log/`:
+    - Right sidebar panel showing AI decision timeline (PC only)
+    - Scrollable list of NPC decision events
+    - Each entry: NPC color dot + name + timestamp + state
+    - Expandable: click to see reasoning and raw response
+    - Real-time updates as NPCs make decisions
+    - Filter: show only selected NPC or all
+    - Color-coded: yellow=requesting, green=success, blue=executing, red=error
+    - Token count and response time per request
+    - Minimize/maximize toggle button
+  - Listens to simulation thinking state events
+
+  **Must NOT do**:
+  - No export/download, no advanced search
+
+  **Recommended Agent Profile**:
+  - **Category**: `visual-engineering`
+  - **Skills**: [`frontend-ui-ux`]
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T18, T20-T22)
+  - **Parallel Group**: Wave 4
+  - **Blocks**: T23
+  - **Blocked By**: T9
+
+  **References**:
+  - `src/ui/index.ts` — Existing UI module structure for registration pattern
+  - `src/ui/fps/` — Simple UI overlay pattern
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+  ```
+  Scenario: Sidebar shows NPC decision events
+    Tool: Playwright (playwright skill)
+    Steps:
+      1. Verify sidebar visible on right side of screen
+      2. Wait 15s for NPC decisions
+      3. Screenshot sidebar with entries
+      4. Click an entry to expand
+    Expected Result: Multiple entries with color states; expanded view shows reasoning
+    Evidence: .sisyphus/evidence/task-19-sidebar.png
+
+  Scenario: Filter shows only selected NPC
+    Tool: Playwright (playwright skill)
+    Steps:
+      1. Click filter, select "Wrench"
+    Expected Result: Only Wrench's entries visible
+    Evidence: .sisyphus/evidence/task-19-filter.png
+  ```
+
+  **Commit**: YES
+  - Message: `feat(ui): implement AI sidebar log panel`
+  - Files: `src/ui/sidebar-log/**`
+
+---
+
+- [ ] 20. NPC Task List UI (Visible During Possession)
+
+  **What to do**:
+  - Implement in `src/ui/task-list/`:
+    - Left panel visible only during NPC possession (T13)
+    - Shows NPC's current goals from LLM `nextGoal` responses
+    - Display: ordered list with status icons (pending/in-progress/done)
+    - Auto-updates when NPC AI updates goals
+    - Read-only for player
+    - Appears on possession, hides on release
+
+  **Must NOT do**:
+  - No task assignment from player, no task sharing
+
+  **Recommended Agent Profile**:
+  - **Category**: `visual-engineering`
+  - **Skills**: [`frontend-ui-ux`]
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T18, T19, T21, T22)
+  - **Parallel Group**: Wave 4
+  - **Blocks**: T23
+  - **Blocked By**: T11, T13
+
+  **References**:
+  - `src/controller/possession/` — Possession state for show/hide logic (T13)
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+  ```
+  Scenario: Task list appears when possessing NPC
+    Tool: Playwright (playwright skill)
+    Steps:
+      1. Possess NPC with Tab
+      2. Verify left panel with task list
+    Expected Result: Ordered task list with status indicators visible
+    Evidence: .sisyphus/evidence/task-20-task-list.png
+
+  Scenario: Task list hides on release
+    Tool: Playwright (playwright skill)
+    Steps:
+      1. Release NPC with Tab
+    Expected Result: Task list panel disappears
+    Evidence: .sisyphus/evidence/task-20-hide.png
+  ```
+
+  **Commit**: YES
+  - Message: `feat(ui): implement NPC task list panel`
+  - Files: `src/ui/task-list/**`
+
+---
+
+- [ ] 21. HUD Polish (HP/Hunger Bars, Mode Indicator)
+
+  **What to do**:
+  - Implement in `src/ui/survival-hud/`:
+    - HP bar: red horizontal bar at bottom-left
+    - Hunger bar: orange bar below HP
+    - Mode indicator: "NORMAL" / "OBSERVER MODE" / "POSSESSING: {NPC name}" at top center
+    - Player/NPC count: "10 NPCs active" in corner
+  - Only visible in cyberpunk scene (don't affect other scenes)
+  - PC only
+  - Listens to simulation survival events for HP/hunger updates
+  - Integrates with existing HUD-stage div
+
+  **Must NOT do**:
+  - No settings menu changes, no keybind customization
+
+  **Recommended Agent Profile**:
+  - **Category**: `visual-engineering`
+  - **Skills**: [`frontend-ui-ux`]
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T18-T20, T22)
+  - **Parallel Group**: Wave 4
+  - **Blocks**: T23
+  - **Blocked By**: T7
+
+  **References**:
+  - `src/ui/crosshair/` — Existing HUD overlay pattern (simple DOM elements on HUD-stage)
+  - `src/controller/index.ts:41-47` — `hudStage` div creation and management
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+  ```
+  Scenario: HUD elements visible during gameplay
+    Tool: Playwright (playwright skill)
+    Steps:
+      1. Start cyberpunk scene game
+      2. Verify HP bar (selector: `.survival-hud .hp-bar`)
+      3. Verify hunger bar (selector: `.survival-hud .hunger-bar`)
+      4. Verify mode indicator visible
+    Expected Result: All HUD elements rendered, not overlapping existing UI
+    Evidence: .sisyphus/evidence/task-21-hud.png
+  ```
+
+  **Commit**: YES
+  - Message: `feat(ui): implement survival HUD with HP/hunger bars`
+  - Files: `src/ui/survival-hud/**`
+
+---
+
+- [ ] 22. World Persistence (Server-Side Save/Load)
+
+  **What to do**:
+  - Implement in `server/src/persistence/`:
+    - Server saves world state to disk every 60 seconds (multiplayer only)
+    - Save data: modified chunks (diff from procedural gen), NPC states, player survival stats, dropped items, monster positions
+    - Storage: JSON files organized per room:
+      - `world-data/{roomId}/chunks.json` — block diffs
+      - `world-data/{roomId}/npcs.json` — NPC state snapshots
+      - `world-data/{roomId}/entities.json` — dropped items, monsters
+      - `world-data/{roomId}/world.json` — seed + metadata
+    - On server start: load saved state for room if exists
+    - On SIGTERM/SIGINT: save immediately before shutdown
+    - Room dissolve: optionally delete or archive save data
+
+  **Must NOT do**:
+  - No database, no backup/versioning, no world import/export
+  - No single-player persistence (uses existing browser localStorage)
+
+  **Recommended Agent Profile**:
+  - **Category**: `deep`
+    - Reason: Data serialization, file I/O, graceful shutdown, state merge
+  - **Skills**: []
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T18-T21)
+  - **Parallel Group**: Wave 4
+  - **Blocks**: T23, T26
+  - **Blocked By**: T3, T17
+
+  **References**:
+  - `server/src/controller/room.ts` — Room lifecycle (create, dissolve) for save trigger points
+  - `server/src/index.ts:46` — Server port and startup for shutdown hook
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+  ```
+  Scenario: World state persists across server restart
+    Tool: Bash
+    Steps:
+      1. Start game, modify world (place block)
+      2. Stop server (SIGTERM), verify save files
+      3. Restart server, query block
+    Expected Result: Block persisted through restart
+    Evidence: .sisyphus/evidence/task-22-persistence.txt
+
+  Scenario: NPC state persists
+    Tool: Bash
+    Steps:
+      1. NPC moves from spawn, gets items
+      2. Stop/restart server
+      3. Query NPC position and inventory
+    Expected Result: NPC state matches pre-restart
+    Evidence: .sisyphus/evidence/task-22-npc-persistence.txt
+  ```
+
+  **Commit**: YES
+  - Message: `feat(persistence): implement JSON-based world save/load`
+  - Files: `server/src/persistence/**`
+
+---
+
+- [ ] 23. Full Integration: All Systems Working Together
+
+  **What to do**:
+  - Wire all systems into cohesive gameplay:
+    - Verify NPC AI drives NPCs that interact with actual voxel world
+    - Verify possession transfers control and pauses AI correctly
+    - Verify observer mode shows all NPC activities
+    - Verify survival ticks affect both player and NPCs
+    - Verify monsters interact with both players and NPCs
+    - Verify death/respawn works for possessed and autonomous NPCs
+    - Verify thinking bubbles and sidebar log show real LLM data
+    - Verify multiplayer: 2+ tabs see same NPCs, same events
+    - Verify persistence: state survives server restart
+    - Verify existing ThreeCraft features: Classic/Ice/Beach/Melon/Pumpkin scenes still work
+  - Fix integration bugs found during testing
+  - Create game start flow: select cyberpunk scene → world loads → NPCs spawn → player can explore/possess
+
+  **Must NOT do**:
+  - No new features, no performance optimization (T25)
+
+  **Recommended Agent Profile**:
+  - **Category**: `deep`
+  - **Skills**: [`playwright`]
+
+  **Parallelization**:
+  - **Can Run In Parallel**: NO (must verify all systems together)
+  - **Parallel Group**: Wave 5 (sequential before T24-T26)
+  - **Blocks**: T24, T25, T26
+  - **Blocked By**: T10, T12, T13, T14, T15, T16, T18, T19, T20, T21, T22
+
+  **References**:
+  - All previous task outputs and file paths
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+  ```
+  Scenario: Full game loop in cyberpunk scene
+    Tool: Playwright (playwright skill)
+    Steps:
+      1. Navigate to http://localhost:5173
+      2. Start single-player with cyberpunk scene
+      3. See 10 NPCs with name tags
+      4. Walk near NPC, observe thinking bubble
+      5. Press Tab to possess NPC
+      6. Mine a block, place a block
+      7. Press Tab to release
+      8. Press G for observer mode
+      9. Click NPC in observer mode for info panel
+    Expected Result: All steps succeed end-to-end
+    Evidence: .sisyphus/evidence/task-23-integration.png
+
+  Scenario: Backward compatibility — Classic scene works
+    Tool: Playwright (playwright skill)
+    Steps:
+      1. Start single-player game (non-cyberpunk scene)
+      2. Move around, place/destroy blocks
+    Expected Result: Classic scene works exactly as before
+    Evidence: .sisyphus/evidence/task-23-backward-compat.png
+
+  Scenario: Multiplayer NPC sync
+    Tool: Playwright (playwright skill)
+    Steps:
+      1. Open two tabs, both join same cyberpunk room
+      2. Both see same NPCs doing same things
+      3. Player A possesses NPC, Player B sees "possessed" indicator
+    Expected Result: Synchronized world, NPC states, possession state
+    Evidence: .sisyphus/evidence/task-23-multiplayer.png
+  ```
+
+  **Commit**: YES
+  - Message: `feat(integration): wire all systems together`
+  - Files: Various integration code
+
+---
+
+- [ ] 24. Multiplayer Sync Verification
+
+  **What to do**:
+  - Open 4+ browser tabs simultaneously in cyberpunk multiplayer room
+  - Verify NPC actions broadcast to all clients
+  - Verify block changes replicate
+  - Verify possession state visible to all
+  - Test disconnect/reconnect: verify state correct on rejoin
+  - Test late joiner: new player joins mid-game, receives current NPC state
+  - Measure latency: NPC updates reach clients within 500ms
+
+  **Must NOT do**:
+  - No automated load testing framework
+
+  **Recommended Agent Profile**:
+  - **Category**: `unspecified-high`
+  - **Skills**: [`playwright`]
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T25, T26)
+  - **Parallel Group**: Wave 5
+  - **Blocks**: F1-F4
+  - **Blocked By**: T17, T23
+
+  **References**:
+  - `src/controller/MultiPlay/` — Client Socket.io handling
+  - `server/src/controller/` — Server event handling
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+  ```
+  Scenario: 4 concurrent tabs connected with NPC sync
+    Tool: Playwright (playwright skill)
+    Steps:
+      1. Open 4 tabs, all join same room, start cyberpunk game
+      2. Verify all 4 see same NPCs
+      3. Player 1 possesses NPC, verify other 3 see possession indicator
+    Expected Result: All 4 tabs synced
+    Evidence: .sisyphus/evidence/task-24-multi-sync.png
+
+  Scenario: Late joiner gets current state
+    Tool: Playwright (playwright skill)
+    Steps:
+      1. Start game with 1 player, NPCs run for 30s
+      2. Second player joins
+      3. Verify second player sees NPCs at current positions (not origin)
+    Expected Result: Late joiner has accurate NPC state
+    Evidence: .sisyphus/evidence/task-24-late-join.png
+  ```
+
+  **Commit**: YES
+  - Message: `fix(multiplayer): verify and fix NPC sync`
+  - Files: Server/client multiplayer code
+
+---
+
+- [ ] 25. Performance Optimization
+
+  **What to do**:
+  - NPC sleep/wake: verify NPCs outside interest radius stop LLM calls
+  - Object pooling: reuse Three.js geometries for NPC/monster rendering
+  - NPC update batching: batch NPC state updates per tick
+  - Render distance: ensure NPC entities respect render distance culling
+  - Profile FPS with 10 NPCs + monsters + terrain
+  - Target: 30+ FPS on mid-range hardware
+
+  **Must NOT do**:
+  - No WebGPU, no server threading
+
+  **Recommended Agent Profile**:
+  - **Category**: `deep`
+  - **Skills**: [`playwright`]
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T24, T26)
+  - **Parallel Group**: Wave 5
+  - **Blocks**: F1-F4
+  - **Blocked By**: T23
+
+  **References**:
+  - `src/controller/MultiPlay/players.ts:19-23` — Existing visibility culling based on render distance
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+  ```
+  Scenario: 30+ FPS with full load
+    Tool: Playwright (playwright skill)
+    Steps:
+      1. Start cyberpunk scene with 10 NPCs
+      2. Measure FPS over 30 seconds via performance API
+    Expected Result: Average FPS >= 30
+    Evidence: .sisyphus/evidence/task-25-fps.txt
+
+  Scenario: NPC sleep reduces resource usage
+    Tool: Bash
+    Steps:
+      1. Move all observers away from NPCs
+      2. Check LLM call count over 30 seconds
+    Expected Result: Near-zero LLM calls when sleeping
+    Evidence: .sisyphus/evidence/task-25-sleep.txt
+  ```
+
+  **Commit**: YES
+  - Message: `perf: optimize NPC sleep mode and rendering`
+  - Files: Various performance files
+
+---
+
+- [ ] 26. Game Start Flow (Spawn Point, NPC Placement, Revival Spring)
+
+  **What to do**:
+  - Cyberpunk-specific game initialization in `src/simulation/game-start/`:
+    - When cyberpunk scene loads: spawn 10 NPCs at predefined positions around origin (settlement pattern)
+    - Place Revival Spring structure at (0, surface_y, 0) with distinctive glowing blocks
+    - Each NPC starts with profession-appropriate inventory
+    - Start simulation engine (stub brain if no API key, GLM-5 if key provided)
+    - Show brief instructions overlay for new cyberpunk features (Tab=possess, G=observer, E=talk)
+  - Single-player: all runs client-side
+  - Multiplayer: server starts simulation, clients receive NPC state
+
+  **Must NOT do**:
+  - No character creation, no server browser, no tutorial
+
+  **Recommended Agent Profile**:
+  - **Category**: `unspecified-high`
+  - **Skills**: [`frontend-ui-ux`]
+
+  **Parallelization**:
+  - **Can Run In Parallel**: YES (with T24, T25)
+  - **Parallel Group**: Wave 5
+  - **Blocks**: F1-F4
+  - **Blocked By**: T22, T23
+
+  **References**:
+  - `src/controller/index.ts:80-105` — `startGame` flow for hooking cyberpunk initialization
+  - `src/core/weather/index.ts` — Weather detection to trigger cyberpunk-specific logic
+  - `src/simulation/personas/` — NPC persona definitions for initial inventory
+
+  **Acceptance Criteria**:
+
+  **QA Scenarios (MANDATORY):**
+  ```
+  Scenario: Cyberpunk game starts with NPCs
+    Tool: Playwright (playwright skill)
+    Steps:
+      1. Start cyberpunk scene
+      2. Verify 10 NPCs spawned near origin
+      3. Verify instructions overlay
+    Expected Result: NPCs visible, instructions shown
+    Evidence: .sisyphus/evidence/task-26-start-flow.png
+
+  Scenario: Revival Spring exists at origin
+    Tool: Playwright (playwright skill)
+    Steps:
+      1. Look at world origin area
+    Expected Result: Distinctive glowing block structure visible
+    Evidence: .sisyphus/evidence/task-26-revival-spring.png
+  ```
+
+  **Commit**: YES
+  - Message: `feat(game): implement cyberpunk game start flow`
+  - Files: `src/simulation/game-start/**`
+
+---
+
+## Final Verification Wave (MANDATORY — after ALL implementation tasks)
+
+> 4 review agents run in PARALLEL. ALL must APPROVE. Rejection → fix → re-run.
+
+- [ ] F1. **Plan Compliance Audit** — `oracle`
+  Read the plan end-to-end. For each "Must Have": verify implementation exists (read file, run command). For each "Must NOT Have": search codebase for forbidden patterns — reject with file:line if found. Check evidence files exist in .sisyphus/evidence/. Compare deliverables against plan. Verify existing ThreeCraft features still work (run `pnpm dev`, load a Classic scene, move around, place blocks).
+  Output: `Must Have [N/N] | Must NOT Have [N/N] | Tasks [N/N] | Backward Compat [PASS/FAIL] | VERDICT: APPROVE/REJECT`
+
+- [ ] F2. **Code Quality Review** — `unspecified-high`
+  Run `pnpm exec tsc --noEmit` for client. Run `pnpm -C server exec tsc --noEmit` for server. Review all NEW/CHANGED files for: `as any`/`@ts-ignore`, empty catches, console.log in prod code, commented-out code, unused imports. Check modular code enforcement: no file >200 LOC (non-prompt), no `utils.ts` catch-alls, `index.ts` is entry-point only. Check AI slop: excessive comments, over-abstraction, generic variable names.
+  Output: `Build [PASS/FAIL] | Files [N clean/N issues] | LOC Rule [PASS/FAIL] | VERDICT`
+
+- [ ] F3. **Real Manual QA** — `unspecified-high` (+ `playwright` skill)
+  Start from clean state. Execute EVERY QA scenario from EVERY task — follow exact steps, capture evidence. Test cross-task integration (NPC AI + possession + survival + multiplayer). Test edge cases: empty inventory death, simultaneous possession attempts, rapid block edits, NPC path invalidation. Test backward compatibility: load Classic scene, play normally. Save to `.sisyphus/evidence/final-qa/`.
+  Output: `Scenarios [N/N pass] | Integration [N/N] | Edge Cases [N tested] | Backward Compat [PASS/FAIL] | VERDICT`
+
+- [ ] F4. **Scope Fidelity Check** — `deep`
+  For each task: read "What to do", read actual implementation. Verify 1:1 match. Check "Must NOT do" compliance across all tasks. Detect scope creep: any features not in plan? Flag unaccounted files. Verify NO existing ThreeCraft files were modified unless explicitly listed in the task.
+  Output: `Tasks [N/N compliant] | Scope Creep [CLEAN/N issues] | Unaccounted [CLEAN/N files] | VERDICT`
+
+---
+
+## Commit Strategy
+
+| After Task | Message | Verification |
+|------------|---------|-------------|
+| T1 | `feat(cyberpunk): add cyberpunk blocks, types, and scene registration` | pnpm dev starts, cyberpunk scene selectable |
+| T2 | `feat(personas): create 10 cyberpunk NPC persona definitions` | 10 persona files exist |
+| T3 | `feat(simulation): scaffold dual-mode game simulation engine` | module imports and initializes |
+| T4 | `feat(pathfinding): implement A* grid-based pathfinding` | paths computed correctly |
+| T5 | `feat(npc): implement NPC entity system extending Player class` | NPCs render in world |
+| T6 | `feat(inventory): implement slot-based inventory for NPCs` | items can be held |
+| T7 | `feat(survival): implement HP and hunger system` | stats change over time |
+| T8 | `feat(llm): implement GLM-5 streaming service with rate limiting` | API responds with JSON |
+| T9 | `feat(ai): implement NPC decision loop with GLM-5` | NPCs make decisions |
+| T10 | `feat(npc-behavior): implement build and gather actions` | NPCs mine/build |
+| T11 | `feat(dialogue): implement P2NPC + NPC2NPC dialogue with bubbles` | conversations work |
+| T12 | `feat(validation): implement action validation with fallback` | invalid actions rejected |
+| T13 | `feat(possession): implement NPC possession system` | player controls NPC |
+| T14 | `feat(observer): implement god mode with NPC selection` | overhead view works |
+| T15 | `feat(monsters): implement Mutant and Corrupted Bot` | monsters spawn + attack |
+| T16 | `feat(death): implement respawn at Revival Spring` | death → respawn works |
+| T17 | `feat(multiplayer): extend Socket.io with NPC sync events` | NPC state syncs |
+| T18 | `feat(ui): implement NPC thinking bubbles` | bubbles show states |
+| T19 | `feat(ui): implement AI sidebar log panel` | log shows decisions |
+| T20 | `feat(ui): implement NPC task list panel` | tasks visible when possessed |
+| T21 | `feat(ui): implement survival HUD with HP/hunger bars` | HUD complete |
+| T22 | `feat(persistence): implement JSON-based world save/load` | state survives restart |
+| T23 | `feat(integration): wire all systems together` | end-to-end gameplay |
+| T24 | `fix(multiplayer): verify and fix NPC sync for concurrent players` | multi-tab works |
+| T25 | `perf: optimize NPC sleep mode and rendering` | 30+ FPS |
+| T26 | `feat(game): implement cyberpunk game start flow` | fresh start works |
+
+---
+
+## Success Criteria
+
+### Verification Commands
+```bash
+pnpm dev                               # Expected: client starts on localhost:5173
+pnpm -C server exec tsc --noEmit       # Expected: server compiles with 0 errors
+# Browser: http://localhost:5173       # Expected: game loads, all 5 original scenes + cyberpunk work
+# Cyberpunk scene:                     # Expected: cyberpunk terrain with neon blocks renders
+# NPCs visible:                        # Expected: 10 named NPCs in cyberpunk scene
+# NPC thinking:                        # Expected: thinking bubbles appear above NPCs
+# Possession:                          # Expected: Tab key possesses/releases NPC
+# Observer mode:                       # Expected: overhead camera shows all NPCs
+# Survival:                            # Expected: HP/hunger bars visible, decrease over time
+# Monsters:                            # Expected: spawn in distance, attack player/NPC
+# Death:                               # Expected: respawn at Revival Spring on death
+# Multiplayer:                         # Expected: 2+ tabs see same NPCs, same world
+```
+
+### Final Checklist
+- [ ] All "Must Have" present
+- [ ] All "Must NOT Have" absent
+- [ ] Existing ThreeCraft features unbroken (backward compatible)
+- [ ] Cyberpunk scene works in single-player AND multiplayer
+- [ ] 10 NPCs autonomous with GLM-5 (or stub brain in test mode)

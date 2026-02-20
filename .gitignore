@@ -103,5 +103,4 @@ typings/
 dist
 .vscode
 /src/.vscode
-.sisyphus/
 .opencode/
