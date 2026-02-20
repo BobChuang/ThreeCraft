@@ -1,0 +1,13 @@
+Task 2 NPC type evidence
+========================
+NPC runtime type count: 5
+NPC runtime types: ['idle', 'walker', 'merchant', 'hacker', 'drone']
+NPC action type count: 6
+NPC actions: ['idle', 'patrol', 'interact', 'trade', 'hack', 'scan']
+isValidNPCAction function exists: True
+
+sample 'patrol' valid: True
+sample 'trade' valid: True
+sample 'invalidAction' valid: False
+sample '' valid: False
+sample 'scan' valid: True

@@ -78,7 +78,7 @@ const language = {
 	low: '低&nbsp;&nbsp',
 	norm: '一般&nbsp;&nbsp',
 	threadNumber: '线程数',
-	weatherName: ['经典', '冰雪', '月下沙滩瓜田', '南瓜田🎃', '奇异'],
+	weatherName: ['经典', '冰雪', '月下沙滩瓜田', '南瓜田🎃', '奇异', 'Cyberpunk'],
 	weather: '场景',
 	chromeSupport: '推荐使用新版Chrome浏览器 →',
 	chromeAddress: 'https://www.google.cn/chrome/',

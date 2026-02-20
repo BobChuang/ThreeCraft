@@ -1,0 +1,106 @@
+
+> three-craft@1.0.0 build /Users/zhangganhui/skills/game/ThreeCraft
+> vite build
+
+vite v2.9.18 building for production...
+<script src="/registerSW.js"> in "/index.html" can't be bundled without type="module" attribute
+transforming...
+transforming...
+✓ 2 modules transformed.
+rendering chunks...
+✓ 278 modules transformed.
+rendering chunks...
+dist/png/bedrock-22bdb1bf.png             5.97 KiB
+dist/png/acaciaLeaves-c754a553.png        12.23 KiB
+dist/png/andesite-00d3c7f0.png            16.24 KiB
+dist/png/birchLeaves-dff360ec.png         12.26 KiB
+dist/png/clayBlock-ecac5d17.png           11.38 KiB
+dist/png/brickBlock-07255cbb.png          12.66 KiB
+dist/png/coalOre-80f56a68.png             6.08 KiB
+dist/png/cobblestone-613b82f7.png         8.54 KiB
+dist/png/blockDiamond-a6a8018a.png        9.85 KiB
+dist/png/diamondOre-e6c54469.png          9.61 KiB
+dist/png/endStone-9df1d017.png            13.20 KiB
+dist/png/diorite-ff88062a.png             13.78 KiB
+dist/png/blockGold-801c6d7a.png           6.27 KiB
+dist/png/glass-a6c5a125.png               4.64 KiB
+dist/png/granite-ec21a949.png             16.41 KiB
+dist/png/gravel-0382de17.png              12.38 KiB
+dist/png/ironOre-1f1a2018.png             9.25 KiB
+dist/png/blockLapisLazuli-c3f4365e.png    13.49 KiB
+dist/png/lapisLazuliOre-9fe67945.png      11.54 KiB
+dist/png/netherBrickBlock-81c114e2.png    11.49 KiB
+dist/png/noteBlock-9c9e43e0.png           13.09 KiB
+dist/png/blockIron-9c2558f1.png           4.66 KiB
+dist/png/netherQuartzOre-c4fa0230.png     19.38 KiB
+dist/png/netherrack-5f9c4be6.png          16.69 KiB
+dist/png/polishedDiorite-ae4b8158.png     12.42 KiB
+dist/png/polishedGranite-62d175b7.png     12.90 KiB
+dist/png/blockQuartz-3621c649.png         5.19 KiB
+dist/png/blockRedstone-440f1ae2.png       9.18 KiB
+dist/png/redSand-e67f2aa9.png             13.20 KiB
+dist/png/redstoneOre-236d8f81.png         9.24 KiB
+dist/png/sand-8b1ef695.png                15.17 KiB
+dist/png/soulsand-fd73f582.png            14.17 KiB
+dist/png/terracotta-1b5635d4.png          11.00 KiB
+dist/png/water-db2a988b.png               8.54 KiB
+dist/png/birchWood-55380871.png           15.15 KiB
+dist/png/acaciaWood-e21d7b47.png          10.25 KiB
+dist/png/emeraldOre-aaa24f96.png          11.22 KiB
+dist/png/cactus-a9740386.png              4.19 KiB
+dist/png/mycelium-547e2a42.png            13.34 KiB
+dist/png/dispenser-bfcaa545.png           7.82 KiB
+dist/png/grassBlock-a0e0af3c.png          4.20 KiB
+dist/png/chiseledSandstone-80a13f4c.png   27.12 KiB
+dist/png/podzol-0c6d143e.png              12.73 KiB
+dist/png/pumpkin-08639625.png             7.51 KiB
+dist/png/redSandstone-16da80d2.png        14.24 KiB
+dist/png/snowblock-e93fdeea.png           8.68 KiB
+dist/svg/logo-minecraft-c510db5a.svg      3.33 KiB
+dist/jpg/background-da959051.jpg          393.56 KiB
+dist/ttf/mplus_hzk_12-52c0ba5f.ttf        2804.33 KiB
+dist/ogg/brick-c82e373e.ogg               18.93 KiB
+dist/ogg/grass-3619fdb8.ogg               7.29 KiB
+dist/ogg/gravel-55a610c8.ogg              6.69 KiB
+dist/ogg/nether-46b2cfa0.ogg              20.53 KiB
+dist/ogg/pumpkin-68fbefd3.ogg             16.64 KiB
+dist/ogg/leaves-b7636085.ogg              18.41 KiB
+dist/ogg/netherrack-33f0f679.ogg          23.79 KiB
+dist/ogg/sand-74ef2fa1.ogg                5.42 KiB
+dist/ogg/water-24a2e0c4.ogg               4.92 KiB
+dist/ogg/wood-de868b31.ogg                6.66 KiB
+dist/ogg/snow-12a5dab4.ogg                19.66 KiB
+dist/ogg/grass-21bd69b6.ogg               7.62 KiB
+dist/ogg/soulsand-ea30f020.ogg            26.83 KiB
+dist/ogg/gravel-0ab687ad.ogg              7.58 KiB
+dist/ogg/netherrack-0ddb6d24.ogg          19.59 KiB
+dist/ogg/sand-1315a12d.ogg                5.06 KiB
+dist/ogg/brick-d5608db8.ogg               21.85 KiB
+dist/ogg/leaves-2babd9a1.ogg              21.94 KiB
+dist/ogg/stone-95820d0b.ogg               7.34 KiB
+dist/ogg/nether-a8674a3c.ogg              31.73 KiB
+dist/ogg/soulsand-19c8693f.ogg            17.97 KiB
+dist/ogg/snow-9821036a.ogg                21.17 KiB
+dist/ogg/wood-f950e9c5.ogg                22.99 KiB
+dist/png/xbox-en-1e7e2610.png             37.11 KiB
+dist/png/ps-en-b87369e2.png               34.45 KiB
+dist/png/xbox-cn-44c2b154.png             42.77 KiB
+dist/png/ps-cn-020b6ba1.png               39.50 KiB
+dist/assets/worker.1949751d.js            3.76 KiB
+dist/index.html                           0.98 KiB
+dist/manifest.webmanifest                 0.47 KiB
+dist/registerSW.js                        0.13 KiB
+dist/css/index-979658a3.css               81.48 KiB
+dist/js/index-9c428f2b.js                 787.81 KiB
+
+(!) Some chunks are larger than 500 KiB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/guide/en/#outputmanualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+PWA v0.12.8
+mode      generateSW
+precache  12 entries (874.15 KiB)
+files generated
+  dist/sw.js
+  dist/workbox-1616146e.js

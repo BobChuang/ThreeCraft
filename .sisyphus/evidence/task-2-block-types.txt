@@ -1,0 +1,28 @@
+Task 2 block/type registration evidence
+=====================================
+Cyber texture file count: 8
+- src/assets/textures/blocks-clipped/cyberAsphalt.png
+- src/assets/textures/blocks-clipped/cyberCircuit.png
+- src/assets/textures/blocks-clipped/cyberCore.png
+- src/assets/textures/blocks-clipped/cyberGlass.png
+- src/assets/textures/blocks-clipped/cyberGrid.png
+- src/assets/textures/blocks-clipped/cyberNeon.png
+- src/assets/textures/blocks-clipped/cyberPanel.png
+- src/assets/textures/blocks-clipped/cyberSteel.png
+
+blockTypes includes cyberGrid: True
+blockTypes includes cyberCircuit: True
+blockTypes includes cyberNeon: True
+blockTypes includes cyberPanel: True
+blockTypes includes cyberSteel: True
+blockTypes includes cyberGlass: True
+blockTypes includes cyberCore: True
+blockTypes includes cyberAsphalt: True
+
+Weather entries with nameIndex=5: 3
+- tuple1 [water,surface,base,nameIndex] = ('52', '50', '54', '5')
+- tuple2 [water,surface,base,nameIndex] = ('55', '51', '56', '5')
+- tuple3 [water,surface,base,nameIndex] = ('52', '53', '57', '5')
+
+en_us weatherName[5] == 'Cyberpunk': True
+zh_cn weatherName[5] == 'Cyberpunk': True

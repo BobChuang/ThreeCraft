@@ -122,6 +122,14 @@ import redSandstoneTextureSideImg from '../../assets/textures/blocks-clipped/red
 import redSandstoneTextureTopImg from '../../assets/textures/blocks-clipped/redSandstoneTop.png';
 import snowblockTextureSideImg from '../../assets/textures/blocks-clipped/snowblockSide.png';
 import snowblockTextureTopImg from '../../assets/textures/blocks-clipped/snowblockTop.png';
+import cyberGridTextureImg from '../../assets/textures/blocks-clipped/cyberGrid.png';
+import cyberCircuitTextureImg from '../../assets/textures/blocks-clipped/cyberCircuit.png';
+import cyberNeonTextureImg from '../../assets/textures/blocks-clipped/cyberNeon.png';
+import cyberPanelTextureImg from '../../assets/textures/blocks-clipped/cyberPanel.png';
+import cyberSteelTextureImg from '../../assets/textures/blocks-clipped/cyberSteel.png';
+import cyberGlassTextureImg from '../../assets/textures/blocks-clipped/cyberGlass.png';
+import cyberCoreTextureImg from '../../assets/textures/blocks-clipped/cyberCore.png';
+import cyberAsphaltTextureImg from '../../assets/textures/blocks-clipped/cyberAsphalt.png';
 
 import alexSkin from '../../assets/textures/entity/alex.png';
 import candideSkin from '../../assets/textures/entity/candide.png';
@@ -221,6 +229,14 @@ const redSandstoneTextureSide = loader.load(redSandstoneTextureSideImg);
 const redSandstoneTextureTop = loader.load(redSandstoneTextureTopImg);
 const snowblockTextureSide = loader.load(snowblockTextureSideImg);
 const snowblockTextureTop = loader.load(snowblockTextureTopImg);
+const cyberGridTexture = loader.load(cyberGridTextureImg);
+const cyberCircuitTexture = loader.load(cyberCircuitTextureImg);
+const cyberNeonTexture = loader.load(cyberNeonTextureImg);
+const cyberPanelTexture = loader.load(cyberPanelTextureImg);
+const cyberSteelTexture = loader.load(cyberSteelTextureImg);
+const cyberGlassTexture = loader.load(cyberGlassTextureImg);
+const cyberCoreTexture = loader.load(cyberCoreTextureImg);
+const cyberAsphaltTexture = loader.load(cyberAsphaltTextureImg);
 const alexSkinTexture = loader.load(alexSkin);
 const candideSkinTexture = loader.load(candideSkin);
 const coolmanSkinTexture = loader.load(coolmanSkin);
@@ -317,6 +333,14 @@ const plusSkinTexture = loader.load(plusSkin);
 	redSandstoneTextureTop,
 	snowblockTextureSide,
 	snowblockTextureTop,
+	cyberGridTexture,
+	cyberCircuitTexture,
+	cyberNeonTexture,
+	cyberPanelTexture,
+	cyberSteelTexture,
+	cyberGlassTexture,
+	cyberCoreTexture,
+	cyberAsphaltTexture,
 	alexSkinTexture,
 	candideSkinTexture,
 	coolmanSkinTexture,
@@ -426,6 +450,14 @@ export const blockTypes = [
 	'pumpkin',
 	'redSandstone',
 	'snowblock',
+	'cyberGrid',
+	'cyberCircuit',
+	'cyberNeon',
+	'cyberPanel',
+	'cyberSteel',
+	'cyberGlass',
+	'cyberCore',
+	'cyberAsphalt',
 ];
 
 // 指定块的名称, 对应的图标, 材质
@@ -783,19 +815,85 @@ export const blockLoader = {
 		step: snowStep,
 		break: snowBreak,
 	},
+	cyberGrid: {
+		name: 'cyberGrid',
+		block3d: stone3d,
+		textureTypes: ['background'],
+		textureImg: cyberGridTexture,
+		step: stoneStep,
+		break: netherBreak,
+	},
+	cyberCircuit: {
+		name: 'cyberCircuit',
+		block3d: blockRedstone3d,
+		textureTypes: ['background'],
+		textureImg: cyberCircuitTexture,
+		step: stoneStep,
+		break: netherBreak,
+	},
+	cyberNeon: {
+		name: 'cyberNeon',
+		block3d: glowstone3d,
+		textureTypes: ['background'],
+		textureImg: cyberNeonTexture,
+		material: new THREE.MeshStandardMaterial({ map: cyberNeonTexture, color: 0x22ddff, transparent: true, opacity: 0.45 }),
+		accessible: true,
+		break: waterBreak,
+	},
+	cyberPanel: {
+		name: 'cyberPanel',
+		block3d: polishedDiorite3d,
+		textureTypes: ['background'],
+		textureImg: cyberPanelTexture,
+	},
+	cyberSteel: {
+		name: 'cyberSteel',
+		block3d: blockIron3d,
+		textureTypes: ['background'],
+		textureImg: cyberSteelTexture,
+		step: stoneStep,
+		break: brickBreak,
+	},
+	cyberGlass: {
+		name: 'cyberGlass',
+		block3d: glass3d,
+		textureTypes: ['background'],
+		textureImg: cyberGlassTexture,
+		material: new THREE.MeshStandardMaterial({ map: cyberGlassTexture, transparent: true, opacity: 0.35 }),
+	},
+	cyberCore: {
+		name: 'cyberCore',
+		block3d: blockDiamond3d,
+		textureTypes: ['background'],
+		textureImg: cyberCoreTexture,
+		step: stoneStep,
+		break: brickBreak,
+	},
+	cyberAsphalt: {
+		name: 'cyberAsphalt',
+		block3d: cobblestone3d,
+		textureTypes: ['background'],
+		textureImg: cyberAsphaltTexture,
+		step: gravelStep,
+		break: gravelBreak,
+	},
 };
 
 // 为块生成材质
+const blockLoaderDict = blockLoader as Record<string, any>;
+
 blockTypes.forEach(
-	(d, i) =>
-		blockLoader[d].material ||
-		(blockLoader[d].material =
-			blockLoader[d].textureImg instanceof Array ? blockLoader[d].textureImg.map(d => new THREE.MeshStandardMaterial({ map: d })) : new THREE.MeshStandardMaterial({ map: blockLoader[d].textureImg }))
+	d =>
+		blockLoaderDict[d].material ||
+		(blockLoaderDict[d].material =
+			blockLoaderDict[d].textureImg instanceof Array
+				? blockLoaderDict[d].textureImg.map((img: THREE.Texture) => new THREE.MeshStandardMaterial({ map: img }))
+				: new THREE.MeshStandardMaterial({ map: blockLoaderDict[d].textureImg }))
 );
 
 // 为块生成音效
-blockTypes.forEach(d => blockLoader[d].step || (blockLoader[d].step = stoneStep));
-blockTypes.forEach(d => blockLoader[d].break || (blockLoader[d].break = netherBreak));
+blockTypes.forEach(d => blockLoaderDict[d].step || (blockLoaderDict[d].step = stoneStep));
+blockTypes.forEach(d => blockLoaderDict[d].break || (blockLoaderDict[d].break = netherBreak));
 
 // 块几何体
 export const blockGeom = new THREE.BoxBufferGeometry(1, 1, 1);
