@@ -1,0 +1,16 @@
+Task 3 Persona File Field Check
+===============================
+persona_files_count=10
+
+blaze.ts: name=Blaze; profession=Street Vendor; missing_fields=none
+doc.ts: name=Doc; profession=Medic; missing_fields=none
+drill.ts: name=Drill; profession=Miner; missing_fields=none
+flash.ts: name=Flash; profession=Courier; missing_fields=none
+neon.ts: name=Neon; profession=Hacker; missing_fields=none
+nix.ts: name=Nix; profession=Bartender; missing_fields=none
+rust.ts: name=Rust; profession=Scavenger; missing_fields=none
+skyline.ts: name=Skyline; profession=Architect; missing_fields=none
+viper.ts: name=Viper; profession=Bounty Hunter; missing_fields=none
+wrench.ts: name=Wrench; profession=Mechanic; missing_fields=none
+
+required_fields=name,profession,backstory,systemPrompt,traits,defaultGoals,preferredActions
