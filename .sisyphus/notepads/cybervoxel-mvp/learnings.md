@@ -47,3 +47,9 @@
 - A dedicated `src/simulation/inventory/` module works best when split by responsibility: slot creation, add/stack rules, drop/death-drop mechanics, item catalog, and manager orchestration.
 - Keeping inventory slots as fixed 20 objects (`{type, quantity, maxStack}`) simplifies full-inventory checks and keeps add/reject behavior deterministic for QA.
 - Exposing inventory operations through `SimulationEngine` (`addInventoryItem`, `dropInventorySlot`, `dropAllInventoryOnDeath`, `getWorldDrops`) provides minimal integration without coupling simulation logic to UI bag rendering.
+
+## 2026-02-21 Task 9
+
+- The GLM service is easier to keep environment-agnostic by splitting concerns into focused modules (`minute-limiter`, `circuit-breaker`, `json-extract`, `sse-parser`) and only handling API key source differences in a small resolver.
+- Emitting lifecycle events from the LLM service and forwarding them through `ClientSimulationBridge` preserves the `SimulationBridge.callLLM` contract while exposing `thinking-start/stream/complete/error` to higher layers.
+- Deterministic Node-based QA can validate streaming parsing, global limiter behavior, and circuit-breaker cooldown without network flakiness by compiling `src/simulation/llm/*.ts` to a temp CommonJS folder and running mock fetch scripts.

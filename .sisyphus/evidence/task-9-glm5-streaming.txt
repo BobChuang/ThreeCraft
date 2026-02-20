@@ -1,0 +1,19 @@
+Task 9 QA Evidence - GLM-5 Streaming
+
+Preparation command:
+`pnpm exec tsc --noEmit false --skipLibCheck true --module commonjs --target es2020 --moduleResolution node --outDir .sisyphus/tmp/task9-llm src/simulation/llm/*.ts`
+
+Verification command:
+`node .sisyphus/evidence/scripts/task-9-glm5-streaming-check.js`
+
+Observed output:
+command: node .sisyphus/evidence/scripts/task-9-glm5-streaming-check.js
+stream_chunk_count=3
+lifecycle_events=thinking-start,thinking-stream,thinking-stream,thinking-stream,thinking-complete
+parsed_action=idle
+retried_for_json=false
+tokens_used=22
+
+Expected outcome:
+- Streaming chunks arrive and lifecycle emits start/stream/complete.
+- Markdown-fenced JSON parses into a valid action object.

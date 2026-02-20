@@ -9,9 +9,12 @@ import {
 	SimulationWorldBlock,
 	SimulationWorldState,
 } from '../contracts/simulation-bridge';
+import { GLM5Service, LLMServiceConfig } from '../llm';
 
 export interface ClientSimulationBridgeOptions {
 	onEvent?: (event: SimulationBridgeEvent) => void;
+	llmConfig?: LLMServiceConfig;
+	llmService?: GLM5Service;
 }
 
 interface ClientBridgeTerrain {
@@ -33,9 +36,31 @@ export class ClientSimulationBridge implements ISimulationBridge {
 
 	private readonly onEvent?: (event: SimulationBridgeEvent) => void;
 
+	private readonly llmService: GLM5Service;
+
+	private readonly llmConfig?: LLMServiceConfig;
+
 	constructor(controller: ClientBridgeController, options: ClientSimulationBridgeOptions = {}) {
 		this.controller = controller;
 		this.onEvent = options.onEvent;
+		this.llmConfig = options.llmConfig;
+		this.llmService =
+			options.llmService ??
+			new GLM5Service({
+				runtimeMode: options.llmConfig?.runtimeMode ?? 'client',
+				...options.llmConfig,
+				emitLifecycleEvent: event => {
+					this.emitEvent({
+						type: 'simulation:lifecycle',
+						timestamp: event.timestamp,
+						payload: {
+							eventType: event.type,
+							npcId: event.npcId,
+							...event.payload,
+						},
+					});
+				},
+			});
 	}
 
 	async getWorldState(position: SimulationVector3, radius: number): Promise<SimulationWorldState> {
@@ -72,20 +97,39 @@ export class ClientSimulationBridge implements ISimulationBridge {
 	}
 
 	async callLLM(prompt: string, options: SimulationLLMOptions): Promise<SimulationLLMResult> {
-		this.emitEvent({
-			type: 'simulation:lifecycle',
-			timestamp: Date.now(),
-			payload: {
-				status: 'llm-stub',
-				npcId: options.npcId,
-				promptLength: prompt.length,
-			},
+		const apiKey = this.llmConfig?.apiKey ?? ClientSimulationBridge.readClientApiKey();
+		if (!apiKey && (this.llmConfig?.runtimeMode ?? 'client') === 'client') {
+			this.emitEvent({
+				type: 'simulation:lifecycle',
+				timestamp: Date.now(),
+				payload: {
+					status: 'llm-missing-key-fallback',
+					npcId: options.npcId,
+				},
+			});
+			return {
+				content: '{"action":"idle"}',
+				model: 'stub-client-bridge',
+				latencyMs: 0,
+			};
+		}
+		const result = await this.llmService.requestJson(prompt, {
+			npcId: options.npcId,
+			timeoutMs: options.timeoutMs,
 		});
 		return {
-			content: '{"action":"idle"}',
-			model: 'stub-client-bridge',
-			latencyMs: 0,
+			content: JSON.stringify(result.parsedJson),
+			model: result.model,
+			latencyMs: result.latencyMs,
 		};
+	}
+
+	private static readClientApiKey(): string | undefined {
+		if (typeof window === 'undefined') return undefined;
+		const storage = window.localStorage;
+		const direct = storage.getItem('zhipu_api_key') ?? storage.getItem('ZHIPU_API_KEY') ?? storage.getItem('glm_api_key');
+		const key = direct?.trim();
+		return key || undefined;
 	}
 
 	emitEvent(event: SimulationBridgeEvent): void {

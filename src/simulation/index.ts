@@ -3,6 +3,8 @@ export type { SimulationEngineOptions } from './simulation-engine';
 export { SimulationInventoryManager, addItemToInventory, createInventorySlots } from './inventory';
 export type { SimulationDroppedItem, SimulationInventoryAddResult, SimulationInventorySlot } from './inventory';
 export { ClientSimulationBridge } from './bridges/client-bridge';
+export { GLM5Service, extractJsonFromLLMText, LLMServiceError } from './llm';
+export type { LLMServiceConfig, LLMServiceResult, LLMRequestOptions, LLMRuntimeMode, ThinkingLifecycleEvent, ThinkingLifecycleEventType } from './llm';
 export type {
 	ISimulationBridge,
 	SimulationBlockAction,
