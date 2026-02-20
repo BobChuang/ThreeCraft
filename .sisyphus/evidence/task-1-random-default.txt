@@ -1,0 +1,7 @@
+Scenario: random default (VITE_FIXED_MAP_INDEX empty)
+Server: pnpm dev --host 127.0.0.1 --port 4173
+Playwright check: page.evaluate + controller.startGame(true) with Math.random mocked to 0.8
+Result:
+{"weatherIndex":9,"warningCount":0,"warnings":[]}
+Expectation: weatherIndex uses random fallback floor(0.8 * 12) = 9
+Status: PASS

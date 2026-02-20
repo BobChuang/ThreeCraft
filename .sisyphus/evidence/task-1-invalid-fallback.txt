@@ -1,0 +1,7 @@
+Scenario: invalid fallback (VITE_FIXED_MAP_INDEX=999)
+Server: VITE_FIXED_MAP_INDEX=999 pnpm dev --host 127.0.0.1 --port 4173
+Playwright check: page.evaluate + controller.startGame(true) twice with Math.random mocked to 0.8
+Result:
+{"weatherIndexAfterSecondStart":9,"warningCount":1,"warnings":["[config] Invalid VITE_FIXED_MAP_INDEX=\"999\", expected integer in range 0-11. Fallback to random map index."]}
+Expectation: invalid index falls back to random (9) and warns once per startup
+Status: PASS

@@ -9,6 +9,23 @@ import weatherConfig from '../core/weather';
 import Log from './log';
 import MultiPlay from './MultiPlay';
 
+const fixedMapIndexRaw = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_FIXED_MAP_INDEX?.trim();
+let hasWarnedInvalidFixedMapIndex = false;
+
+const getFixedMapIndex = () => {
+	if (!fixedMapIndexRaw) return null;
+	const fixedMapIndex = Number(fixedMapIndexRaw);
+	const maxIndex = weatherConfig.length - 1;
+	if (!Number.isInteger(fixedMapIndex) || fixedMapIndex < 0 || fixedMapIndex > maxIndex) {
+		if (!hasWarnedInvalidFixedMapIndex) {
+			console.warn(`[config] Invalid VITE_FIXED_MAP_INDEX="${fixedMapIndexRaw}", expected integer in range 0-${maxIndex}. Fallback to random map index.`);
+			hasWarnedInvalidFixedMapIndex = true;
+		}
+		return null;
+	}
+	return fixedMapIndex;
+};
+
 class Controller {
 	ui: UI;
 
@@ -92,7 +109,10 @@ class Controller {
 		if (config.seed === null) config.seed = Math.random();
 		if (config.cloudSeed === null) config.cloudSeed = Math.random();
 		if (config.treeSeed === null) config.treeSeed = Math.random();
-		if (config.weather === null) config.weather = Math.floor(Math.random() * weatherConfig.length);
+		if (config.weather === null) {
+			const fixedMapIndex = getFixedMapIndex();
+			config.weather = fixedMapIndex === null ? Math.floor(Math.random() * weatherConfig.length) : fixedMapIndex;
+		}
 		// 载入log
 		this.log.load(config.log);
 		if (justInit) return;

@@ -1,0 +1,7 @@
+Scenario: fixed index (VITE_FIXED_MAP_INDEX=8)
+Server: VITE_FIXED_MAP_INDEX=8 pnpm dev --host 127.0.0.1 --port 4173
+Playwright check: page.evaluate + controller.startGame(true) with Math.random mocked to 0.8
+Result:
+{"weatherIndex":8,"warningCount":0,"warnings":[]}
+Expectation: fixed index overrides random and always returns 8
+Status: PASS
