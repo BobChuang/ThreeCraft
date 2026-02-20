@@ -1,68 +1,59 @@
 import * as THREE from 'three';
 import { config } from '../../controller/config';
-import Terrain from '../terrain';
 import { NPCEntity } from './entity';
-import { npcPersonaProfiles } from './personas';
-import { NPCAnimationState } from './types';
+import { getNPCSkinById } from './personas';
+import { NPCRenderSnapshot } from './types';
 
-const WALKER_ID = 'npc-7';
+const mapActionToAnimation = (action: string): NPCRenderSnapshot['animationState'] => {
+	if (action === 'move') return 'walking';
+	if (action === 'build') return 'building';
+	if (action === 'gather') return 'mining';
+	if (action === 'dialogue') return 'speaking';
+	return 'idle';
+};
+
+export const toNPCRenderSnapshot = (state: {
+	id: string;
+	name: string;
+	profession: string;
+	position: { x: number; y: number; z: number };
+	lastAction?: string;
+	thinkingState: NPCRenderSnapshot['thinkingState'];
+}): NPCRenderSnapshot => ({
+	id: state.id,
+	name: state.name,
+	profession: state.profession,
+	position: state.position,
+	animationState: mapActionToAnimation(state.lastAction ?? 'idle'),
+	thinkingState: state.thinkingState,
+});
 
 export class NPCRenderer {
 	private readonly scene: THREE.Scene;
 
-	private readonly terrain: Terrain;
+	private readonly npcMap: Map<string, NPCEntity>;
 
-	private readonly npcs: NPCEntity[];
-
-	private readonly walkAnchors: THREE.Vector3[];
-
-	private walkTargetIdx: number;
-
-	constructor(scene: THREE.Scene, terrain: Terrain) {
+	constructor(scene: THREE.Scene) {
 		this.scene = scene;
-		this.terrain = terrain;
-		this.npcs = [];
-		this.walkAnchors = [new THREE.Vector3(-2, 0, 7), new THREE.Vector3(6, 0, 7)];
-		this.walkTargetIdx = 0;
+		this.npcMap = new Map();
 	}
 
-	spawnAroundOrigin() {
-		this.clear();
-		this.walkTargetIdx = 0;
-		this.npcs.push(
-			...npcPersonaProfiles.map((profile, idx) => {
-				const { x } = profile.spawnOffset;
-				const { z } = profile.spawnOffset;
-				const y = this.terrain.getFloorHeight(x, z) + 1.25;
-				const npc = new NPCEntity({
-					id: `npc-${idx}`,
-					displayName: profile.name,
-					profession: profile.profession,
-					skinIdx: profile.skinIdx,
-					pos: new THREE.Vector3(x, y, z),
-					reward: new THREE.Euler(0, Math.PI, 0, 'YXZ'),
-					animationState: profile.defaultAnimation,
-				});
-
-				if (npc.id === WALKER_ID) {
-					npc.setAnimationState('walking');
-					npc.setPosition({ x: this.walkAnchors[this.walkTargetIdx].x, y, z: this.walkAnchors[this.walkTargetIdx].z });
-				}
-
-				this.scene.add(npc.player);
-				return npc;
-			})
-		);
-		this.refreshStaticStates();
+	syncSnapshots(snapshots: NPCRenderSnapshot[]) {
+		const incoming = new Set(snapshots.map(snapshot => snapshot.id));
+		snapshots.forEach(snapshot => this.upsertNPC(snapshot));
+		[...this.npcMap.entries()].forEach(([id, npc]) => {
+			if (incoming.has(id)) return;
+			this.scene.remove(npc.player);
+			npc.player.remove();
+			this.npcMap.delete(id);
+		});
 	}
 
 	render() {
 		const visibilityDistance = Math.max(24, config.renderer.stageSize / 2);
 		const observer = new THREE.Vector3(config.state.posX, config.state.posY, config.state.posZ);
-		this.npcs.forEach(npc => {
-			this.driveAnimationState(npc);
+		this.npcMap.forEach(npc => {
 			npc.update();
-
 			const dist = observer.distanceTo(npc.position);
 			const visible = dist <= visibilityDistance;
 			npc.player.visible = visible;
@@ -71,33 +62,35 @@ export class NPCRenderer {
 	}
 
 	clear() {
-		this.npcs.forEach(npc => {
+		this.npcMap.forEach(npc => {
 			npc.player.remove(npc.nameplate);
 			this.scene.remove(npc.player);
 			npc.player.remove();
 		});
-		this.npcs.length = 0;
+		this.npcMap.clear();
 	}
 
-	private driveAnimationState(npc: NPCEntity) {
-		if (npc.id !== WALKER_ID) return;
-		const target = this.walkAnchors[this.walkTargetIdx];
-		const horizontalDistance = Math.hypot(target.x - npc.position.x, target.z - npc.position.z);
-		if (horizontalDistance > 0.25) return;
+	private upsertNPC(snapshot: NPCRenderSnapshot) {
+		const existing = this.npcMap.get(snapshot.id);
+		if (existing) {
+			existing.setAnimationState(snapshot.animationState);
+			existing.setPosition({ x: snapshot.position.x, y: snapshot.position.y + 0.25, z: snapshot.position.z });
+			if (snapshot.rotation?.y !== undefined) existing.setRotation({ y: snapshot.rotation.y });
+			return;
+		}
 
-		this.walkTargetIdx = (this.walkTargetIdx + 1) % this.walkAnchors.length;
-		const nextTarget = this.walkAnchors[this.walkTargetIdx];
-		const nextY = this.terrain.getFloorHeight(nextTarget.x, nextTarget.z) + 1.25;
-		npc.setAnimationState('walking');
-		npc.setPosition({ x: nextTarget.x, y: nextY, z: nextTarget.z });
-		npc.setRotation({ y: Math.atan2(nextTarget.x - npc.position.x, nextTarget.z - npc.position.z) } as { y: number });
-	}
-
-	private refreshStaticStates() {
-		const staticStates: NPCAnimationState[] = ['idle', 'mining', 'building', 'speaking'];
-		this.npcs.forEach((npc, idx) => {
-			if (npc.id === WALKER_ID) return;
-			npc.setAnimationState(staticStates[idx % staticStates.length]);
+		const spawnY = snapshot.position.y + 0.25;
+		const npc = new NPCEntity({
+			id: snapshot.id,
+			displayName: snapshot.name,
+			profession: snapshot.profession,
+			skinIdx: getNPCSkinById(snapshot.id),
+			pos: new THREE.Vector3(snapshot.position.x, spawnY, snapshot.position.z),
+			reward: new THREE.Euler(0, Math.PI, 0, 'YXZ'),
+			animationState: snapshot.animationState,
 		});
+		npc.setPosition({ x: snapshot.position.x, y: spawnY, z: snapshot.position.z });
+		this.npcMap.set(snapshot.id, npc);
+		this.scene.add(npc.player);
 	}
 }

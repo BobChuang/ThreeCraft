@@ -8,8 +8,8 @@ import { deepCopy } from '../utils/deep-copy';
 import weatherConfig from '../core/weather';
 import Log from './log';
 import MultiPlay from './MultiPlay';
-import { ClientSimulationBridge, SimulationEngine } from '../simulation';
-import { NPCRenderer } from '../core/npc';
+import { ClientSimulationBridge, SimulationEngine, SimulationNPCState } from '../simulation';
+import { NPCRenderer, toNPCRenderSnapshot } from '../core/npc';
 
 const fixedMapIndexRaw = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_FIXED_MAP_INDEX?.trim();
 let hasWarnedInvalidFixedMapIndex = false;
@@ -202,6 +202,19 @@ class Controller {
 			this.gameController.hasChange = false;
 		}
 		if (this.simulationEngine) this.simulationEngine.setObservers([{ x: config.state.posX, y: config.state.posY, z: config.state.posZ }]);
+		if (this.simulationEngine && this.npcRenderer) {
+			const snapshots = this.simulationEngine.getNPCStates().map((state: SimulationNPCState) =>
+				toNPCRenderSnapshot({
+					id: state.id,
+					name: state.name,
+					profession: state.profession,
+					position: state.position,
+					lastAction: state.lastAction,
+					thinkingState: state.thinkingState,
+				})
+			);
+			this.npcRenderer.syncSnapshots(snapshots);
+		}
 		// 补充人物运动动画
 		this.multiPlay.playersController.render();
 		if (!this.multiPlay.working) this.npcRenderer?.render();
@@ -226,8 +239,7 @@ class Controller {
 
 	ensureSinglePlayerNPCs() {
 		if (this.multiPlay.working) return;
-		if (!this.npcRenderer) this.npcRenderer = new NPCRenderer(this.core.scene, this.core.terrain);
-		this.npcRenderer.spawnAroundOrigin();
+		if (!this.npcRenderer) this.npcRenderer = new NPCRenderer(this.core.scene);
 	}
 }
 
