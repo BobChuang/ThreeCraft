@@ -29,3 +29,9 @@
 - Keeping the simulation core behind `ISimulationBridge` makes `SimulationEngine` runnable in pure Node checks without DOM or renderer dependencies.
 - Deterministic NPC bootstrap is easiest by deriving ids and spawn offsets from the first 10 persona entries, giving stable ordering for evidence scripts.
 - A lightweight mocked client bridge plus short tick interval produces reliable QA evidence for event emission, block modification delegation, and sleep/wake-ready observer updates.
+
+## 2026-02-21 Task 6
+
+- Extending `Player` directly for `NPCEntity` lets NPCs reuse the existing limb swing timing (`animateStamp / 75`) while swapping animation poses by state.
+- Spawning NPCs must happen after `terrain.updateState()` in single-player flow, otherwise terrain clear/rebuild will wipe scene-attached NPC meshes.
+- Nameplate rendering works reliably with `THREE.Sprite` + `CanvasTexture` attached to each player model, and can be distance-culled together with the NPC mesh for cheap visibility control.

@@ -1,0 +1,122 @@
+import * as THREE from 'three';
+import { symConfig } from '../../controller/config';
+import Player from '../player';
+import { createNPCNameplate } from './nameplate';
+import { NPCAnimationState } from './types';
+
+export class NPCEntity extends Player {
+	readonly id: string;
+
+	readonly displayName: string;
+
+	readonly profession: string;
+
+	readonly nameplate: THREE.Sprite;
+
+	private animationState: NPCAnimationState;
+
+	constructor({
+		id,
+		displayName,
+		profession,
+		skinIdx,
+		pos,
+		reward,
+		animationState,
+	}: {
+		id: string;
+		displayName: string;
+		profession: string;
+		skinIdx: number;
+		pos: THREE.Vector3;
+		reward: THREE.Euler;
+		animationState: NPCAnimationState;
+	}) {
+		super({ idx: skinIdx, pos, reward });
+		this.id = id;
+		this.displayName = displayName;
+		this.profession = profession;
+		this.animationState = animationState;
+		this.player.name = `npc_${id}`;
+		this.nameplate = createNPCNameplate(displayName, profession);
+		this.player.add(this.nameplate);
+	}
+
+	setAnimationState(state: NPCAnimationState) {
+		this.animationState = state;
+	}
+
+	getAnimationState() {
+		return this.animationState;
+	}
+
+	update() {
+		let delta = this.lastCall;
+		this.lastCall = performance.now();
+		delta = this.lastCall - delta;
+		this.updateReward();
+
+		const isMoving = this.target.clone().sub(this.position).length() > symConfig.eps;
+		if (isMoving) {
+			this.updatePosition(delta);
+			this.animationState = 'walking';
+			this.reqAnimate(delta);
+			return;
+		}
+
+		if (this.animationState === 'idle') {
+			this.resetAnimate();
+			return;
+		}
+
+		this.reqAnimate(delta);
+	}
+
+	setAnimate() {
+		const phase = this.animateStamp / 75;
+		const swing = Math.sin(phase);
+		const oppositeSwing = Math.sin(phase + Math.PI);
+
+		if (this.animationState === 'walking') {
+			this.player.leftArm.rotation.x = swing;
+			this.player.rightArm.rotation.x = oppositeSwing;
+			this.player.leftLeg.rotation.x = swing;
+			this.player.rightLeg.rotation.x = oppositeSwing;
+			this.player.head.rotation.y = 0;
+			return;
+		}
+
+		if (this.animationState === 'mining') {
+			this.player.rightArm.rotation.x = -0.4 + Math.sin(phase * 1.8) * 1.1;
+			this.player.leftArm.rotation.x = 0.2 + Math.sin(phase * 1.8 + Math.PI / 2) * 0.2;
+			this.player.leftLeg.rotation.x = Math.sin(phase * 0.9) * 0.08;
+			this.player.rightLeg.rotation.x = Math.sin(phase * 0.9 + Math.PI) * 0.08;
+			this.player.head.rotation.y = 0;
+			return;
+		}
+
+		if (this.animationState === 'building') {
+			this.player.leftArm.rotation.x = -0.2 + Math.sin(phase * 1.3) * 0.75;
+			this.player.rightArm.rotation.x = -0.2 + Math.sin(phase * 1.3 + Math.PI) * 0.75;
+			this.player.leftLeg.rotation.x = Math.sin(phase) * 0.05;
+			this.player.rightLeg.rotation.x = Math.sin(phase + Math.PI) * 0.05;
+			this.player.head.rotation.y = 0;
+			return;
+		}
+
+		if (this.animationState === 'speaking') {
+			this.player.leftArm.rotation.x = 0.1 + Math.sin(phase * 1.4) * 0.35;
+			this.player.rightArm.rotation.x = 0.1 + Math.sin(phase * 1.4 + Math.PI / 2) * 0.35;
+			this.player.leftLeg.rotation.x = 0;
+			this.player.rightLeg.rotation.x = 0;
+			this.player.head.rotation.y = Math.sin(phase * 0.5) * 0.18;
+			return;
+		}
+
+		this.player.leftArm.rotation.x = 0;
+		this.player.rightArm.rotation.x = 0;
+		this.player.leftLeg.rotation.x = 0;
+		this.player.rightLeg.rotation.x = 0;
+		this.player.head.rotation.y = 0;
+	}
+}

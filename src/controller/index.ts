@@ -9,6 +9,7 @@ import weatherConfig from '../core/weather';
 import Log from './log';
 import MultiPlay from './MultiPlay';
 import { ClientSimulationBridge, SimulationEngine } from '../simulation';
+import { NPCRenderer } from '../core/npc';
 
 const fixedMapIndexRaw = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_FIXED_MAP_INDEX?.trim();
 let hasWarnedInvalidFixedMapIndex = false;
@@ -54,6 +55,8 @@ class Controller {
 
 	simulationEngine: SimulationEngine | null;
 
+	npcRenderer: NPCRenderer | null;
+
 	constructor(el: HTMLElement) {
 		// 挂载游戏层和控制器层, 默认看不到
 		[...el.children].forEach(d => d.remove());
@@ -68,6 +71,7 @@ class Controller {
 
 		this.multiPlay = new MultiPlay(this);
 		this.simulationEngine = null;
+		this.npcRenderer = null;
 
 		// 读取默认配置文件
 		deepCopy(defaultConfig, config);
@@ -139,6 +143,7 @@ class Controller {
 		}
 		// 更新地形, 开始游戏
 		this.core.terrain.updateState();
+		if (!this.multiPlay.working) this.ensureSinglePlayerNPCs();
 		this.running = true;
 		this.core.updateCore();
 		// 要求控制层重新开始监听
@@ -148,6 +153,10 @@ class Controller {
 		this.gameController.moveController.jumping = true;
 		this.tryRender();
 		this.multiPlay.playersController.addScene();
+		if (this.multiPlay.working) {
+			this.npcRenderer?.clear();
+			this.npcRenderer = null;
+		}
 	}
 
 	// 停止游戏(进入了菜单)
@@ -160,6 +169,8 @@ class Controller {
 	endGame() {
 		this.simulationEngine?.stop();
 		this.simulationEngine = null;
+		this.npcRenderer?.clear();
+		this.npcRenderer = null;
 		deepCopy(defaultConfig, config);
 		this.core.terrain.clear();
 		if (this.multiPlay.working) {
@@ -193,6 +204,7 @@ class Controller {
 		if (this.simulationEngine) this.simulationEngine.setObservers([{ x: config.state.posX, y: config.state.posY, z: config.state.posZ }]);
 		// 补充人物运动动画
 		this.multiPlay.playersController.render();
+		if (!this.multiPlay.working) this.npcRenderer?.render();
 		// FPS继续计数
 		this.uiController.ui.fps.work();
 		this.gameController.update();
@@ -210,6 +222,12 @@ class Controller {
 			initialObservers: [{ x: config.state.posX, y: config.state.posY, z: config.state.posZ }],
 		});
 		this.simulationEngine.start();
+	}
+
+	ensureSinglePlayerNPCs() {
+		if (this.multiPlay.working) return;
+		if (!this.npcRenderer) this.npcRenderer = new NPCRenderer(this.core.scene, this.core.terrain);
+		this.npcRenderer.spawnAroundOrigin();
 	}
 }
 

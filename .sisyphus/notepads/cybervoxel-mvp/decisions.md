@@ -29,3 +29,9 @@
 - Added a dedicated contract module at `src/simulation/contracts/simulation-bridge.ts` as the only required I/O boundary (`getWorldState`, `callLLM`, `emitEvent`, `modifyBlock`) for environment-agnostic simulation.
 - Implemented `SimulationEngine` with default `tickIntervalMs = 500` and `observerSleepDistance = 128`, plus deterministic 10-NPC registry initialization and typed event emission hooks for UI integration.
 - Integrated single-player startup in `src/controller/index.ts` with `ClientSimulationBridge` and stub-brain mode enabled by default, while gating activation behind `!multiPlay.working` to keep multiplayer behavior unchanged.
+
+## 2026-02-21 Task 6
+
+- Added a dedicated `src/core/npc/` module set (`entity`, `renderer`, `personas`, `nameplate`, `types`) and kept `index.ts` as export-only to satisfy modular architecture constraints.
+- Mapped all 10 persona/profession NPC profiles onto existing `skinsMap` indices only (no new assets), with deterministic spawn offsets around `(0, surface_y, 0)`.
+- Integrated `NPCRenderer` only into single-player runtime (`Controller.runGame` / `tryRender` / `endGame`) and left multiplayer protocols/controllers untouched.
