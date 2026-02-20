@@ -41,3 +41,9 @@
 - The renderer-side NPC roster must be keyed by simulation IDs (`npc-01..npc-10`) and refreshed from `SimulationEngine.getNPCStates()` every frame to avoid drift from hardcoded local spawn lists.
 - Preserving interpolation is straightforward by continuing to feed snapshot positions through `NPCEntity`/`Player` target position updates instead of direct mesh teleport each render.
 - Mapping simulation `lastAction` to renderer animation states in one converter (`toNPCRenderSnapshot`) keeps controller integration thin and avoids coupling renderer to simulation internals.
+
+## 2026-02-21 Task 7
+
+- A dedicated `src/simulation/inventory/` module works best when split by responsibility: slot creation, add/stack rules, drop/death-drop mechanics, item catalog, and manager orchestration.
+- Keeping inventory slots as fixed 20 objects (`{type, quantity, maxStack}`) simplifies full-inventory checks and keeps add/reject behavior deterministic for QA.
+- Exposing inventory operations through `SimulationEngine` (`addInventoryItem`, `dropInventorySlot`, `dropAllInventoryOnDeath`, `getWorldDrops`) provides minimal integration without coupling simulation logic to UI bag rendering.

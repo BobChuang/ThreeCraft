@@ -1,5 +1,7 @@
 export { SimulationEngine } from './simulation-engine';
 export type { SimulationEngineOptions } from './simulation-engine';
+export { SimulationInventoryManager, addItemToInventory, createInventorySlots } from './inventory';
+export type { SimulationDroppedItem, SimulationInventoryAddResult, SimulationInventorySlot } from './inventory';
 export { ClientSimulationBridge } from './bridges/client-bridge';
 export type {
 	ISimulationBridge,

@@ -2,6 +2,7 @@ import { ISimulationBridge, SimulationVector3 } from './contracts/simulation-bri
 import { SimulationEvent, SimulationEventPayloadMap, SimulationEventType, toBridgeEvent } from './events';
 import { createInitialNPCRegistry, SimulationNPCState } from './npc-state';
 import { getStubBrainDecision } from './stub-brain';
+import { SimulationDroppedItem, SimulationInventoryAddResult, SimulationInventoryManager, SimulationInventorySlot } from './inventory';
 
 const calculateDistance = (a: SimulationVector3, b: SimulationVector3): number => {
 	const dx = a.x - b.x;
@@ -41,6 +42,8 @@ export class SimulationEngine {
 
 	readonly npcRegistry: Map<string, SimulationNPCState>;
 
+	readonly inventory: SimulationInventoryManager;
+
 	constructor(bridge: ISimulationBridge, options: SimulationEngineOptions = {}) {
 		this.bridge = bridge;
 		this.tickIntervalMs = options.tickIntervalMs ?? 500;
@@ -49,6 +52,12 @@ export class SimulationEngine {
 		this.tickHandle = null;
 		this.observers = options.initialObservers ?? [];
 		this.npcRegistry = createInitialNPCRegistry();
+		this.inventory = new SimulationInventoryManager();
+		this.inventory.registerEntity('player-local');
+		[...this.npcRegistry.values()].forEach(npc => {
+			this.inventory.registerEntity(npc.id);
+			npc.inventory = this.inventory.getInventory(npc.id);
+		});
 	}
 
 	start() {
@@ -80,7 +89,49 @@ export class SimulationEngine {
 	}
 
 	getNPCStates(): SimulationNPCState[] {
-		return [...this.npcRegistry.values()].map(npc => ({ ...npc, position: { ...npc.position }, inventory: [...npc.inventory], survival: { ...npc.survival } }));
+		return [...this.npcRegistry.values()].map(npc => ({
+			...npc,
+			position: { ...npc.position },
+			inventory: npc.inventory.map(slot => ({ ...slot })),
+			survival: { ...npc.survival },
+		}));
+	}
+
+	getInventory(entityId: string): SimulationInventorySlot[] {
+		return this.inventory.getInventory(entityId);
+	}
+
+	getWorldDrops(): SimulationDroppedItem[] {
+		return this.inventory.getWorldDrops();
+	}
+
+	addInventoryItem(entityId: string, type: string, quantity: number, maxStack?: number): SimulationInventoryAddResult {
+		const result = this.inventory.addItem(entityId, type, quantity, maxStack);
+		if (entityId.startsWith('npc-')) {
+			const npc = this.npcRegistry.get(entityId);
+			if (npc) npc.inventory = this.inventory.getInventory(entityId);
+		}
+		return result;
+	}
+
+	dropInventorySlot(entityId: string, slotIndex: number, quantity: number, position: SimulationVector3): SimulationDroppedItem | null {
+		const drop = this.inventory.dropFromSlot(entityId, slotIndex, quantity, position);
+		if (entityId.startsWith('npc-')) {
+			const npc = this.npcRegistry.get(entityId);
+			if (npc) npc.inventory = this.inventory.getInventory(entityId);
+		}
+		if (drop) this.emit('inventory:drop', drop);
+		return drop;
+	}
+
+	dropAllInventoryOnDeath(entityId: string, position: SimulationVector3): SimulationDroppedItem[] {
+		const drops = this.inventory.dropAllForDeath(entityId, position);
+		if (entityId.startsWith('npc-')) {
+			const npc = this.npcRegistry.get(entityId);
+			if (npc) npc.inventory = this.inventory.getInventory(entityId);
+		}
+		drops.forEach(drop => this.emit('inventory:drop', drop));
+		return drops;
 	}
 
 	private async tick() {

@@ -1,0 +1,7 @@
+Command: pnpm dlx tsx -e "import { SimulationInventoryManager } from './src/simulation/inventory'; ..."
+Scenario: inventory-add
+Result: PASS
+accepted=1
+rejected=0
+isFull=false
+slot={"type":"neonBlock","quantity":1,"maxStack":64}

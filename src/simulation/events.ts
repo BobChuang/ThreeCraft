@@ -1,5 +1,6 @@
 import { SimulationBridgeEvent } from './contracts/simulation-bridge';
 import { SimulationNPCState, SimulationThinkingState } from './npc-state';
+import { SimulationDroppedItem } from './inventory';
 
 export interface ThinkingStateChangePayload {
 	npcId: string;
@@ -24,7 +25,9 @@ export interface NPCTickPayload {
 	sleeping: boolean;
 }
 
-export type SimulationEventType = 'thinking:state' | 'npc:action' | 'survival:update' | 'simulation:npc-tick' | 'simulation:lifecycle';
+export type InventoryDropPayload = SimulationDroppedItem;
+
+export type SimulationEventType = 'thinking:state' | 'npc:action' | 'survival:update' | 'simulation:npc-tick' | 'simulation:lifecycle' | 'inventory:drop';
 
 export type SimulationEventPayloadMap = {
 	'thinking:state': ThinkingStateChangePayload;
@@ -32,6 +35,7 @@ export type SimulationEventPayloadMap = {
 	'survival:update': SurvivalUpdatePayload;
 	'simulation:npc-tick': NPCTickPayload;
 	'simulation:lifecycle': Record<string, unknown>;
+	'inventory:drop': InventoryDropPayload;
 };
 
 export type SimulationEvent<T extends SimulationEventType = SimulationEventType> = {

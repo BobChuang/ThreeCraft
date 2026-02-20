@@ -1,0 +1,7 @@
+Command: pnpm dlx tsx -e "import { SimulationInventoryManager } from './src/simulation/inventory'; ..."
+Scenario: inventory-full
+Result: PASS
+occupiedSlots=20
+accepted=0
+rejected=1
+isFull=true

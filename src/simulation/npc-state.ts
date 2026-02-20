@@ -1,5 +1,7 @@
 import { npcPersonas } from './personas';
 import { SimulationVector3 } from './contracts/simulation-bridge';
+import { createInventorySlots } from './inventory';
+import { SimulationInventorySlot } from './inventory/types';
 
 export type SimulationThinkingState = 'idle' | 'requesting' | 'received' | 'executing';
 
@@ -10,17 +12,12 @@ export interface SimulationSurvivalState {
 	maxHunger: number;
 }
 
-export interface SimulationInventoryItem {
-	type: string;
-	quantity: number;
-}
-
 export interface SimulationNPCState {
 	id: string;
 	name: string;
 	profession: string;
 	position: SimulationVector3;
-	inventory: SimulationInventoryItem[];
+	inventory: SimulationInventorySlot[];
 	survival: SimulationSurvivalState;
 	thinkingState: SimulationThinkingState;
 	isSleeping: boolean;
@@ -52,7 +49,7 @@ export const createInitialNPCRegistry = (): Map<string, SimulationNPCState> => {
 			name: persona.name,
 			profession: persona.profession,
 			position: { ...spawn },
-			inventory: [],
+			inventory: createInventorySlots(),
 			survival: {
 				hp: 100,
 				maxHp: 100,
