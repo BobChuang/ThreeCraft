@@ -1,0 +1,17 @@
+Task: 4. 模拟引擎脚手架（仅单机模式）
+Scenario: Single-player mode smoke check with client bridge scaffold and mocked controller terrain.
+
+Commands:
+1) pnpm exec tsc --skipLibCheck --module commonjs --target es2019 --outDir .sisyphus/tmp/task4 src/simulation/bridges/client-bridge.ts src/simulation/contracts/simulation-bridge.ts
+2) node -e '<runtime script for SimulationEngine + ClientSimulationBridge mock>'
+
+Runtime output:
+- engineStarted=true
+- eventCount=602
+- actionEvents=100
+- blockUpdates=1
+- firstNPC=npc-01:dialogue
+
+Conclusion:
+- PASS: client bridge integrates with SimulationEngine in single-player scaffold.
+- PASS: bridge event hook emits stable events and modifyBlock delegates to block controller update.

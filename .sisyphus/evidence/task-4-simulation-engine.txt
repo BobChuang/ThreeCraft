@@ -1,0 +1,17 @@
+Task: 4. 模拟引擎脚手架（仅单机模式）
+Scenario: SimulationEngine uses deterministic stub brain and initializes 10 NPC entries.
+
+Commands:
+1) pnpm exec tsc --skipLibCheck --module commonjs --target es2019 --outDir .sisyphus/tmp/task4 src/simulation/contracts/simulation-bridge.ts src/simulation/events.ts src/simulation/npc-state.ts src/simulation/stub-brain.ts src/simulation/simulation-engine.ts src/simulation/personas/*.ts
+2) node -e '<runtime script for SimulationEngine + stub bridge>'
+
+Runtime output:
+- npcCount=10
+- sleepingCount=0
+- sampleActions=npc-01:move, npc-02:move, npc-03:move
+- eventCount=662
+- lifecycleEvents=2
+
+Conclusion:
+- PASS: registry deterministically initializes exactly 10 NPC states.
+- PASS: tick loop runs and emits lifecycle + action events under stub mode.

@@ -8,6 +8,7 @@ import { deepCopy } from '../utils/deep-copy';
 import weatherConfig from '../core/weather';
 import Log from './log';
 import MultiPlay from './MultiPlay';
+import { ClientSimulationBridge, SimulationEngine } from '../simulation';
 
 const fixedMapIndexRaw = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_FIXED_MAP_INDEX?.trim();
 let hasWarnedInvalidFixedMapIndex = false;
@@ -51,6 +52,8 @@ class Controller {
 
 	multiPlay: MultiPlay;
 
+	simulationEngine: SimulationEngine | null;
+
 	constructor(el: HTMLElement) {
 		// 挂载游戏层和控制器层, 默认看不到
 		[...el.children].forEach(d => d.remove());
@@ -64,6 +67,7 @@ class Controller {
 		el.appendChild(this.hudStage);
 
 		this.multiPlay = new MultiPlay(this);
+		this.simulationEngine = null;
 
 		// 读取默认配置文件
 		deepCopy(defaultConfig, config);
@@ -115,6 +119,7 @@ class Controller {
 		}
 		// 载入log
 		this.log.load(config.log);
+		if (!this.multiPlay.working) this.ensureSinglePlayerSimulation();
 		if (justInit) return;
 		// 刷新背包
 		this.uiController.ui.bag.place();
@@ -153,6 +158,8 @@ class Controller {
 
 	// 结束游戏(清除当前状态)
 	endGame() {
+		this.simulationEngine?.stop();
+		this.simulationEngine = null;
 		deepCopy(defaultConfig, config);
 		this.core.terrain.clear();
 		if (this.multiPlay.working) {
@@ -183,6 +190,7 @@ class Controller {
 			this.multiPlay.emitUpdateState();
 			this.gameController.hasChange = false;
 		}
+		if (this.simulationEngine) this.simulationEngine.setObservers([{ x: config.state.posX, y: config.state.posY, z: config.state.posZ }]);
 		// 补充人物运动动画
 		this.multiPlay.playersController.render();
 		// FPS继续计数
@@ -190,6 +198,18 @@ class Controller {
 		this.gameController.update();
 		// 尝试渲染场景
 		this.core.tryRender();
+	}
+
+	ensureSinglePlayerSimulation() {
+		if (this.simulationEngine || this.multiPlay.working) return;
+		const bridge = new ClientSimulationBridge(this);
+		this.simulationEngine = new SimulationEngine(bridge, {
+			tickIntervalMs: 500,
+			observerSleepDistance: 128,
+			useStubBrain: true,
+			initialObservers: [{ x: config.state.posX, y: config.state.posY, z: config.state.posZ }],
+		});
+		this.simulationEngine.start();
 	}
 }
 
