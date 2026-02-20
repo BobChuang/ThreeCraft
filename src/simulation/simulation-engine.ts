@@ -1,8 +1,9 @@
 import { ISimulationBridge, SimulationVector3 } from './contracts/simulation-bridge';
 import { SimulationEvent, SimulationEventPayloadMap, SimulationEventType, toBridgeEvent } from './events';
 import { createInitialNPCRegistry, SimulationNPCState } from './npc-state';
-import { SimulationDroppedItem, SimulationInventoryAddResult, SimulationInventoryManager, SimulationInventorySlot } from './inventory';
+import { getInventoryItemDefinition, SimulationDroppedItem, SimulationInventoryAddResult, SimulationInventoryManager, SimulationInventorySlot } from './inventory';
 import { NPCDecisionLoop, ConversationMessage } from './npc-ai';
+import { createDefaultSurvivalState, SimulationSurvivalManager } from './survival';
 
 const calculateDistance = (a: SimulationVector3, b: SimulationVector3): number => {
 	const dx = a.x - b.x;
@@ -38,12 +39,17 @@ export class SimulationEngine {
 
 	readonly inventory: SimulationInventoryManager;
 
+	readonly survival: SimulationSurvivalManager;
+
+	private previousTickAt: number | null;
+
 	constructor(bridge: ISimulationBridge, options: SimulationEngineOptions = {}) {
 		this.bridge = bridge;
 		this.tickIntervalMs = options.tickIntervalMs ?? 500;
 		this.observerSleepDistance = options.observerSleepDistance ?? 128;
 		this.useStubBrain = options.useStubBrain ?? false;
 		this.tickHandle = null;
+		this.previousTickAt = null;
 		this.observers = options.initialObservers ?? [];
 		this.npcRegistry = createInitialNPCRegistry();
 		this.decisionLoop = new NPCDecisionLoop(bridge, {
@@ -61,10 +67,14 @@ export class SimulationEngine {
 			},
 		});
 		this.inventory = new SimulationInventoryManager();
+		this.survival = new SimulationSurvivalManager();
 		this.inventory.registerEntity('player-local');
+		this.survival.registerEntity('player-local', createDefaultSurvivalState());
 		[...this.npcRegistry.values()].forEach(npc => {
 			this.inventory.registerEntity(npc.id);
+			this.survival.registerEntity(npc.id, npc.survival);
 			npc.inventory = this.inventory.getInventory(npc.id);
+			npc.survival = this.survival.getState(npc.id);
 		});
 	}
 
@@ -83,12 +93,14 @@ export class SimulationEngine {
 				});
 			});
 		}, this.tickIntervalMs);
+		this.previousTickAt = Date.now();
 	}
 
 	stop() {
 		if (!this.tickHandle) return;
 		clearInterval(this.tickHandle);
 		this.tickHandle = null;
+		this.previousTickAt = null;
 		this.emit('simulation:lifecycle', { status: 'stopped' });
 	}
 
@@ -111,6 +123,14 @@ export class SimulationEngine {
 
 	getWorldDrops(): SimulationDroppedItem[] {
 		return this.inventory.getWorldDrops();
+	}
+
+	getSurvivalState(entityId: string) {
+		if (entityId.startsWith('npc-')) {
+			const npc = this.npcRegistry.get(entityId);
+			if (npc) npc.survival = this.survival.getState(entityId);
+		}
+		return this.survival.getState(entityId);
 	}
 
 	getNPCConversationHistory(npcId: string): ConversationMessage[] {
@@ -146,10 +166,53 @@ export class SimulationEngine {
 		return drops;
 	}
 
+	consumeFood(entityId: string, itemType: string): boolean {
+		const itemDefinition = getInventoryItemDefinition(itemType);
+		if (!itemDefinition.hungerRestore || itemDefinition.hungerRestore <= 0) return false;
+		const consumed = this.inventory.consumeItem(entityId, itemDefinition.type, 1);
+		if (consumed <= 0) return false;
+		const foodResult = this.survival.consumeFood(entityId, itemDefinition.hungerRestore);
+		if (entityId.startsWith('npc-')) {
+			const npc = this.npcRegistry.get(entityId);
+			if (npc) {
+				npc.inventory = this.inventory.getInventory(entityId);
+				npc.survival = foodResult.state;
+			}
+		}
+		this.emit('survival:update', {
+			entityId,
+			hp: foodResult.state.hp,
+			hunger: foodResult.state.hunger,
+		});
+		return true;
+	}
+
 	private async tick() {
+		const now = Date.now();
+		const elapsedMs = this.previousTickAt === null ? this.tickIntervalMs : now - this.previousTickAt;
+		this.previousTickAt = now;
+
+		const playerSurvival = this.survival.tickEntity('player-local', elapsedMs);
+		if (playerSurvival.changed) {
+			this.emit('survival:update', {
+				entityId: 'player-local',
+				hp: playerSurvival.state.hp,
+				hunger: playerSurvival.state.hunger,
+			});
+		}
+
 		const npcs = [...this.npcRegistry.values()];
 		const activeNPCs: SimulationNPCState[] = [];
 		npcs.forEach(npc => {
+			const survivalUpdate = this.survival.tickEntity(npc.id, elapsedMs);
+			npc.survival = survivalUpdate.state;
+			if (survivalUpdate.changed) {
+				this.emit('survival:update', {
+					entityId: npc.id,
+					hp: npc.survival.hp,
+					hunger: npc.survival.hunger,
+				});
+			}
 			npc.lastTickAt = Date.now();
 			npc.tickCount += 1;
 			const sleeping = this.shouldSleepByObserverDistance(npc.position);
@@ -190,11 +253,6 @@ export class SimulationEngine {
 				targetNpcId: result.action.target?.npcId,
 			});
 		}
-		this.emit('survival:update', {
-			entityId: npc.id,
-			hp: npc.survival.hp,
-			hunger: npc.survival.hunger,
-		});
 	}
 
 	private emit<T extends SimulationEventType>(type: T, payload: SimulationEventPayloadMap[T]) {

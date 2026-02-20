@@ -1,0 +1,4 @@
+export const HUNGER_DECAY_INTERVAL_MS = 30_000;
+export const STARVATION_HP_INTERVAL_MS = 10_000;
+export const HP_REGEN_INTERVAL_MS = 10_000;
+export const HP_REGEN_HUNGER_THRESHOLD = 80;

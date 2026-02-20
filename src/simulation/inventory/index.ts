@@ -1,5 +1,6 @@
 export { DEFAULT_INVENTORY_SLOTS, createInventorySlots } from './create-inventory';
 export { addItemToInventory } from './add-item';
+export { consumeItemFromInventory } from './consume-item';
 export { dropAllInventoryItems, dropItemFromSlot } from './drop-items';
 export { getInventoryItemDefinition } from './item-catalog';
 export { SimulationInventoryManager } from './inventory-manager';

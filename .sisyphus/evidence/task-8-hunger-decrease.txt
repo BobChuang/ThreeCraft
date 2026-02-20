@@ -1,0 +1,8 @@
+command: node -e "...SimulationSurvivalManager hunger decrease scenario..."
+scenario=hunger-decrease
+start_hunger=100
+ticks=2
+elapsed_ms=60000
+end_hunger=98
+expected_hunger=98
+pass=true

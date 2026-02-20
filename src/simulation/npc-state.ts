@@ -2,15 +2,9 @@ import { npcPersonas } from './personas';
 import { SimulationVector3 } from './contracts/simulation-bridge';
 import { createInventorySlots } from './inventory';
 import { SimulationInventorySlot } from './inventory/types';
+import { createDefaultSurvivalState, SimulationSurvivalState } from './survival';
 
 export type SimulationThinkingState = 'idle' | 'requesting' | 'received' | 'executing';
-
-export interface SimulationSurvivalState {
-	hp: number;
-	maxHp: number;
-	hunger: number;
-	maxHunger: number;
-}
 
 export interface SimulationNPCState {
 	id: string;
@@ -50,12 +44,7 @@ export const createInitialNPCRegistry = (): Map<string, SimulationNPCState> => {
 			profession: persona.profession,
 			position: { ...spawn },
 			inventory: createInventorySlots(),
-			survival: {
-				hp: 100,
-				maxHp: 100,
-				hunger: 100,
-				maxHunger: 100,
-			},
+			survival: createDefaultSurvivalState(),
 			thinkingState: 'idle',
 			isSleeping: false,
 			lastTickAt: 0,

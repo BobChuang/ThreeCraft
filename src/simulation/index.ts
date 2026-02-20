@@ -2,6 +2,8 @@ export { SimulationEngine } from './simulation-engine';
 export type { SimulationEngineOptions } from './simulation-engine';
 export { SimulationInventoryManager, addItemToInventory, createInventorySlots } from './inventory';
 export type { SimulationDroppedItem, SimulationInventoryAddResult, SimulationInventorySlot } from './inventory';
+export { SimulationSurvivalManager, createDefaultSurvivalState } from './survival';
+export type { SimulationSurvivalState, SurvivalFoodResult, SurvivalTickResult } from './survival';
 export { ClientSimulationBridge } from './bridges/client-bridge';
 export { GLM5Service, extractJsonFromLLMText, LLMServiceError } from './llm';
 export { NPCDecisionLoop, parseAndValidateNPCAction, executeNPCAction } from './npc-ai';

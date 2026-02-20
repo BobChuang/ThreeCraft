@@ -1,5 +1,6 @@
 import { SimulationVector3 } from '../contracts/simulation-bridge';
 import { addItemToInventory } from './add-item';
+import { consumeItemFromInventory } from './consume-item';
 import { createInventorySlots } from './create-inventory';
 import { dropAllInventoryItems, dropItemFromSlot } from './drop-items';
 import { getInventoryItemDefinition } from './item-catalog';
@@ -29,6 +30,11 @@ export class SimulationInventoryManager {
 		const inventory = this.inventories.get(entityId) ?? this.registerEntity(entityId);
 		const item = getInventoryItemDefinition(itemType);
 		return addItemToInventory(inventory, item.type, quantity, maxStack ?? item.maxStack);
+	}
+
+	consumeItem(entityId: string, itemType: string, quantity = 1): number {
+		const inventory = this.inventories.get(entityId) ?? this.registerEntity(entityId);
+		return consumeItemFromInventory(inventory, itemType, quantity);
 	}
 
 	dropFromSlot(entityId: string, slotIndex: number, quantity: number, position: SimulationVector3): SimulationDroppedItem | null {

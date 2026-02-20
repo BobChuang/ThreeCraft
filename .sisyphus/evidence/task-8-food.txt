@@ -1,0 +1,9 @@
+command: node -e "...SimulationEngine consumeFood scenario..."
+scenario=food-consumption
+before_hunger=50
+after_hunger=80
+before_synth_ration=1
+after_synth_ration=0
+consume_return=true
+survival_event_emitted=true
+pass=true

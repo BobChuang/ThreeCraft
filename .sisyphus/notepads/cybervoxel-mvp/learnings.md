@@ -59,3 +59,9 @@
 - Moving decision orchestration into `src/simulation/npc-ai/` keeps `SimulationEngine` focused on scheduling and event forwarding while the AI loop handles observe/prompt/call/validate/execute details.
 - A per-NPC gate (`inFlightByNpc` + `nextDecisionAt`) cleanly enforces both "skip while request in-flight" and configurable decision cadence defaults (5s) without blocking simulation ticks.
 - Keeping a capped per-NPC conversation buffer (`role/content/timestamp`, max 10) is enough for short-term context and can be validated deterministically through compiled Node QA scripts.
+
+## 2026-02-21 Task 8
+
+- A dedicated `SimulationSurvivalManager` with per-entity elapsed-time accumulators keeps hunger/HP progression deterministic even when tick intervals vary.
+- Wiring survival to both `player-local` and NPC ids in `SimulationEngine.tick()` ensures one shared ruleset (decay, starvation, regen) without NPC-only branching.
+- Reusing inventory catalog food metadata plus `SimulationInventoryManager.consumeItem()` provides strict food consumption semantics: item removal first, then hunger restore and `survival:update` emission.
