@@ -15,16 +15,17 @@ const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEve
 });
 
 io.on('connection', socket => {
-	Object.keys(controllers).forEach(key => {
-		socket.on(key, async args => {
+	(Object.keys(controllers) as ControllerKeys[]).forEach(key => {
+		type ArgsType = Parameters<ClientToServerEvents[typeof key]>[0];
+		socket.on(key, async (args: ArgsType) => {
 			const { type, data } = args;
 			const res = await controllers[type as ControllerKeys](data, socket, io);
 			if (res) socket.emit(res.type, res);
 		});
-		socket.on('disconnect', async () => {
-			const res = await controllers.LEAVE_ROOM({}, socket, io);
-			if (res) socket.emit(res.type, res);
-		});
+	});
+	socket.on('disconnect', async () => {
+		const res = await controllers.LEAVE_ROOM({}, socket, io);
+		if (res) socket.emit(res.type, res);
 	});
 });
 
