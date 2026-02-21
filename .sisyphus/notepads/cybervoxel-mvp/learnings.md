@@ -122,3 +122,14 @@
 - Adding a dedicated typed bus under `src/simulation/events/` allows UI-facing contracts (`NPC_STATE_UPDATE`, `NPC_ACTION`, `NPC_DIALOGUE`, `SURVIVAL_UPDATE`) to stay stable while SimulationEngine keeps emitting existing bridge events.
 - Jitter reduction is effective when throttling per event type + entity key (e.g., `npcId`/`entityId`) and keeping only the latest pending event for that key before flush.
 - Migrating observer sidebar and possession HUD to `Controller` bus-backed state access (`getNPCStateFromClientBus*`) decouples UI reads from direct simulation polling while preserving single-player-only wiring.
+
+## 2026-02-21 Task 18 Manual QA
+
+- In Playwright runtime QA, dynamic import of `'/src/index.ts'` is a reliable way to access the live singleton `Controller` and run deterministic single-player verification checks without source changes.
+- Single-player validation can prove bus integration health by combining `simulationEngine.getNPCStates()` presence checks with a bus getter read (`getNPCStateFromClientBus`) and a user-visible possession indicator assertion (`附身：<name>`).
+
+## 2026-02-22 Task 19
+
+- CSS2D thinking bubble auto-hide must use the same time base end-to-end (`Date.now` for show/update checks); mixing `Date.now` and `performance.now` prevents expiry from triggering.
+- Thinking stream rendering is more stable when controller caches per-NPC accumulated chunks and reuses that cache in the `received` phase, instead of replacing with placeholder text.
+- Simulation lifecycle mapping needs to accept both `eventType` (bridge LLM events) and `status` (engine lifecycle forwarding) to keep thinking-stream events reachable across both paths.

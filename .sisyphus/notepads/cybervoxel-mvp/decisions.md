@@ -92,3 +92,9 @@
 - Introduced a client-only typed NPC event bus (`ClientNPCEventBus`) and kept `SimulationEngine` unchanged by mapping bridge events (`npc:action`, `npc:dialogue`, `survival:update`) into the new UI contract via mapper modules.
 - Emitted `NPC_STATE_UPDATE` as batched events from the single-player render loop (`mapNPCStatesToClientEvents`) so UI consumers can track full NPC state snapshots without accessing simulation internals directly.
 - Centralized bus consumption in controller-level subscriptions, then exposed read-only NPC state getters for observer sidebar / possession HUD to keep integration thin and single-player scoped.
+
+## 2026-02-22 Task 19
+
+- Adopted `CSS2DRenderer` as a global HUD overlay in `Core` and attached per-NPC `CSS2DObject` thinking bubbles under `src/core/npc/thinking-bubble/` to align with label overlay architecture.
+- Finalized end-to-end thinking lifecycle wiring in controller/event pipeline: `thinking:state` drives requesting/received/executing/idle state changes, `thinking-stream` drives live chunk updates, and `npc:action` enforces final executing text.
+- Kept scope isolated to Task 19 by excluding unrelated dirty files from commit (`.sisyphus/ralph-loop.local.md`, task-18 manual QA leftover) while appending only required notepad records.

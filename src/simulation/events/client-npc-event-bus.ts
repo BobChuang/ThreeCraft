@@ -10,6 +10,8 @@ const DEFAULT_THROTTLE_MS: Record<ClientNPCEventType, number> = {
 	[CLIENT_NPC_EVENT_TYPES.NPC_STATE_UPDATE]: 120,
 	[CLIENT_NPC_EVENT_TYPES.NPC_ACTION]: 0,
 	[CLIENT_NPC_EVENT_TYPES.NPC_DIALOGUE]: 0,
+	[CLIENT_NPC_EVENT_TYPES.NPC_THINKING_STATE]: 0,
+	[CLIENT_NPC_EVENT_TYPES.NPC_THINKING_STREAM]: 0,
 	[CLIENT_NPC_EVENT_TYPES.SURVIVAL_UPDATE]: 120,
 };
 
@@ -21,6 +23,10 @@ const getThrottleKey = (event: ClientNPCEvent): string => {
 			return (event as ClientNPCEvent<'NPC_ACTION'>).payload.npcId;
 		case CLIENT_NPC_EVENT_TYPES.NPC_DIALOGUE:
 			return (event as ClientNPCEvent<'NPC_DIALOGUE'>).payload.npcId;
+		case CLIENT_NPC_EVENT_TYPES.NPC_THINKING_STATE:
+			return (event as ClientNPCEvent<'NPC_THINKING_STATE'>).payload.npcId;
+		case CLIENT_NPC_EVENT_TYPES.NPC_THINKING_STREAM:
+			return (event as ClientNPCEvent<'NPC_THINKING_STREAM'>).payload.npcId;
 		case CLIENT_NPC_EVENT_TYPES.SURVIVAL_UPDATE:
 			return (event as ClientNPCEvent<'SURVIVAL_UPDATE'>).payload.entityId;
 		default:
@@ -44,6 +50,8 @@ export class ClientNPCEventBus {
 			NPC_STATE_UPDATE: new Set(),
 			NPC_ACTION: new Set(),
 			NPC_DIALOGUE: new Set(),
+			NPC_THINKING_STATE: new Set(),
+			NPC_THINKING_STREAM: new Set(),
 			SURVIVAL_UPDATE: new Set(),
 		};
 		this.throttleMsByType = {

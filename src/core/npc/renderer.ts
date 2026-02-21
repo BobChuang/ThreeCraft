@@ -69,6 +69,7 @@ export class NPCRenderer {
 	render() {
 		const visibilityDistance = Math.max(24, config.renderer.stageSize / 2);
 		const observer = new THREE.Vector3(config.state.posX, config.state.posY, config.state.posZ);
+		const now = Date.now();
 		this.entityMap.forEach(entity => {
 			entity.update();
 			const dist = observer.distanceTo(entity.position);
@@ -77,6 +78,7 @@ export class NPCRenderer {
 			entity.nameplate.visible = visible;
 			if (entity instanceof NPCEntity) {
 				entity.dialogueBubble.sprite.visible = visible && entity.dialogueBubble.sprite.visible;
+				entity.thinkingBubble.updateVisibility(visible, now);
 			}
 		});
 	}
@@ -85,6 +87,36 @@ export class NPCRenderer {
 		const entity = this.entityMap.get(npcId);
 		if (!(entity instanceof NPCEntity)) return;
 		entity.showDialogue(text, now);
+	}
+
+	showThinkingRequesting(npcId: string, now = Date.now()): void {
+		const entity = this.entityMap.get(npcId);
+		if (!(entity instanceof NPCEntity)) return;
+		entity.showThinkingRequesting(now);
+	}
+
+	appendThinkingStream(npcId: string, chunk: string, now = Date.now()): void {
+		const entity = this.entityMap.get(npcId);
+		if (!(entity instanceof NPCEntity)) return;
+		entity.appendThinkingStream(chunk, now);
+	}
+
+	showThinkingReasoning(npcId: string, reasoning: string, now = Date.now()): void {
+		const entity = this.entityMap.get(npcId);
+		if (!(entity instanceof NPCEntity)) return;
+		entity.showThinkingReasoning(reasoning, now);
+	}
+
+	showThinkingExecuting(npcId: string, action: string, now = Date.now()): void {
+		const entity = this.entityMap.get(npcId);
+		if (!(entity instanceof NPCEntity)) return;
+		entity.showThinkingExecuting(action, now);
+	}
+
+	hideThinking(npcId: string): void {
+		const entity = this.entityMap.get(npcId);
+		if (!(entity instanceof NPCEntity)) return;
+		entity.hideThinking();
 	}
 
 	findNearestNPC(position: { x: number; y: number; z: number }, maxDistance: number): NPCEntity | null {
@@ -104,7 +136,10 @@ export class NPCRenderer {
 	clear() {
 		this.entityMap.forEach(entity => {
 			entity.player.remove(entity.nameplate);
-			if (entity instanceof NPCEntity) entity.player.remove(entity.dialogueBubble.sprite);
+			if (entity instanceof NPCEntity) {
+				entity.player.remove(entity.dialogueBubble.sprite);
+				entity.player.remove(entity.thinkingBubble.object);
+			}
 			this.scene.remove(entity.player);
 			entity.player.remove();
 		});

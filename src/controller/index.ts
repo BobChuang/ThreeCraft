@@ -82,6 +82,8 @@ class Controller {
 
 	readonly npcDialogueLog: string[];
 
+	readonly npcThinkingStreamById: Map<string, string>;
+
 	constructor(el: HTMLElement) {
 		// 挂载游戏层和控制器层, 默认看不到
 		[...el.children].forEach(d => d.remove());
@@ -115,6 +117,7 @@ class Controller {
 		this.possessionController = new PossessionController(this);
 		this.observerController = new ObserverController(this);
 		this.npcDialogueLog = [];
+		this.npcThinkingStreamById = new Map();
 		this.log = new Log([]);
 
 		// 特殊处理VR部分
@@ -205,6 +208,7 @@ class Controller {
 		this.clientEventBus?.clear();
 		this.clientEventBus = null;
 		this.npcStateById.clear();
+		this.npcThinkingStreamById.clear();
 		this.simulationEngine?.stop();
 		this.simulationEngine = null;
 		this.npcRenderer?.clear();
@@ -372,6 +376,40 @@ class Controller {
 			this.clientEventBus.subscribe(CLIENT_NPC_EVENT_TYPES.NPC_STATE_UPDATE, event => {
 				this.npcStateById.set(event.payload.npcId, event.payload.state);
 			}),
+			this.clientEventBus.subscribe(CLIENT_NPC_EVENT_TYPES.NPC_THINKING_STATE, event => {
+				const current = this.npcStateById.get(event.payload.npcId);
+				if (current) {
+					this.npcStateById.set(event.payload.npcId, {
+						...current,
+						thinkingState: event.payload.state,
+					});
+				}
+				if (event.payload.state === 'idle') {
+					this.npcThinkingStreamById.delete(event.payload.npcId);
+					this.npcRenderer?.hideThinking(event.payload.npcId);
+					return;
+				}
+				if (event.payload.state === 'requesting') {
+					this.npcThinkingStreamById.delete(event.payload.npcId);
+					this.npcRenderer?.showThinkingRequesting(event.payload.npcId, event.timestamp);
+					return;
+				}
+				if (event.payload.state === 'received') {
+					const streamedReasoning = this.npcThinkingStreamById.get(event.payload.npcId)?.trim();
+					if (!streamedReasoning) return;
+					this.npcRenderer?.showThinkingReasoning(event.payload.npcId, streamedReasoning, event.timestamp);
+					return;
+				}
+				if (event.payload.state === 'executing') {
+					this.npcRenderer?.showThinkingExecuting(event.payload.npcId, '执行中', event.timestamp);
+				}
+			}),
+			this.clientEventBus.subscribe(CLIENT_NPC_EVENT_TYPES.NPC_THINKING_STREAM, event => {
+				const prevChunk = this.npcThinkingStreamById.get(event.payload.npcId) ?? '';
+				const nextChunk = `${prevChunk}${event.payload.chunk}`.trim();
+				if (nextChunk) this.npcThinkingStreamById.set(event.payload.npcId, nextChunk.slice(0, 240));
+				this.npcRenderer?.appendThinkingStream(event.payload.npcId, event.payload.chunk, event.timestamp);
+			}),
 			this.clientEventBus.subscribe(CLIENT_NPC_EVENT_TYPES.NPC_ACTION, event => {
 				const current = this.npcStateById.get(event.payload.npcId);
 				if (!current) return;
@@ -380,6 +418,11 @@ class Controller {
 					lastAction: event.payload.action,
 					position: { ...event.payload.position },
 				});
+				if (typeof event.payload.reasoning === 'string' && event.payload.reasoning.trim()) {
+					this.npcRenderer?.showThinkingReasoning(event.payload.npcId, event.payload.reasoning, event.timestamp);
+					this.npcThinkingStreamById.set(event.payload.npcId, event.payload.reasoning.trim().slice(0, 240));
+				}
+				this.npcRenderer?.showThinkingExecuting(event.payload.npcId, event.payload.action, event.timestamp);
 			}),
 			this.clientEventBus.subscribe(CLIENT_NPC_EVENT_TYPES.SURVIVAL_UPDATE, event => {
 				if (!event.payload.entityId.startsWith('npc-')) return;

@@ -1,11 +1,13 @@
 import type { SimulationBridgeEvent } from '../contracts/simulation-bridge';
 import type { NPCActionPayload, NPCDialoguePayload, SurvivalUpdatePayload } from '../events';
-import type { SimulationNPCState } from '../npc-state';
+import type { SimulationNPCState, SimulationThinkingState } from '../npc-state';
 
 export const CLIENT_NPC_EVENT_TYPES = {
 	NPC_STATE_UPDATE: 'NPC_STATE_UPDATE',
 	NPC_ACTION: 'NPC_ACTION',
 	NPC_DIALOGUE: 'NPC_DIALOGUE',
+	NPC_THINKING_STATE: 'NPC_THINKING_STATE',
+	NPC_THINKING_STREAM: 'NPC_THINKING_STREAM',
 	SURVIVAL_UPDATE: 'SURVIVAL_UPDATE',
 } as const;
 
@@ -16,10 +18,23 @@ export interface NPCStateUpdatePayload {
 	state: SimulationNPCState;
 }
 
+export interface NPCThinkingStatePayload {
+	npcId: string;
+	state: SimulationThinkingState;
+}
+
+export interface NPCThinkingStreamPayload {
+	npcId: string;
+	chunk: string;
+	chunkIndex?: number;
+}
+
 export type ClientNPCEventPayloadMap = {
 	NPC_STATE_UPDATE: NPCStateUpdatePayload;
 	NPC_ACTION: NPCActionPayload;
 	NPC_DIALOGUE: NPCDialoguePayload;
+	NPC_THINKING_STATE: NPCThinkingStatePayload;
+	NPC_THINKING_STREAM: NPCThinkingStreamPayload;
 	SURVIVAL_UPDATE: SurvivalUpdatePayload;
 };
 

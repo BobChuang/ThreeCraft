@@ -67,3 +67,11 @@
 ## 2026-02-21 Task 18
 
 - `pnpm build` still reports the known baseline Vite warning about `<script src="/registerSW.js">` lacking `type="module"`; it is pre-existing and non-blocking for event-bus functionality.
+
+## 2026-02-21 Task 18 Manual QA
+
+- Playwright screenshot capture remains unstable in this WebGL runtime (`page.screenshot` timeout/target crash in longer sessions); deterministic QA evidence is more stable through runtime assertions + console scan + textual logs.
+
+## 2026-02-22 Task 19
+
+- Local Vite run still emits the known baseline `registerSW.js` console 404 warning during Playwright capture; it is unrelated to thinking-bubble functionality and non-blocking for acceptance.

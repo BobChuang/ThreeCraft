@@ -3,6 +3,7 @@ import { symConfig } from '../../controller/config';
 import Player from '../player';
 import { createNPCDialogueBubble, NPCDialogueBubbleHandle } from './dialogue-bubble';
 import { createNPCNameplate } from './nameplate';
+import { createNPCThinkingBubble, NPCThinkingBubbleHandle } from './thinking-bubble';
 import { NPCAnimationState } from './types';
 
 export class NPCEntity extends Player {
@@ -15,6 +16,8 @@ export class NPCEntity extends Player {
 	readonly nameplate: THREE.Sprite;
 
 	readonly dialogueBubble!: NPCDialogueBubbleHandle;
+
+	readonly thinkingBubble!: NPCThinkingBubbleHandle;
 
 	private animationState: NPCAnimationState;
 
@@ -45,10 +48,32 @@ export class NPCEntity extends Player {
 		this.player.add(this.nameplate);
 		this.dialogueBubble = createNPCDialogueBubble();
 		this.player.add(this.dialogueBubble.sprite);
+		this.thinkingBubble = createNPCThinkingBubble();
+		this.player.add(this.thinkingBubble.object);
 	}
 
 	showDialogue(text: string, now: number) {
 		this.dialogueBubble.show(text, now);
+	}
+
+	showThinkingRequesting(now: number) {
+		this.thinkingBubble.showRequesting(now);
+	}
+
+	appendThinkingStream(chunk: string, now: number) {
+		this.thinkingBubble.appendStreamChunk(chunk, now);
+	}
+
+	showThinkingReasoning(reasoning: string, now: number) {
+		this.thinkingBubble.showReasoning(reasoning, now);
+	}
+
+	showThinkingExecuting(action: string, now: number) {
+		this.thinkingBubble.showExecutingAction(action, now);
+	}
+
+	hideThinking() {
+		this.thinkingBubble.hideNow();
 	}
 
 	setAnimationState(state: NPCAnimationState) {
