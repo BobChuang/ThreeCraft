@@ -116,3 +116,9 @@
 ## 2026-02-21 Task 17 Retry (player death drop gap)
 
 - The minimal safe fix is a single call to `dropAllInventoryOnDeath('player-local', position)` inside `handlePlayerDeath()` before emitting `player:death`, reusing the exact same drop pipeline already used by NPC death.
+
+## 2026-02-21 Task 18
+
+- Adding a dedicated typed bus under `src/simulation/events/` allows UI-facing contracts (`NPC_STATE_UPDATE`, `NPC_ACTION`, `NPC_DIALOGUE`, `SURVIVAL_UPDATE`) to stay stable while SimulationEngine keeps emitting existing bridge events.
+- Jitter reduction is effective when throttling per event type + entity key (e.g., `npcId`/`entityId`) and keeping only the latest pending event for that key before flush.
+- Migrating observer sidebar and possession HUD to `Controller` bus-backed state access (`getNPCStateFromClientBus*`) decouples UI reads from direct simulation polling while preserving single-player-only wiring.

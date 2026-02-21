@@ -8,7 +8,18 @@ import { deepCopy } from '../utils/deep-copy';
 import weatherConfig from '../core/weather';
 import Log from './log';
 import MultiPlay from './MultiPlay';
-import { ClientSimulationBridge, PLAYER_RESPAWN_POINT_XZ, SimulationBridgeEvent, SimulationEngine, SimulationNPCState } from '../simulation';
+import {
+	CLIENT_NPC_EVENT_TYPES,
+	ClientNPCEvent,
+	ClientNPCEventBus,
+	ClientSimulationBridge,
+	mapBridgeEventToClientNPCEvent,
+	mapNPCStatesToClientEvents,
+	PLAYER_RESPAWN_POINT_XZ,
+	SimulationBridgeEvent,
+	SimulationEngine,
+	SimulationNPCState,
+} from '../simulation';
 import { NPCRenderer, toNPCRenderSnapshot } from '../core/npc';
 import { PossessionController } from './possession';
 import { ObserverController } from './observer';
@@ -57,6 +68,12 @@ class Controller {
 
 	simulationEngine: SimulationEngine | null;
 
+	clientEventBus: ClientNPCEventBus | null;
+
+	readonly npcStateById: Map<string, SimulationNPCState>;
+
+	private npcEventUnsubscribers: Array<() => void>;
+
 	npcRenderer: NPCRenderer | null;
 
 	possessionController: PossessionController;
@@ -79,6 +96,9 @@ class Controller {
 
 		this.multiPlay = new MultiPlay(this);
 		this.simulationEngine = null;
+		this.clientEventBus = null;
+		this.npcStateById = new Map();
+		this.npcEventUnsubscribers = [];
 		this.npcRenderer = null;
 
 		// 读取默认配置文件
@@ -180,6 +200,11 @@ class Controller {
 	endGame() {
 		this.observerController.reset();
 		this.possessionController.reset();
+		this.npcEventUnsubscribers.forEach(unsubscribe => unsubscribe());
+		this.npcEventUnsubscribers = [];
+		this.clientEventBus?.clear();
+		this.clientEventBus = null;
+		this.npcStateById.clear();
 		this.simulationEngine?.stop();
 		this.simulationEngine = null;
 		this.npcRenderer?.clear();
@@ -218,7 +243,9 @@ class Controller {
 		this.observerController.update();
 		if (this.simulationEngine) this.simulationEngine.setObservers([{ x: config.state.posX, y: config.state.posY, z: config.state.posZ }]);
 		if (this.simulationEngine && this.npcRenderer) {
-			const snapshots = this.simulationEngine.getNPCStates().map((state: SimulationNPCState) =>
+			const npcStates = this.simulationEngine.getNPCStates();
+			this.clientEventBus?.dispatchBatch(mapNPCStatesToClientEvents(npcStates));
+			const snapshots = npcStates.map((state: SimulationNPCState) =>
 				toNPCRenderSnapshot({
 					id: state.id,
 					name: state.name,
@@ -243,6 +270,7 @@ class Controller {
 
 	ensureSinglePlayerSimulation() {
 		if (this.simulationEngine || this.multiPlay.working) return;
+		this.ensureClientEventBus();
 		const bridge = new ClientSimulationBridge(this, {
 			onEvent: event => this.handleSimulationEvent(event),
 		});
@@ -272,17 +300,8 @@ class Controller {
 	}
 
 	private handleSimulationEvent(event: SimulationBridgeEvent): void {
-		if (event.type === 'npc:dialogue') {
-			const npcId = typeof event.payload.npcId === 'string' ? event.payload.npcId : '';
-			const dialogue = typeof event.payload.dialogue === 'string' ? event.payload.dialogue : '';
-			if (!npcId || !dialogue) return;
-			this.npcRenderer?.showDialogue(npcId, dialogue, event.timestamp);
-			const sourceId = typeof event.payload.sourceNpcId === 'string' ? event.payload.sourceNpcId : npcId;
-			const targetId = typeof event.payload.targetNpcId === 'string' ? event.payload.targetNpcId : 'unknown';
-			this.npcDialogueLog.push(`${new Date(event.timestamp).toISOString()} ${sourceId} -> ${targetId}: ${dialogue}`);
-			if (this.npcDialogueLog.length > 100) this.npcDialogueLog.shift();
-			return;
-		}
+		const mapped = mapBridgeEventToClientNPCEvent(event);
+		if (mapped) this.clientEventBus?.dispatchBatch([mapped]);
 		if (event.type === 'player:death') {
 			if (this.multiPlay.working || !this.simulationEngine || this.simulationEngine.isPlayerDead() === false) return;
 			if (this.possessionController.isPossessing()) this.possessionController.reset();
@@ -324,6 +343,69 @@ class Controller {
 	ensureSinglePlayerNPCs() {
 		if (this.multiPlay.working) return;
 		if (!this.npcRenderer) this.npcRenderer = new NPCRenderer(this.core.scene);
+	}
+
+	getNPCStateFromClientBus(npcId: string): SimulationNPCState | null {
+		const state = this.npcStateById.get(npcId);
+		if (!state) return null;
+		return {
+			...state,
+			position: { ...state.position },
+			inventory: state.inventory.map(slot => ({ ...slot })),
+			survival: { ...state.survival },
+		};
+	}
+
+	getNPCStatesFromClientBus(): SimulationNPCState[] {
+		return [...this.npcStateById.values()].map(state => ({
+			...state,
+			position: { ...state.position },
+			inventory: state.inventory.map(slot => ({ ...slot })),
+			survival: { ...state.survival },
+		}));
+	}
+
+	private ensureClientEventBus(): void {
+		if (this.clientEventBus) return;
+		this.clientEventBus = new ClientNPCEventBus();
+		this.npcEventUnsubscribers.push(
+			this.clientEventBus.subscribe(CLIENT_NPC_EVENT_TYPES.NPC_STATE_UPDATE, event => {
+				this.npcStateById.set(event.payload.npcId, event.payload.state);
+			}),
+			this.clientEventBus.subscribe(CLIENT_NPC_EVENT_TYPES.NPC_ACTION, event => {
+				const current = this.npcStateById.get(event.payload.npcId);
+				if (!current) return;
+				this.npcStateById.set(event.payload.npcId, {
+					...current,
+					lastAction: event.payload.action,
+					position: { ...event.payload.position },
+				});
+			}),
+			this.clientEventBus.subscribe(CLIENT_NPC_EVENT_TYPES.SURVIVAL_UPDATE, event => {
+				if (!event.payload.entityId.startsWith('npc-')) return;
+				const current = this.npcStateById.get(event.payload.entityId);
+				if (!current) return;
+				this.npcStateById.set(event.payload.entityId, {
+					...current,
+					survival: {
+						...current.survival,
+						hp: event.payload.hp,
+						hunger: event.payload.hunger,
+					},
+				});
+			}),
+			this.clientEventBus.subscribe(CLIENT_NPC_EVENT_TYPES.NPC_DIALOGUE, event => this.handleClientNPCDialogue(event))
+		);
+	}
+
+	private handleClientNPCDialogue(event: ClientNPCEvent<'NPC_DIALOGUE'>): void {
+		const { npcId, dialogue } = event.payload;
+		if (!npcId || !dialogue) return;
+		this.npcRenderer?.showDialogue(npcId, dialogue, event.timestamp);
+		const sourceId = typeof event.payload.sourceNpcId === 'string' ? event.payload.sourceNpcId : npcId;
+		const targetId = typeof event.payload.targetNpcId === 'string' ? event.payload.targetNpcId : 'unknown';
+		this.npcDialogueLog.push(`${new Date(event.timestamp).toISOString()} ${sourceId} -> ${targetId}: ${dialogue}`);
+		if (this.npcDialogueLog.length > 100) this.npcDialogueLog.shift();
 	}
 }
 

@@ -86,3 +86,9 @@
 ## 2026-02-21 Task 17 Retry (player death drop gap)
 
 - Standardized player death to share the same drop path as NPC death by invoking `dropAllInventoryOnDeath('player-local', position)` in `handlePlayerDeath()`, avoiding any parallel drop logic.
+
+## 2026-02-21 Task 18
+
+- Introduced a client-only typed NPC event bus (`ClientNPCEventBus`) and kept `SimulationEngine` unchanged by mapping bridge events (`npc:action`, `npc:dialogue`, `survival:update`) into the new UI contract via mapper modules.
+- Emitted `NPC_STATE_UPDATE` as batched events from the single-player render loop (`mapNPCStatesToClientEvents`) so UI consumers can track full NPC state snapshots without accessing simulation internals directly.
+- Centralized bus consumption in controller-level subscriptions, then exposed read-only NPC state getters for observer sidebar / possession HUD to keep integration thin and single-player scoped.

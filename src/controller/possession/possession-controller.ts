@@ -60,7 +60,7 @@ export class PossessionController {
 
 	getPossessedNPCName(): string | null {
 		if (!this.active || !this.host.simulationEngine) return null;
-		const npc = this.host.simulationEngine.getNPCStates().find(item => item.id === this.active?.npcId);
+		const npc = this.host.getNPCStateFromClientBus(this.active.npcId) ?? this.host.simulationEngine.getNPCStates().find(item => item.id === this.active?.npcId);
 		return npc?.name ?? null;
 	}
 
@@ -89,7 +89,7 @@ export class PossessionController {
 			this.host.ui.menu.setNotify(language.developing, 1200, this.host.uiController.ui.actionControl.elem);
 			return false;
 		}
-		const npc = simulation.getNPCStates().find(item => item.id === npcId);
+		const npc = this.host.getNPCStateFromClientBus(npcId) ?? simulation.getNPCStates().find(item => item.id === npcId);
 		if (!npc) {
 			this.host.ui.menu.setNotify(language.possessionNoTarget, 1200, this.host.uiController.ui.actionControl.elem);
 			return false;
@@ -157,7 +157,7 @@ export class PossessionController {
 	syncPossessedStateFromSimulation(): void {
 		if (!this.active || !this.host.simulationEngine) return;
 		const { active } = this;
-		const npc = this.host.simulationEngine.getNPCStates().find(item => item.id === active.npcId);
+		const npc = this.host.getNPCStateFromClientBus(active.npcId) ?? this.host.simulationEngine.getNPCStates().find(item => item.id === active.npcId);
 		if (!npc) {
 			this.releaseActiveNPC();
 			return;
@@ -175,7 +175,8 @@ export class PossessionController {
 
 	private findNearestNPC(): SimulationNPCState | null {
 		if (!this.host.simulationEngine) return null;
-		const npcs = this.host.simulationEngine.getNPCStates();
+		const fromBus = this.host.getNPCStatesFromClientBus();
+		const npcs = fromBus.length > 0 ? fromBus : this.host.simulationEngine.getNPCStates();
 		let nearest: SimulationNPCState | null = null;
 		let nearestDist = Number.POSITIVE_INFINITY;
 		npcs.forEach(npc => {

@@ -1,0 +1,4 @@
+unsubscribe_calls_after_two_dispatches=1
+throttled_state_calls_for_same_npc=1
+assert_unsubscribe=PASS
+assert_throttle_merge=PASS

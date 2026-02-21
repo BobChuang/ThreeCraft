@@ -90,7 +90,8 @@ export class ObserverController {
 			this.updateIndicator();
 			return;
 		}
-		const snapshots = this.host.simulationEngine.getNPCStates();
+		const snapshots = this.host.getNPCStatesFromClientBus();
+		if (snapshots.length === 0) snapshots.push(...this.host.simulationEngine.getNPCStates());
 		this.markers.sync(snapshots);
 		this.markers.setVisible(this.enabled);
 		if (this.enabled) {

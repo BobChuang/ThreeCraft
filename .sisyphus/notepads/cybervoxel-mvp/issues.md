@@ -63,3 +63,7 @@
 ## 2026-02-21 Task 17 Retry (player death drop gap)
 
 - In respawn-at-origin flows, if death occurs very close to respawn position, the player can quickly re-collect their own drop after revival due to shared pickup rules; this is expected under current acceptance scope and does not block death-drop emission correctness.
+
+## 2026-02-21 Task 18
+
+- `pnpm build` still reports the known baseline Vite warning about `<script src="/registerSW.js">` lacking `type="module"`; it is pre-existing and non-blocking for event-bus functionality.
