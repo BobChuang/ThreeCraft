@@ -125,3 +125,9 @@
 ## 2026-02-22 Task 26 补充
 
 - Playwright WebGL 长会话会累计大量控制台错误噪声；本任务证据以短窗口 FPS 采样与文本结果为主，避免被自动化会话抖动干扰。
+
+## 2026-02-22 Task 27
+
+- 本地 `pnpm dev --port 4173` 端口被占用后自动回退到 `4174`，本次证据采集已按实际端口执行。
+- 开发运行期继续出现仓库既有 `registerSW.js` 404 基线 warning；未发现阻塞 T27 验收的新构建错误。
+- Playwright 中若动态导入 `'/src/index.ts'` 会触发重复控制器实例并刷出大量 `TypeError: undefined is not iterable` 控制台错误；已改为短链路直接进入单机截图规避。

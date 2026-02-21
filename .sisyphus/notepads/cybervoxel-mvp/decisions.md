@@ -142,3 +142,9 @@
 ## 2026-02-22 Task 26 决策补充
 
 - 将距离平方计算提取到 `renderer-math.ts`，把渲染器类中热路径数学逻辑外置，便于复用并降低 `renderer.ts` 局部复杂度。
+
+## 2026-02-22 Task 27
+
+- 赛博朋克开局初始化统一收敛到 `src/simulation/game-start/`：将“脑模型分流（stub/GLM-5）”与“世界首帧布置（NPC 聚居点 + 复活泉 + 职业背包 + 提示文案）”模块化拆分，并通过 `src/simulation/index.ts` 暴露给控制器。
+- 控制器侧选择“单机且赛博朋克且仅首次进入”触发开局流程：`ensureSinglePlayerSimulation` 负责脑模型参数，`runGame` 负责地形更新后的世界布置，避免联机路径和非赛博朋克路径受影响。
+- 对已存在存档世界启用 `skipForPersistedWorld`，仅提示功能键文案而不重置 NPC/地形，保证存档恢复语义优先于开局模板覆盖。

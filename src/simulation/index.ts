@@ -1,5 +1,7 @@
 export { SimulationEngine } from './simulation-engine';
 export type { SimulationEngineOptions } from './simulation-engine';
+export { resolveCyberpunkBrainBootstrap, initializeCyberpunkGameStart } from './game-start';
+export type { CyberpunkBrainBootstrap, InitializeCyberpunkGameStartParams } from './game-start';
 export { SimulationInventoryManager, addItemToInventory, createInventorySlots } from './inventory';
 export type { SimulationDroppedItem, SimulationInventoryAddResult, SimulationInventorySlot } from './inventory';
 export { SimulationSurvivalManager, createDefaultSurvivalState } from './survival';

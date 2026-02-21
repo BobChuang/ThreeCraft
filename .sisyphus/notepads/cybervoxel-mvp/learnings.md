@@ -179,3 +179,9 @@
 ## 2026-02-22 Task 26 补充
 
 - `sleep(ms)` 增加非法值与非正数快速返回后，可避免无效定时器进入事件循环，减少行为执行链路中的空等待开销。
+
+## 2026-02-22 Task 27
+
+- 赛博朋克开局收口可复用单机启动钩子：在 `runGame` 的 `terrain.updateState()` 后执行一次 `initializeCyberpunkGameStart`，可稳定覆盖 NPC 初始聚居点、职业背包和复活泉落块。
+- `resolveCyberpunkBrainBootstrap` 通过本地 `zhipu_api_key/ZHIPU_API_KEY/glm_api_key` 自动分流 stub 与 `glm-5`，无需改动 server/socket 路径。
+- Playwright 证据采集在 WebGL 场景下应避免动态重复导入 `'/src/index.ts'`（会触发重复控制器实例）；短路径“直接进单机并立即截图”更稳。

@@ -19,6 +19,8 @@ import {
 	SimulationBridgeEvent,
 	SimulationEngine,
 	SimulationNPCState,
+	initializeCyberpunkGameStart,
+	resolveCyberpunkBrainBootstrap,
 	type PersistenceAdapter,
 	WorldPersistenceController,
 } from '../simulation';
@@ -156,6 +158,10 @@ class Controller {
 
 	private playerSurvivalState: PlayerSurvivalHUDState;
 
+	private hasInitializedCyberpunkStartFlow: boolean;
+
+	private loadedSinglePlayerSnapshot: boolean;
+
 	constructor(el: HTMLElement) {
 		// 挂载游戏层和控制器层, 默认看不到
 		[...el.children].forEach(d => d.remove());
@@ -193,6 +199,8 @@ class Controller {
 		this.npcThinkingStreamById = new Map();
 		this.npcTaskTrackerById = new Map();
 		this.playerSurvivalState = { hp: 100, maxHp: 100, hunger: 100, maxHunger: 100 };
+		this.hasInitializedCyberpunkStartFlow = false;
+		this.loadedSinglePlayerSnapshot = false;
 		this.log = new Log([]);
 
 		// 特殊处理VR部分
@@ -250,6 +258,7 @@ class Controller {
 		// 更新地形, 开始游戏
 		this.core.terrain.updateState();
 		if (!this.multiPlay.working) this.ensureSinglePlayerNPCs();
+		if (!this.multiPlay.working) this.ensureCyberpunkGameStartFlow();
 		this.running = true;
 		this.core.updateCore();
 		// 要求控制层重新开始监听
@@ -290,6 +299,8 @@ class Controller {
 		this.simulationEngine = null;
 		this.npcRenderer?.clear();
 		this.npcRenderer = null;
+		this.hasInitializedCyberpunkStartFlow = false;
+		this.loadedSinglePlayerSnapshot = false;
 		deepCopy(defaultConfig, config);
 		this.core.terrain.clear();
 		if (this.multiPlay.working) {
@@ -354,17 +365,21 @@ class Controller {
 	ensureSinglePlayerSimulation() {
 		if (this.simulationEngine || this.multiPlay.working) return;
 		this.ensureClientEventBus();
+		const cyberpunkScene = isCyberpunkSceneSelected();
+		const brainBootstrap = resolveCyberpunkBrainBootstrap(cyberpunkScene);
 		const bridge = new ClientSimulationBridge(this, {
 			onEvent: event => this.handleSimulationEvent(event),
+			llmConfig: brainBootstrap.llmConfig,
 		});
 		this.simulationEngine = new SimulationEngine(bridge, {
 			tickIntervalMs: 500,
 			observerSleepDistance: 128,
-			useStubBrain: true,
+			useStubBrain: brainBootstrap.useStubBrain,
 			initialObservers: [{ x: config.state.posX, y: config.state.posY, z: config.state.posZ }],
 		});
 		this.worldPersistence = new WorldPersistenceController(this.createSinglePlayerPersistenceAdapter());
 		const snapshot = this.worldPersistence.loadLatest();
+		this.loadedSinglePlayerSnapshot = Boolean(snapshot);
 		if (snapshot) {
 			this.log = new Log(config.log);
 		}
@@ -377,6 +392,23 @@ class Controller {
 			maxHunger: playerSurvival.maxHunger,
 		};
 		this.worldPersistence.start();
+	}
+
+	private ensureCyberpunkGameStartFlow(): void {
+		if (!this.simulationEngine || !this.core || this.hasInitializedCyberpunkStartFlow || !isCyberpunkSceneSelected()) return;
+		initializeCyberpunkGameStart({
+			simulationEngine: this.simulationEngine,
+			terrain: this.core.terrain,
+			skipForPersistedWorld: this.loadedSinglePlayerSnapshot,
+			applySpringBlocks: blocks => {
+				blocks.forEach(block => this.log.insert(block));
+				this.gameController.blockController.update(blocks, true);
+			},
+			notifyHint: message => {
+				this.uiController.ui.menu.setNotify(message, 1800, this.uiController.ui.actionControl.elem);
+			},
+		});
+		this.hasInitializedCyberpunkStartFlow = true;
 	}
 
 	private createSinglePlayerPersistenceAdapter(): PersistenceAdapter {
