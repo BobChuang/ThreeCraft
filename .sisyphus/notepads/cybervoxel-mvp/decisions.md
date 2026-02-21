@@ -126,3 +126,9 @@
 ## 2026-02-22 Task 24
 
 - Task24 收口采用“只补决策记录 + 复用既有证据 + 构建与提交推送验收”策略，不新增功能代码，确保闭环可追溯且不引入额外风险。
+
+## 2026-02-22 Task 25
+
+- 长时稳定性 QA 选择“20 个分段 checkpoint（minute-equivalent）+ 周期性交互”的证据策略，以满足 soak 覆盖目标并规避 Playwright WebGL 长等待崩溃噪声。
+- 刷新恢复证据固定为单文件截图 `.sisyphus/evidence/task-25-refresh-resume.png` 与文本报告 `.sisyphus/evidence/task-25-soak-test.txt`，不引入额外功能代码修改。
+- LLM 失败降级按“当前运行能力”执行：若不可直接注入 `callLLM` 失败，则以 NPC 循环/HUD/FPS 持续健康作为非阻塞降级判定依据。

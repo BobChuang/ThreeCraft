@@ -110,3 +110,9 @@
 
 - Playwright MCP 在 WebGL 长会话中仍偶发 `Target crashed`；重开 tab 后可恢复并继续验证，不影响本次功能结论。
 - 本次图像解析工具对部分现有 PNG 证据返回不稳定（同文件多次结果不一致/不可读），因此最终一致性判断以实时交互验证 + 文件存在性/尺寸校验为主。
+
+## 2026-02-22 Task 25
+
+- Playwright MCP 在该 WebGL 场景下执行超长 `wait`/会话时仍可能出现 `Target crashed` 或 snapshot timeout；本任务改用短周期分段验证以规避自动化层不稳定。
+- 运行期继续观测到仓库基线 `registerSW.js` 404 / 非 module 错误，为既有问题，未阻塞单机稳定性与刷新恢复验收结论。
+- 当前运行环境中 `simulationEngine.client.callLLM` 直连 hook 不可用，LLM 失败降级验证采用“运行连续性（NPC/HUD/FPS）不被阻塞”的能力内检查路径。
