@@ -132,3 +132,9 @@
 - 长时稳定性 QA 选择“20 个分段 checkpoint（minute-equivalent）+ 周期性交互”的证据策略，以满足 soak 覆盖目标并规避 Playwright WebGL 长等待崩溃噪声。
 - 刷新恢复证据固定为单文件截图 `.sisyphus/evidence/task-25-refresh-resume.png` 与文本报告 `.sisyphus/evidence/task-25-soak-test.txt`，不引入额外功能代码修改。
 - LLM 失败降级按“当前运行能力”执行：若不可直接注入 `callLLM` 失败，则以 NPC 循环/HUD/FPS 持续健康作为非阻塞降级判定依据。
+
+## 2026-02-22 Task 26
+
+- 选择仅在 `src/core/npc/renderer.ts`、`src/core/npc/entity.ts`、`src/simulation/npc-ai/behaviors/shared.ts` 做最小性能改动，避免扩大到联机/协议或其他任务范围。
+- NPC 渲染裁剪策略采用 `spawnDistance = base + 16`、`despawnDistance = base + 24`，以可预测的滞回区间平衡性能与视觉稳定性。
+- 保持现有 sleep/wake 语义不变，通过“远距离全量休眠验证 + thinking-active=0”证明离观察者过远时不会持续触发 NPC 活跃决策。

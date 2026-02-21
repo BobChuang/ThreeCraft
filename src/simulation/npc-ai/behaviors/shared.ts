@@ -29,12 +29,14 @@ export const applyPathAsWalking = (context: NPCBehaviorExecutionContext, path: S
 	if (!path || path.length <= 1) {
 		return [];
 	}
-	const walked = path.slice(1);
-	walked.forEach((point, stepIndex) => {
-		context.npc.position = { ...point };
+	const walked: SimulationVector3[] = [];
+	for (let index = 1; index < path.length; index += 1) {
+		const point = path[index];
+		walked.push(point);
+		context.npc.position = point;
 		context.npc.lastAction = 'move';
-		context.onActionState?.('move', { ...context.npc.position }, { stepIndex: stepIndex + 1, pathLength: path.length });
-	});
+		context.onActionState?.('move', point, { stepIndex: index, pathLength: path.length });
+	}
 	return walked;
 };
 

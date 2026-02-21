@@ -91,7 +91,10 @@ export class NPCEntity extends Player {
 		this.updateReward();
 		this.dialogueBubble?.update(this.lastCall);
 
-		const isMoving = this.target.clone().sub(this.position).length() > symConfig.eps;
+		const dx = this.target.x - this.position.x;
+		const dy = this.target.y - this.position.y;
+		const dz = this.target.z - this.position.z;
+		const isMoving = dx * dx + dy * dy + dz * dz > symConfig.eps * symConfig.eps;
 		if (isMoving) {
 			this.updatePosition(delta);
 			this.animationState = 'walking';

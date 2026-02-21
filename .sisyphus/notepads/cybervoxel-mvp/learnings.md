@@ -169,3 +169,9 @@
 - 在当前 Playwright/WebGL 运行能力下，长时稳定性验证更可靠的方式是“分段 checkpoint + 周期性交互覆盖”（移动/战斗/建造/附身）而非单次超长等待，能显著降低自动化崩溃噪声对结论的干扰。
 - `VITE_FIXED_MAP_INDEX=12` 依然是单机赛博朋克场景验证的稳定入口，配合 `single-player` 进入后可持续观测 `HUD/FPS/NPC 活跃` 健康信号。
 - 刷新恢复验证采用“刷新前状态采样 -> reload -> 再次进入单机 -> 刷新后状态采样”可稳定得到可比对证据（模式/HUD/NPC 活跃数）。
+
+## 2026-02-22 Task 26
+
+- 在 `NPCRenderer.syncSnapshots` 中按观察者距离做“生成阈值/销毁阈值”双门限裁剪（hysteresis）可避免远距离 NPC 频繁创建销毁抖动，同时显著减少场景内实体数量。
+- 渲染热路径把 `distanceTo()`（含开方）改为平方距离比较并复用 `THREE.Vector3` 观察者实例，可降低每帧分配与数学开销。
+- `applyPathAsWalking` 改为 for 循环增量遍历（避免 `slice`+`forEach`）后，路径执行阶段对象分配更少，行为执行链路更轻。

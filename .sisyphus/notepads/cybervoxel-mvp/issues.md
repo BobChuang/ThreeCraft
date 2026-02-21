@@ -116,3 +116,8 @@
 - Playwright MCP 在该 WebGL 场景下执行超长 `wait`/会话时仍可能出现 `Target crashed` 或 snapshot timeout；本任务改用短周期分段验证以规避自动化层不稳定。
 - 运行期继续观测到仓库基线 `registerSW.js` 404 / 非 module 错误，为既有问题，未阻塞单机稳定性与刷新恢复验收结论。
 - 当前运行环境中 `simulationEngine.client.callLLM` 直连 hook 不可用，LLM 失败降级验证采用“运行连续性（NPC/HUD/FPS）不被阻塞”的能力内检查路径。
+
+## 2026-02-22 Task 26
+
+- 本地 QA 启动 `pnpm dev --port 4173` 时端口连续被占用，Vite 自动回退到 `4180`；证据采集已使用实际端口并记录在 task-26 证据文件。
+- 运行期仍可见仓库基线 `registerSW.js` 404/非 module 噪声，不影响本次性能优化验收结论。

@@ -3,6 +3,7 @@ import { config } from '../../controller/config';
 import { NPCEntity } from './entity';
 import { MonsterEntity } from './monster-entity';
 import { getNPCSkinById } from './personas';
+import { getDistanceSq } from './renderer-math';
 import { NPCRenderSnapshot } from './types';
 
 const mapActionToAnimation = (action: string): NPCRenderSnapshot['animationState'] => {
@@ -47,37 +48,58 @@ export const toNPCRenderSnapshot = (state: {
 
 export class NPCRenderer {
 	private readonly scene: THREE.Scene;
-
 	private readonly entityMap: Map<string, NPCEntity | MonsterEntity>;
+	private readonly visibilityById: Map<string, boolean>;
+	private readonly observerPosition: THREE.Vector3;
 
 	constructor(scene: THREE.Scene) {
 		this.scene = scene;
 		this.entityMap = new Map();
+		this.visibilityById = new Map();
+		this.observerPosition = new THREE.Vector3();
 	}
 
 	syncSnapshots(snapshots: NPCRenderSnapshot[]) {
-		const incoming = new Set(snapshots.map(snapshot => snapshot.id));
-		snapshots.forEach(snapshot => this.upsertEntity(snapshot));
+		const baseVisibilityDistance = Math.max(24, config.renderer.stageSize / 2);
+		const spawnDistance = baseVisibilityDistance + 16;
+		const despawnDistance = baseVisibilityDistance + 24;
+		const spawnDistanceSq = spawnDistance * spawnDistance;
+		const despawnDistanceSq = despawnDistance * despawnDistance;
+		const observer = this.updateObserverPosition();
+		const incoming = new Set<string>();
+		snapshots.forEach(snapshot => {
+			const distanceSq = getDistanceSq(observer, snapshot.position);
+			if (distanceSq > spawnDistanceSq) return;
+			incoming.add(snapshot.id);
+			this.upsertEntity(snapshot);
+		});
 		[...this.entityMap.entries()].forEach(([id, entity]) => {
 			if (incoming.has(id)) return;
+			const distanceSq = getDistanceSq(observer, entity.position);
+			if (distanceSq <= despawnDistanceSq) return;
 			this.scene.remove(entity.player);
 			entity.player.remove();
 			this.entityMap.delete(id);
+			this.visibilityById.delete(id);
 		});
 	}
 
 	render() {
 		const visibilityDistance = Math.max(24, config.renderer.stageSize / 2);
-		const observer = new THREE.Vector3(config.state.posX, config.state.posY, config.state.posZ);
+		const visibilityDistanceSq = visibilityDistance * visibilityDistance;
+		const observer = this.updateObserverPosition();
 		const now = Date.now();
 		this.entityMap.forEach(entity => {
-			entity.update();
-			const dist = observer.distanceTo(entity.position);
-			const visible = dist <= visibilityDistance;
-			entity.player.visible = visible;
-			entity.nameplate.visible = visible;
+			const visible = getDistanceSq(observer, entity.position) <= visibilityDistanceSq;
+			const previousVisible = this.visibilityById.get(entity.id);
+			if (visible) entity.update();
+			if (previousVisible !== visible) {
+				entity.player.visible = visible;
+				entity.nameplate.visible = visible;
+				this.visibilityById.set(entity.id, visible);
+			}
 			if (entity instanceof NPCEntity) {
-				entity.dialogueBubble.sprite.visible = visible && entity.dialogueBubble.sprite.visible;
+				if (!visible) entity.dialogueBubble.sprite.visible = false;
 				entity.thinkingBubble.updateVisibility(visible, now);
 			}
 		});
@@ -144,6 +166,12 @@ export class NPCRenderer {
 			entity.player.remove();
 		});
 		this.entityMap.clear();
+		this.visibilityById.clear();
+	}
+
+	private updateObserverPosition(): THREE.Vector3 {
+		this.observerPosition.set(config.state.posX, config.state.posY, config.state.posZ);
+		return this.observerPosition;
 	}
 
 	private upsertEntity(snapshot: NPCRenderSnapshot) {

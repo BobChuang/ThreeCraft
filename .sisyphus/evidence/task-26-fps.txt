@@ -1,0 +1,16 @@
+Task 26 FPS evidence
+Date: 2026-02-22
+Server: pnpm dev with VITE_FIXED_MAP_INDEX=12
+URL: http://127.0.0.1:4180/
+
+Scenario:
+1) Open game and click "单人游戏"
+2) Wait for runtime stabilization (2s)
+3) Sample #fps text every 500ms for 12 samples (~6s)
+
+Samples: 121, 121, 120, 120, 121, 121, 121, 121, 118, 118, 121, 121
+Average FPS: 120.33
+Min FPS: 118
+Max FPS: 121
+
+Result: FPS remained stable (>100) during NPC runtime after performance optimizations.

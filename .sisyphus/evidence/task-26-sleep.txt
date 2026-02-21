@@ -1,0 +1,18 @@
+Task 26 NPC sleep/wake evidence
+Date: 2026-02-22
+Server: pnpm dev with VITE_FIXED_MAP_INDEX=12
+URL: http://127.0.0.1:4180/
+
+Scenario:
+1) Enter single-player and read simulation NPC states near spawn
+2) Teleport observer/player camera to far coordinate (4096, 80, 4096)
+3) Wait 2.5s (>= several simulation ticks)
+4) Read simulation NPC states again
+
+Metrics:
+- Near spawn: sleeping=0, active=10
+- Far away: sleeping=10, active=0
+- Far away thinking-active NPCs: 0
+- Total NPCs observed: 10
+
+Result: all off-range NPCs transitioned to sleep mode and stopped active thinking/decision activity while far from the observer.
