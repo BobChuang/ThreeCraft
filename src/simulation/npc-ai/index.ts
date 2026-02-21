@@ -4,3 +4,5 @@ export { parseAndValidateNPCAction } from './llm-action-parser';
 export { executeNPCAction } from './execute-action';
 export type { NPCActionExecutionContext, NPCActionExecutionResult } from './execute-action';
 export type { ConversationMessage } from './conversation-history';
+export { validateNPCAction } from './validation';
+export type { NPCActionValidationResult } from './validation';

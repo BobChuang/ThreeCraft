@@ -35,7 +35,7 @@ const summarizeHistory = (history: ConversationMessage[]): string =>
 		}))
 	);
 
-export const buildNPCPrompt = (persona: NPCPersonaDefinition, npc: SimulationNPCState, observation: NPCObservation, history: ConversationMessage[]): string => {
+export const buildNPCPrompt = (persona: NPCPersonaDefinition, npc: SimulationNPCState, observation: NPCObservation, history: ConversationMessage[], correctiveContext?: string): string => {
 	const worldStateLine = `[World State] Nearby blocks: ${summarizeBlocks(observation)}, Nearby NPCs: ${summarizeNearbyNPCs(observation)}, Inventory: ${serialize(npc.inventory)}, HP: ${
 		npc.survival.hp
 	}, Hunger: ${npc.survival.hunger}`;
@@ -46,6 +46,9 @@ export const buildNPCPrompt = (persona: NPCPersonaDefinition, npc: SimulationNPC
 		worldStateLine,
 		`[Recent History] ${summarizeHistory(history)}`,
 		`[Task List] ${serialize(persona.defaultGoals)}`,
+		correctiveContext ? `[Corrective Context] ${correctiveContext}` : '',
 		instructionLine,
-	].join('\n');
+	]
+		.filter(Boolean)
+		.join('\n');
 };

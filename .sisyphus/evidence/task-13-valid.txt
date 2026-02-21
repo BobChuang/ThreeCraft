@@ -1,0 +1,12 @@
+Task 13 Validation Evidence - valid action
+Command:
+pnpm exec tsc src/simulation/npc-ai/validation/*.ts src/simulation/npc-ai/observe.ts src/simulation/npc-state.ts src/utils/types/npc.ts --target ES2020 --module commonjs --esModuleInterop --skipLibCheck true --outDir .sisyphus/tmp/task13-validation
+node scenario runner
+
+Scenario Input:
+{"action":"move","target":{"position":{"x":5,"y":1,"z":5}}}
+
+Result:
+VALID={"valid":true,"action":{"action":"move","target":{"position":{"x":5,"y":1,"z":5}}}}
+
+Assertion: PASS (valid action accepted)

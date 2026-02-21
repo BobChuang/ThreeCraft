@@ -5,9 +5,9 @@ import { NPCPersonaDefinition, npcPersonas } from '../personas';
 import { getStubBrainDecision } from '../stub-brain';
 import { ConversationMessage, NPCConversationHistory } from './conversation-history';
 import { executeNPCAction, NPCActionExecutionResult } from './execute-action';
-import { parseAndValidateNPCAction } from './llm-action-parser';
 import { observeNPCContext } from './observe';
 import { buildNPCPrompt } from './prompt-builder';
+import { validateNPCAction } from './validation';
 
 export interface NPCDecisionLoopOptions {
 	decisionIntervalMs?: number;
@@ -88,6 +88,10 @@ export class NPCDecisionLoop {
 
 	private readonly nextDecisionAt: Map<string, number>;
 
+	private readonly correctiveContextByNpc: Map<string, string>;
+
+	private readonly actionTickByNpc: Map<string, number>;
+
 	constructor(bridge: ISimulationBridge, options: NPCDecisionLoopOptions = {}) {
 		this.bridge = bridge;
 		this.decisionIntervalMs = options.decisionIntervalMs ?? DEFAULT_DECISION_INTERVAL_MS;
@@ -102,6 +106,8 @@ export class NPCDecisionLoop {
 		this.history = new NPCConversationHistory();
 		this.inFlightByNpc = new Set();
 		this.nextDecisionAt = new Map();
+		this.correctiveContextByNpc = new Map();
+		this.actionTickByNpc = new Map();
 	}
 
 	getHistory(npcId: string): ConversationMessage[] {
@@ -111,6 +117,7 @@ export class NPCDecisionLoop {
 	async runDecision(npc: SimulationNPCState, allNPCs: SimulationNPCState[]): Promise<NPCDecisionResult> {
 		if (this.inFlightByNpc.has(npc.id)) return { status: 'skipped', reason: 'in-flight' };
 		if ((this.nextDecisionAt.get(npc.id) ?? 0) > this.now()) return { status: 'skipped', reason: 'cadence' };
+		if (this.actionTickByNpc.get(npc.id) === npc.tickCount) return { status: 'skipped', reason: 'one-action-per-tick' };
 
 		this.inFlightByNpc.add(npc.id);
 		try {
@@ -120,14 +127,50 @@ export class NPCDecisionLoop {
 
 			this.emitLifecycle('npc:decision-prompt', { npcId: npc.id });
 			const persona = resolvePersona(npc);
-			const prompt = buildNPCPrompt(persona, npc, observation, this.history.get(npc.id));
+			const correctiveContext = this.correctiveContextByNpc.get(npc.id);
+			const prompt = buildNPCPrompt(persona, npc, observation, this.history.get(npc.id), correctiveContext);
+			this.correctiveContextByNpc.delete(npc.id);
 			this.history.append(npc.id, { role: 'user', content: prompt, timestamp: this.now() });
 
 			this.emitLifecycle('npc:decision-call', { npcId: npc.id, useStubBrain: this.useStubBrain });
-			const decidedAction = this.useStubBrain
-				? toStubAction(getStubBrainDecision(npc), npc)
-				: parseAndValidateNPCAction((await this.bridge.callLLM(prompt, { npcId: npc.id, timeoutMs: this.decisionIntervalMs })).content).action;
-			this.history.append(npc.id, { role: 'assistant', content: JSON.stringify(decidedAction), timestamp: this.now() });
+			const rawContent = this.useStubBrain
+				? JSON.stringify(toStubAction(getStubBrainDecision(npc), npc))
+				: (await this.bridge.callLLM(prompt, { npcId: npc.id, timeoutMs: this.decisionIntervalMs })).content;
+			this.history.append(npc.id, { role: 'assistant', content: rawContent, timestamp: this.now() });
+
+			const validation = validateNPCAction({
+				npc,
+				observation,
+				rawContent,
+			});
+			if (!validation.valid) {
+				this.correctiveContextByNpc.set(npc.id, validation.correctiveContext);
+				this.emitLifecycle('npc:decision-warning', {
+					npcId: npc.id,
+					reason: validation.reason,
+					warning: validation.warning,
+				});
+				this.transitionThinking(npc, 'executing');
+				const fallbackAction: NPCAction = {
+					action: 'idle',
+					reasoning: `Fallback idle: ${validation.reason}`,
+					nextGoal: 'Retry with corrective context',
+				};
+				const fallbackExecution = await executeNPCAction(this.bridge, npc, fallbackAction, observation, {
+					onActionState: (action, position, details) => {
+						this.onActionState?.(npc, action, { position, details });
+					},
+					addInventoryItem: this.addInventoryItem,
+					consumeInventoryItem: this.consumeInventoryItem,
+				});
+				this.emitLifecycle('npc:decision-execute', { npcId: npc.id, action: 'idle', applied: true, fallback: true });
+				this.actionTickByNpc.set(npc.id, npc.tickCount);
+				this.nextDecisionAt.set(npc.id, this.now());
+				this.transitionThinking(npc, 'idle');
+				return { status: 'executed', action: fallbackAction, execution: fallbackExecution };
+			}
+
+			const decidedAction = validation.action;
 
 			this.transitionThinking(npc, 'received');
 			this.emitLifecycle('npc:decision-validate', { npcId: npc.id, action: decidedAction.action });
@@ -140,6 +183,7 @@ export class NPCDecisionLoop {
 				consumeInventoryItem: this.consumeInventoryItem,
 			});
 			this.emitLifecycle('npc:decision-execute', { npcId: npc.id, action: decidedAction.action, applied: execution.applied });
+			this.actionTickByNpc.set(npc.id, npc.tickCount);
 			this.nextDecisionAt.set(npc.id, this.now() + this.decisionIntervalMs);
 			this.transitionThinking(npc, 'idle');
 			return { status: 'executed', action: decidedAction, execution };

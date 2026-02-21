@@ -71,3 +71,9 @@
 - Splitting NPC action execution into focused behavior modules (`execute-move`, `execute-gather`, `execute-build`) keeps the decision loop clean while allowing per-action delays and side effects.
 - Emitting intermediate `npc:action` state updates from behavior executors provides visible animation transitions (walking/mining/building) before final decision completion events.
 - Deterministic Node evidence for gather/build is reliable when the bridge world state is backed by an in-memory block map that both `getWorldState` and `modifyBlock` share.
+
+## 2026-02-21 Task 13
+
+- Keeping action validation in a dedicated `npc-ai/validation/` module set allows the decision loop to stay orchestration-focused while schema validation, injection checks, and feasibility checks evolve independently.
+- A deterministic one-action-per-tick guard can be enforced cheaply by comparing `npc.tickCount` against an internal `actionTickByNpc` map before executing any behavior.
+- Corrective-context retries work best when injected as a one-shot prompt section (`[Corrective Context]`) and consumed on the next decision call.

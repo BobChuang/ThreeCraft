@@ -41,3 +41,9 @@
 - Replaced hardcoded NPC spawn orchestration with `NPCRenderer.syncSnapshots()` so simulation state is the single source of truth for rendered NPC lifecycle.
 - Standardized persona mapping to simulation IDs (`npc-01..npc-10`) and resolved skin assignment via ID lookup (`getNPCSkinById`) to keep renderer/persona alignment deterministic.
 - Updated single-player render loop to convert `SimulationNPCState` into `NPCRenderSnapshot` each frame and removed terrain-dependent NPC bootstrap logic from controller.
+
+## 2026-02-21 Task 13
+
+- Added a modular validation pipeline at `src/simulation/npc-ai/validation/` that composes JSON/schema checks (`isValidNPCAction` reuse), prompt-injection filtering, and feasibility checks before any action execution.
+- Chose explicit fail-safe fallback behavior in `NPCDecisionLoop`: invalid/suspicious/unfeasible actions emit warning lifecycle events, force an `idle` action, and enqueue a corrective prompt hint for the next decision tick.
+- Enforced deterministic one-action-per-tick using a per-NPC `actionTickByNpc` map keyed by current `npc.tickCount`.

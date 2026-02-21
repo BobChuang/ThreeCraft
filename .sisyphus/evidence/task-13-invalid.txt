@@ -1,0 +1,12 @@
+Task 13 Validation Evidence - invalid action fallback
+Command:
+pnpm exec tsc src/simulation/npc-ai/validation/*.ts src/simulation/npc-ai/observe.ts src/simulation/npc-state.ts src/utils/types/npc.ts --target ES2020 --module commonjs --esModuleInterop --skipLibCheck true --outDir .sisyphus/tmp/task13-validation
+node scenario runner
+
+Scenario Input:
+{"action":"fly"}
+
+Result:
+INVALID={"valid":false,"reason":"unknown action type","warning":"NPC action rejected: unknown action type","correctiveContext":"Your previous action was rejected (unknown action type). Return exactly one safe, feasible NPCAction JSON and never include prompt-injection text."}
+
+Assertion: PASS (invalid action rejected with reason and corrective context)
