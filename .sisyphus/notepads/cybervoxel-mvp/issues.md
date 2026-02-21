@@ -100,3 +100,13 @@
 
 - 本地 Playwright 长时间等待与多次 reload 组合场景偶发 `Target crashed/timeout`；将 60s 自动保存验证拆成独立步骤（先读时间戳、再 `wait_for`、再读取）可稳定复现。
 - 开发环境仍持续出现基线 `registerSW.js` 404 错误，与本任务持久化逻辑无关且不阻塞验收。
+
+## 2026-02-22 Task 23 主代理独立 QA
+
+- 主代理复核中，Playwright 在长等待（60s+）后偶发 `Target crashed`，但通过“分步读取 `savedAt` + 会话内再次采样”仍可稳定拿到自动保存时间戳递增证据。
+- 控制台错误仅见仓库基线 `registerSW.js` 404；未发现阻塞世界持久化验收的新运行时错误。
+
+## 2026-02-22 Task 24 Orchestrator QA
+
+- Playwright MCP 在 WebGL 长会话中仍偶发 `Target crashed`；重开 tab 后可恢复并继续验证，不影响本次功能结论。
+- 本次图像解析工具对部分现有 PNG 证据返回不稳定（同文件多次结果不一致/不可读），因此最终一致性判断以实时交互验证 + 文件存在性/尺寸校验为主。

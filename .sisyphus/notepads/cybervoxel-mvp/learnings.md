@@ -157,3 +157,9 @@
 - `WorldPersistenceController` 以适配器模式接入控制器最稳妥：控制器负责读取/应用 config + log + simulation state，持久化模块只负责序列化、定时保存、beforeunload/pagehide 触发。
 - NPC/掉落物/怪物状态恢复在 `SimulationEngine.applyPersistedState()` 内集中处理，能避免把状态回填逻辑分散到 UI 或 bridge 层。
 - 为了让“方块差异”覆盖 NPC 行为建造/采集路径，`ClientSimulationBridge.modifyBlock()` 同步写入 `controller.log.insert(blockLog)` 是必要补点，否则自动存档仅包含玩家手动编辑记录。
+
+## 2026-02-22 Task 24 Orchestrator QA
+
+- 在 `VITE_FIXED_MAP_INDEX=12` 下，单机进入后可稳定看到 `AI 决策日志`、10 个 NPC 名单（含 `Neon` 等）和 `10 个 NPC 活跃`，可作为赛博朋克集成流活性证据。
+- 本项目的“向后兼容基础流”可通过主菜单可交互项（`单人游戏` / `上载存档` / `缓存读档`）及从游戏内 `退出` 返回菜单来做无侵入验证。
+- Task 24 三张证据图统一为 1440x900；结合实时交互验证可快速确认证据文件与场景语义一致。

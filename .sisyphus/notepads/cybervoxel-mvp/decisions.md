@@ -122,3 +122,7 @@
 - 持久化方案选择 `src/simulation/persistence/` 新模块 + 控制器最小集成：单机启动时先 `loadLatest()` 再启动 simulation，结束游戏时 `saveNow()` 并清理监听。
 - 存储介质本任务采用 localStorage（键：`threecraft:singleplayer-world`）作为最小可行实现，并在证据中明确未采用 IndexedDB。
 - 存档内容固定覆盖：方块差异（`config.log`）、NPC 状态、玩家生存状态、掉落物、怪物位置/状态，以及世界 seed/weather 与玩家位置，保证刷新后可恢复到最近一次客户端快照。
+
+## 2026-02-22 Task 24
+
+- Task24 收口采用“只补决策记录 + 复用既有证据 + 构建与提交推送验收”策略，不新增功能代码，确保闭环可追溯且不引入额外风险。

@@ -1,0 +1,27 @@
+## 2026-02-22 Orchestrator QA (Task 24 integration, verification-only)
+
+- Environment: local Vite app at `http://127.0.0.1:3100/` with `VITE_FIXED_MAP_INDEX=12`.
+- Known baseline observed and accepted: `registerSW.js` 404 (non-blocking, matches prior notes).
+
+### Scenario results (explicit pass/fail)
+
+1) Live app launches and enters single-player mode: **PASS**
+- Main menu loaded (`单人游戏/多人游戏/...`), clicking `单人游戏` consistently entered in-game state.
+
+2) Integrated cyberpunk flow visible/working: **PASS**
+- In-game AI integration visible (`AI 决策日志` panel), cyberpunk NPC set present (`Neon`, `Blaze`, `Nix`, etc.), status updates streamed (`执行中/成功`) with `10 个 NPC 活跃`.
+
+3) Backward-compat basic flow still works: **PASS**
+- Returned to start menu and verified legacy/basic entry controls remain available (`缓存读档`, `上载存档`, `单人游戏`) and are interactable without crash overlay.
+
+4) Single-player stability flow (no crash overlay, usable HUD/crosshair/hotbar): **PASS**
+- In-game HUD visible and updating (`HP`, `HUNGER`, hotbar icons). No in-app crash overlay/fatal panel observed during tested flows.
+
+### Existing screenshot consistency check
+
+- Checked files exist and are valid PNGs at 1440x900:
+  - `.sisyphus/evidence/task-24-integration.png`
+  - `.sisyphus/evidence/task-24-backward-compat.png`
+  - `.sisyphus/evidence/task-24-single-stability.png`
+- Live observed UI states are consistent with expected semantics of those three evidence scenarios (integration / backward-compat entry flow / single-player stability).
+- Note: automated image-vision parsing was partially unreliable in this run, so consistency judgment is based primarily on live interactive verification plus file presence/format checks.

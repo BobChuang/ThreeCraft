@@ -91,8 +91,17 @@ const parseGoalListFromNextGoal = (nextGoal: string): string[] => {
 	return [normalizeGoalText(normalized)].filter(Boolean);
 };
 
+const isValidWeatherIndex = (value: unknown): value is number => Number.isInteger(value) && (value as number) >= 0 && (value as number) < weatherConfig.length;
+
+const resolvePlayableWeatherIndex = (current: unknown): number => {
+	if (isValidWeatherIndex(current)) return current;
+	const fixedMapIndex = getFixedMapIndex();
+	if (fixedMapIndex !== null) return fixedMapIndex;
+	return Math.floor(Math.random() * weatherConfig.length);
+};
+
 const isCyberpunkSceneSelected = (): boolean => {
-	if (config.weather === null) return false;
+	if (!isValidWeatherIndex(config.weather)) return false;
 	const weatherType = weatherConfig[config.weather];
 	if (!weatherType) return false;
 	return weatherType[3] === 5;
@@ -217,10 +226,7 @@ class Controller {
 		if (config.seed === null) config.seed = Math.random();
 		if (config.cloudSeed === null) config.cloudSeed = Math.random();
 		if (config.treeSeed === null) config.treeSeed = Math.random();
-		if (config.weather === null) {
-			const fixedMapIndex = getFixedMapIndex();
-			config.weather = fixedMapIndex === null ? Math.floor(Math.random() * weatherConfig.length) : fixedMapIndex;
-		}
+		if (!isValidWeatherIndex(config.weather)) config.weather = resolvePlayableWeatherIndex(config.weather);
 		// 载入log
 		this.log.load(config.log);
 		if (!this.multiPlay.working) this.ensureSinglePlayerSimulation();
@@ -398,6 +404,7 @@ class Controller {
 			},
 			applySnapshot: snapshot => {
 				if (!this.simulationEngine) throw new Error('Simulation engine is not ready');
+				const resolvedWeather = isValidWeatherIndex(snapshot.weather) ? snapshot.weather : resolvePlayableWeatherIndex(config.weather);
 				const mutableConfig = config as unknown as {
 					seed: number | null;
 					cloudSeed: number | null;
@@ -409,7 +416,7 @@ class Controller {
 				mutableConfig.seed = snapshot.seed;
 				mutableConfig.cloudSeed = snapshot.cloudSeed;
 				mutableConfig.treeSeed = snapshot.treeSeed;
-				mutableConfig.weather = snapshot.weather;
+				mutableConfig.weather = resolvedWeather;
 				mutableConfig.state.posX = snapshot.playerPosition.x;
 				mutableConfig.state.posY = snapshot.playerPosition.y;
 				mutableConfig.state.posZ = snapshot.playerPosition.z;
