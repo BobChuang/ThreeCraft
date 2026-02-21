@@ -134,9 +134,14 @@
 - Thinking stream rendering is more stable when controller caches per-NPC accumulated chunks and reuses that cache in the `received` phase, instead of replacing with placeholder text.
 - Simulation lifecycle mapping needs to accept both `eventType` (bridge LLM events) and `status` (engine lifecycle forwarding) to keep thinking-stream events reachable across both paths.
 
-
 ## 2026-02-22 Task 20
 
 - 侧边栏日志面板可通过复用 `thinking:state` 与 `simulation:lifecycle` 现有事件流实现，无需新增桥接协议；并需同时兼容 `eventType` / `status` 两种字段来源。
 - 以 `activeRequestIdByNpc + rawByNpc` 维护单 NPC 请求生命周期，能够把 `thinking-stream` 分段内容聚合到 `thinking-complete/error` 的同一条目，便于详情展开查看。
 - Playwright 在该 WebGL 场景下需要启用 SwiftShader 参数（`--use-angle=swiftshader --use-gl=swiftshader`）才能稳定渲染 HUD 并完成筛选截图证据采集。
+
+## 2026-02-22 Task 21
+
+- 任务列表 UI 以控制器侧 `nextGoal` 事件增量跟踪最稳定：将每次新 `nextGoal` 解析为 `current + upcoming`，并把被替换的旧 `current` 归档为 `done`，即可得到只读且有序的 `待办/进行中/完成` 列表。
+- 面板显隐无需新增事件，直接在渲染循环中基于 `possessionController.getPossessedNPCId()` 决定 `taskList.sync(viewModel|null)`，可确保附身即时显示、释放即时隐藏。
+- `nextGoal` 实际文本格式不固定（多行、编号、分隔符），需要做轻量标准化与多策略拆分，避免 UI 只显示原始整段字符串。

@@ -41,6 +41,46 @@ const getFixedMapIndex = () => {
 	return fixedMapIndex;
 };
 
+interface NPCTaskTracker {
+	npcName: string;
+	completedGoals: string[];
+	currentGoal: string | null;
+	upcomingGoals: string[];
+	updatedAt: number;
+}
+
+interface NPCTaskListPanelState {
+	npcName: string;
+	currentGoal: string | null;
+	items: Array<{ text: string; status: 'todo' | 'in-progress' | 'done' }>;
+}
+
+const normalizeGoalText = (value: string): string =>
+	value
+		.trim()
+		.replace(/[\u3000\t]+/g, ' ')
+		.replace(/\s{2,}/g, ' ')
+		.replace(/^[-*•\d.)、\]]+\s*/, '')
+		.replace(/[;；。]+$/, '');
+
+const parseGoalListFromNextGoal = (nextGoal: string): string[] => {
+	const normalized = nextGoal.replaceAll('\r', '').trim();
+	if (!normalized) return [];
+	const byLine = normalized.split('\n').map(normalizeGoalText).filter(Boolean);
+	if (byLine.length > 1) return byLine.slice(0, 8);
+	const numbered = normalized
+		.split(/\s*\d+[.)、]\s*/)
+		.map(normalizeGoalText)
+		.filter(Boolean);
+	if (numbered.length > 1) return numbered.slice(0, 8);
+	const segmented = normalized
+		.split(/\s*(?:->|=>|＞|>|\||;|；)\s*/)
+		.map(normalizeGoalText)
+		.filter(Boolean);
+	if (segmented.length > 1) return segmented.slice(0, 8);
+	return [normalizeGoalText(normalized)].filter(Boolean);
+};
+
 class Controller {
 	ui: UI;
 
@@ -84,6 +124,8 @@ class Controller {
 
 	readonly npcThinkingStreamById: Map<string, string>;
 
+	readonly npcTaskTrackerById: Map<string, NPCTaskTracker>;
+
 	constructor(el: HTMLElement) {
 		// 挂载游戏层和控制器层, 默认看不到
 		[...el.children].forEach(d => d.remove());
@@ -118,6 +160,7 @@ class Controller {
 		this.observerController = new ObserverController(this);
 		this.npcDialogueLog = [];
 		this.npcThinkingStreamById = new Map();
+		this.npcTaskTrackerById = new Map();
 		this.log = new Log([]);
 
 		// 特殊处理VR部分
@@ -209,6 +252,7 @@ class Controller {
 		this.clientEventBus = null;
 		this.npcStateById.clear();
 		this.npcThinkingStreamById.clear();
+		this.npcTaskTrackerById.clear();
 		this.simulationEngine?.stop();
 		this.simulationEngine = null;
 		this.npcRenderer?.clear();
@@ -262,6 +306,7 @@ class Controller {
 			this.npcRenderer.syncSnapshots(snapshots);
 			this.possessionController.syncPossessedStateFromSimulation();
 		}
+		this.ui.taskList.sync(this.getPossessedNPCTaskListState());
 		// 补充人物运动动画
 		this.multiPlay.playersController.render();
 		if (!this.multiPlay.working) this.npcRenderer?.render();
@@ -376,6 +421,8 @@ class Controller {
 		this.npcEventUnsubscribers.push(
 			this.clientEventBus.subscribe(CLIENT_NPC_EVENT_TYPES.NPC_STATE_UPDATE, event => {
 				this.npcStateById.set(event.payload.npcId, event.payload.state);
+				const tracked = this.npcTaskTrackerById.get(event.payload.npcId);
+				if (tracked && tracked.npcName !== event.payload.state.name) tracked.npcName = event.payload.state.name;
 			}),
 			this.clientEventBus.subscribe(CLIENT_NPC_EVENT_TYPES.NPC_THINKING_STATE, event => {
 				const current = this.npcStateById.get(event.payload.npcId);
@@ -423,6 +470,7 @@ class Controller {
 					this.npcRenderer?.showThinkingReasoning(event.payload.npcId, event.payload.reasoning, event.timestamp);
 					this.npcThinkingStreamById.set(event.payload.npcId, event.payload.reasoning.trim().slice(0, 240));
 				}
+				this.updateNPCTaskTracker(event.payload.npcId, event.payload.nextGoal);
 				this.npcRenderer?.showThinkingExecuting(event.payload.npcId, event.payload.action, event.timestamp);
 			}),
 			this.clientEventBus.subscribe(CLIENT_NPC_EVENT_TYPES.SURVIVAL_UPDATE, event => {
@@ -450,6 +498,58 @@ class Controller {
 		const targetId = typeof event.payload.targetNpcId === 'string' ? event.payload.targetNpcId : 'unknown';
 		this.npcDialogueLog.push(`${new Date(event.timestamp).toISOString()} ${sourceId} -> ${targetId}: ${dialogue}`);
 		if (this.npcDialogueLog.length > 100) this.npcDialogueLog.shift();
+	}
+
+	private getPossessedNPCTaskListState(): NPCTaskListPanelState | null {
+		if (config.controller.operation !== 'pc') return null;
+		const possessedNpcId = this.possessionController.getPossessedNPCId();
+		if (!possessedNpcId) return null;
+		const npcName = this.npcStateById.get(possessedNpcId)?.name ?? possessedNpcId;
+		const tracked = this.npcTaskTrackerById.get(possessedNpcId);
+		if (!tracked) {
+			return {
+				npcName,
+				currentGoal: null,
+				items: [],
+			};
+		}
+		tracked.npcName = npcName;
+		const items = [
+			...tracked.completedGoals.map(text => ({ text, status: 'done' as const })),
+			...(tracked.currentGoal ? [{ text: tracked.currentGoal, status: 'in-progress' as const }] : []),
+			...tracked.upcomingGoals.map(text => ({ text, status: 'todo' as const })),
+		].slice(-10);
+		return {
+			npcName: tracked.npcName,
+			currentGoal: tracked.currentGoal,
+			items,
+		};
+	}
+
+	private updateNPCTaskTracker(npcId: string, rawNextGoal: unknown): void {
+		if (typeof rawNextGoal !== 'string') return;
+		const parsedGoals = parseGoalListFromNextGoal(rawNextGoal);
+		if (parsedGoals.length === 0) return;
+		const npcName = this.npcStateById.get(npcId)?.name ?? npcId;
+		const tracker =
+			this.npcTaskTrackerById.get(npcId) ??
+			({
+				npcName,
+				completedGoals: [],
+				currentGoal: null,
+				upcomingGoals: [],
+				updatedAt: 0,
+			} as NPCTaskTracker);
+		tracker.npcName = npcName;
+		const [nextCurrentGoal, ...nextUpcomingGoals] = parsedGoals;
+		if (tracker.currentGoal && tracker.currentGoal !== nextCurrentGoal && !tracker.completedGoals.includes(tracker.currentGoal)) {
+			tracker.completedGoals.push(tracker.currentGoal);
+			if (tracker.completedGoals.length > 8) tracker.completedGoals.shift();
+		}
+		tracker.currentGoal = nextCurrentGoal;
+		tracker.upcomingGoals = nextUpcomingGoals;
+		tracker.updatedAt = Date.now();
+		this.npcTaskTrackerById.set(npcId, tracker);
 	}
 }
 

@@ -7,6 +7,7 @@ import ActonControl from './action';
 import DialoguePanel from './dialogue';
 import DeathOverlay from './death';
 import SidebarLog from './sidebar-log';
+import TaskListPanel from './task-list';
 import { Controller } from '../controller';
 import { config } from '../controller/config';
 
@@ -27,6 +28,8 @@ class UI {
 
 	sidebarLog!: SidebarLog;
 
+	taskList!: TaskListPanel;
+
 	controller!: Controller;
 
 	loadController(controller: Controller) {
@@ -45,6 +48,7 @@ class UI {
 		this.dialogue = new DialoguePanel(document.getElementById('HUD-stage')!);
 		this.death = new DeathOverlay(document.getElementById('HUD-stage')!);
 		this.sidebarLog = new SidebarLog(document.getElementById('HUD-stage')!, npcId => this.controller.getNPCStateFromClientBus(npcId)?.name ?? npcId);
+		this.taskList = new TaskListPanel(document.getElementById('HUD-stage')!);
 		document.oncontextmenu = () => false;
 	}
 
@@ -60,6 +64,7 @@ class UI {
 		this.bag.pause();
 		this.dialogue.close();
 		this.death.close();
+		this.taskList.sync(null);
 	}
 }
 

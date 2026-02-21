@@ -58,6 +58,10 @@ export class PossessionController {
 		return this.active !== null;
 	}
 
+	getPossessedNPCId(): string | null {
+		return this.active?.npcId ?? null;
+	}
+
 	getPossessedNPCName(): string | null {
 		if (!this.active || !this.host.simulationEngine) return null;
 		const npc = this.host.getNPCStateFromClientBus(this.active.npcId) ?? this.host.simulationEngine.getNPCStates().find(item => item.id === this.active?.npcId);
