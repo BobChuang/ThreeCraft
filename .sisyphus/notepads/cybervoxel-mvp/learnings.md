@@ -106,3 +106,13 @@
 - Routing the PC `E` key through action control first (try nearby NPC dialogue, then bag fallback) avoids input conflicts and keeps dialogue interaction scoped to single-player runtime.
 - `NPCConversationHistory` pair logs plus `SimulationEngine.getNPCPairDialogueHistory()` provide a deterministic way to verify NPC→NPC delivery separately from renderer/UI behavior.
 - Playwright evidence is most reliable when triggering a real player message then immediately re-showing the confirmed NPC reply text on the same NPC for screenshot timing within the 5-second bubble window.
+
+## 2026-02-21 Task 17
+
+- Death/respawn flow is safest when modeled as explicit runtime state (`SimulationDeathManager`) instead of inferring from survival HP every frame; this prevents repeated death side effects and keeps respawn timers deterministic.
+- Reusing `SimulationInventoryManager.dropAllForDeath()` plus a centralized drop sweep (`purgeExpiredDrops`) keeps death-drop lifecycle minimal and avoids a second world-item model.
+- UI verification is stable when Playwright drives `simulation.survival.setState(...hp=0)` directly and asserts the overlay + respawn button behavior from browser runtime state.
+
+## 2026-02-21 Task 17 Retry (player death drop gap)
+
+- The minimal safe fix is a single call to `dropAllInventoryOnDeath('player-local', position)` inside `handlePlayerDeath()` before emitting `player:death`, reusing the exact same drop pipeline already used by NPC death.

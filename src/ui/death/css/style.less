@@ -1,0 +1,56 @@
+#death-overlay {
+	position: fixed;
+	inset: 0;
+	display: none;
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+	gap: 16px;
+	background: radial-gradient(circle at center, rgba(38, 8, 8, 0.72) 0%, rgba(4, 0, 0, 0.92) 70%);
+	backdrop-filter: blur(2px);
+	z-index: 99999990;
+}
+
+#death-overlay.active {
+	display: flex;
+	animation: death-fade-in 220ms ease-out;
+}
+
+#death-message {
+	font-size: 40px;
+	letter-spacing: 6px;
+	color: #ffd5d5;
+	text-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+	font-weight: 700;
+}
+
+#death-respawn-btn {
+	padding: 10px 30px;
+	font-size: 18px;
+	font-weight: 700;
+	letter-spacing: 2px;
+	border: 1px solid rgba(255, 178, 178, 0.9);
+	background: linear-gradient(180deg, rgba(92, 12, 12, 0.95), rgba(36, 4, 4, 0.95));
+	color: #fff4f4;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+#death-respawn-btn:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 0 14px rgba(255, 122, 122, 0.55);
+}
+
+#death-respawn-btn:active {
+	transform: translateY(1px);
+}
+
+@keyframes death-fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}

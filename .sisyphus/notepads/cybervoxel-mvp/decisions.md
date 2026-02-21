@@ -76,3 +76,13 @@
 - Kept dialogue UI as a dedicated module (`src/ui/dialogue/`) and integrated it through existing UI/controller wiring instead of embedding logic in bag/action plugins.
 - Extended `npc:dialogue` event payload with `sourceNpcId`/`sourceType` so the same bridge event can represent player→NPC and NPC→NPC flows without adding new event types.
 - Chose capped (10) per-pair dialogue history keyed by normalized NPC id pair to support deterministic evidence retrieval and bounded memory usage.
+
+## 2026-02-21 Task 17
+
+- Added dedicated death module files under `src/simulation/death/` (`death-manager`, `death-constants`, `types`) and kept `index.ts` export-only to preserve modular boundaries.
+- Chose event-driven player death UX (`player:death` / `player:respawn`) and kept respawn point ownership split: `x/z` from simulation constant, `surface_y` resolved in controller via terrain floor height.
+- Implemented NPC death as deterministic sequence: drop all inventory, append death system note into NPC history, schedule 10s respawn at Revival Spring `(0,1,0)`, restore survival, clear inventory, and resume AI ticks.
+
+## 2026-02-21 Task 17 Retry (player death drop gap)
+
+- Standardized player death to share the same drop path as NPC death by invoking `dropAllInventoryOnDeath('player-local', position)` in `handlePlayerDeath()`, avoiding any parallel drop logic.

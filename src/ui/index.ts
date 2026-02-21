@@ -5,6 +5,7 @@ import Bag from './bag';
 import Menu from './menu';
 import ActonControl from './action';
 import DialoguePanel from './dialogue';
+import DeathOverlay from './death';
 import { Controller } from '../controller';
 import { config } from '../controller/config';
 
@@ -20,6 +21,8 @@ class UI {
 	menu!: Menu;
 
 	dialogue!: DialoguePanel;
+
+	death!: DeathOverlay;
 
 	controller!: Controller;
 
@@ -37,6 +40,7 @@ class UI {
 		// 菜单对象
 		this.menu = new Menu(document.getElementById('app')!, this.controller);
 		this.dialogue = new DialoguePanel(document.getElementById('HUD-stage')!);
+		this.death = new DeathOverlay(document.getElementById('HUD-stage')!);
 		document.oncontextmenu = () => false;
 	}
 
@@ -51,6 +55,7 @@ class UI {
 		this.actionControl.pause();
 		this.bag.pause();
 		this.dialogue.close();
+		this.death.close();
 	}
 }
 

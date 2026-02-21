@@ -8,7 +8,7 @@ import { deepCopy } from '../utils/deep-copy';
 import weatherConfig from '../core/weather';
 import Log from './log';
 import MultiPlay from './MultiPlay';
-import { ClientSimulationBridge, SimulationBridgeEvent, SimulationEngine, SimulationNPCState } from '../simulation';
+import { ClientSimulationBridge, PLAYER_RESPAWN_POINT_XZ, SimulationBridgeEvent, SimulationEngine, SimulationNPCState } from '../simulation';
 import { NPCRenderer, toNPCRenderSnapshot } from '../core/npc';
 import { PossessionController } from './possession';
 import { ObserverController } from './observer';
@@ -272,15 +272,53 @@ class Controller {
 	}
 
 	private handleSimulationEvent(event: SimulationBridgeEvent): void {
-		if (event.type !== 'npc:dialogue') return;
-		const npcId = typeof event.payload.npcId === 'string' ? event.payload.npcId : '';
-		const dialogue = typeof event.payload.dialogue === 'string' ? event.payload.dialogue : '';
-		if (!npcId || !dialogue) return;
-		this.npcRenderer?.showDialogue(npcId, dialogue, event.timestamp);
-		const sourceId = typeof event.payload.sourceNpcId === 'string' ? event.payload.sourceNpcId : npcId;
-		const targetId = typeof event.payload.targetNpcId === 'string' ? event.payload.targetNpcId : 'unknown';
-		this.npcDialogueLog.push(`${new Date(event.timestamp).toISOString()} ${sourceId} -> ${targetId}: ${dialogue}`);
-		if (this.npcDialogueLog.length > 100) this.npcDialogueLog.shift();
+		if (event.type === 'npc:dialogue') {
+			const npcId = typeof event.payload.npcId === 'string' ? event.payload.npcId : '';
+			const dialogue = typeof event.payload.dialogue === 'string' ? event.payload.dialogue : '';
+			if (!npcId || !dialogue) return;
+			this.npcRenderer?.showDialogue(npcId, dialogue, event.timestamp);
+			const sourceId = typeof event.payload.sourceNpcId === 'string' ? event.payload.sourceNpcId : npcId;
+			const targetId = typeof event.payload.targetNpcId === 'string' ? event.payload.targetNpcId : 'unknown';
+			this.npcDialogueLog.push(`${new Date(event.timestamp).toISOString()} ${sourceId} -> ${targetId}: ${dialogue}`);
+			if (this.npcDialogueLog.length > 100) this.npcDialogueLog.shift();
+			return;
+		}
+		if (event.type === 'player:death') {
+			if (this.multiPlay.working || !this.simulationEngine || this.simulationEngine.isPlayerDead() === false) return;
+			if (this.possessionController.isPossessing()) this.possessionController.reset();
+			if (this.observerController.isObserverMode()) this.observerController.reset();
+			this.ui.dialogue.close();
+			this.ui.death.open({
+				onRespawn: () => this.handlePlayerRespawnRequest(),
+			});
+			this.ui.actionControl.pause();
+			return;
+		}
+		if (event.type === 'player:respawn') {
+			this.ui.death.close();
+			if (this.running) this.ui.actionControl.listen();
+		}
+	}
+
+	private handlePlayerRespawnRequest(): void {
+		if (!this.simulationEngine || !this.core || this.multiPlay.working) return;
+		const surfaceY = this.core.terrain.getFloorHeight(PLAYER_RESPAWN_POINT_XZ.x, PLAYER_RESPAWN_POINT_XZ.z) + 1;
+		const respawnPosition = {
+			x: PLAYER_RESPAWN_POINT_XZ.x,
+			y: surfaceY,
+			z: PLAYER_RESPAWN_POINT_XZ.z,
+		};
+		const success = this.simulationEngine.respawnPlayer(respawnPosition);
+		if (!success) return;
+		config.state.posX = respawnPosition.x;
+		config.state.posY = respawnPosition.y;
+		config.state.posZ = respawnPosition.z;
+		this.core.camera.position.set(respawnPosition.x, respawnPosition.y, respawnPosition.z);
+		this.gameController.moveController.jumping = true;
+		this.uiController.ui.bag.items = Array(10).fill(null);
+		this.uiController.ui.bag.update();
+		this.uiController.ui.bag.highlight();
+		this.ui.menu.setNotify('已在复活点重生', 1200, this.ui.actionControl.elem);
 	}
 
 	ensureSinglePlayerNPCs() {

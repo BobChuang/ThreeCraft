@@ -71,4 +71,46 @@ export class SimulationInventoryManager {
 		this.worldDrops.push(drop);
 		return drop;
 	}
+
+	clearInventory(entityId: string): void {
+		const inventory = this.inventories.get(entityId) ?? this.registerEntity(entityId);
+		inventory.forEach(slot => {
+			slot.type = null;
+			slot.quantity = 0;
+		});
+	}
+
+	purgeExpiredDrops(maxAgeMs: number, now = Date.now()): SimulationDroppedItem[] {
+		if (maxAgeMs <= 0 || this.worldDrops.length === 0) return [];
+		const expired: SimulationDroppedItem[] = [];
+		for (let index = this.worldDrops.length - 1; index >= 0; index -= 1) {
+			const drop = this.worldDrops[index];
+			if (now - drop.droppedAt >= maxAgeMs) {
+				expired.push(this.worldDrops[index]);
+				this.worldDrops.splice(index, 1);
+			}
+		}
+		return expired;
+	}
+
+	collectDrop(dropId: string, collectorId: string): SimulationDroppedItem | null {
+		const dropIndex = this.worldDrops.findIndex(drop => drop.id === dropId);
+		if (dropIndex < 0) return null;
+		const drop = this.worldDrops[dropIndex];
+		const addResult = this.addItem(collectorId, drop.type, drop.quantity);
+		if (addResult.accepted <= 0) return null;
+		if (addResult.accepted >= drop.quantity) {
+			this.worldDrops.splice(dropIndex, 1);
+			return {
+				...drop,
+				position: { ...drop.position },
+			};
+		}
+		drop.quantity -= addResult.accepted;
+		return {
+			...drop,
+			quantity: addResult.accepted,
+			position: { ...drop.position },
+		};
+	}
 }

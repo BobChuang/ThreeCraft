@@ -4,6 +4,7 @@ export { SimulationInventoryManager, addItemToInventory, createInventorySlots } 
 export type { SimulationDroppedItem, SimulationInventoryAddResult, SimulationInventorySlot } from './inventory';
 export { SimulationSurvivalManager, createDefaultSurvivalState } from './survival';
 export { SimulationMonsterManager, MAX_ACTIVE_MONSTERS, MONSTER_DEFINITIONS } from './monsters';
+export { PLAYER_RESPAWN_POINT_XZ } from './death';
 export type { SimulationSurvivalState, SurvivalFoodResult, SurvivalTickResult } from './survival';
 export type { SimulationMonsterState, MonsterType, MonsterPhase, MonsterAttackEvent } from './monsters';
 export { ClientSimulationBridge } from './bridges/client-bridge';

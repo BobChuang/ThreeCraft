@@ -145,6 +145,15 @@ export class NPCDecisionLoop {
 		});
 	}
 
+	appendSystemHistory(npcId: string, content: string): void {
+		if (!content.trim()) return;
+		this.history.append(npcId, {
+			role: 'system',
+			content,
+			timestamp: this.now(),
+		});
+	}
+
 	getPairHistory(leftNpcId: string, rightNpcId: string): PairDialogueMessage[] {
 		return this.history.getPairDialogue(leftNpcId, rightNpcId);
 	}

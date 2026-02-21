@@ -1,0 +1,41 @@
+Task 17 Drop / Death Evidence
+Date: 2026-02-21
+
+[Playwright Player-Death Drop Sanity]
+URL: http://127.0.0.1:4173
+Scenario:
+1) add inventory to player-local (`synth-ration x4`)
+2) force player hp=0
+3) verify world drop count increases at death position
+4) verify player is dead and inventory is emptied while dead
+5) verify death UI is visible with exact text
+
+Observed result JSON:
+{"ok":true,"beforeDropCount":0,"afterDropCount":1,"dropDelta":1,"latestDrop":{"id":"drop-player-local-synth-ration-1771687045110-0a9spm","ownerId":"player-local","type":"synth-ration","quantity":4,"position":{"x":0,"y":4.602400000000001,"z":0},"droppedAt":1771687045110},"playerDead":true,"playerInventoryWhileDead":[],"deathOverlayVisible":true,"deathText":"你已死亡"}
+
+Assertions:
+- Player death triggers inventory drop: PASS
+- Dropped item ownerId is `player-local` and quantity preserved: PASS
+- Player inventory emptied during death state: PASS
+- Death overlay text is "你已死亡": PASS
+
+[Playwright Simulation Sanity]
+URL: http://127.0.0.1:4173
+Scenario:
+1) add inventory to npc-01
+2) force npc-01 hp=0
+3) verify death drop created
+4) verify death note appended to npc dialogue history
+5) move npc-02 to dropped item to verify pickup by other entity
+6) age one manual drop beyond 5 minutes and verify despawn cleanup
+7) fast-forward npc-01 respawn timer and verify revival spring restore
+
+Observed result JSON:
+{"ok":true,"dropsAfterDeath":1,"dropTypesAfterDeath":["synth-ration"],"deathRecorded":true,"npc2InventoryAfterPickup":[{"type":"synth-ration","quantity":3,"maxStack":16}],"dropsAfterPickup":0,"dropsAfterDespawn":0,"npc1AfterRespawn":{"position":{"x":0,"y":1,"z":0},"hp":100,"hunger":100,"inventoryCount":0}}
+
+Assertions:
+- NPC death triggers inventory drop: PASS
+- Death message appended into NPC history: PASS
+- Other entity (npc-02) picks dropped items: PASS
+- Expired drops (>5 min) are cleaned: PASS
+- NPC respawns at Revival Spring (0,1,0) after timer and inventory cleared: PASS

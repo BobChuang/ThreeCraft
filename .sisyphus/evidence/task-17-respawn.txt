@@ -1,0 +1,29 @@
+Task 17 Respawn Evidence
+Date: 2026-02-21
+
+[Build]
+Command: pnpm build
+Result: PASS
+Key output:
+- vite v2.9.18 building for production...
+- ✓ 367 modules transformed.
+- PWA v0.12.8 generateSW complete
+
+[Playwright UI Sanity]
+URL: http://127.0.0.1:4173
+Scenario:
+1) start single-player runtime from browser context
+2) force player hp=0
+3) wait for death tick
+4) assert overlay text and visibility
+5) click respawn button
+6) assert hp/hunger/position reset
+
+Observed result JSON:
+{"ok":true,"before":{"dead":true,"visible":true,"text":"你已死亡","survival":{"hp":0,"maxHp":100,"hunger":0,"maxHunger":100}},"after":{"dead":false,"visible":false,"survival":{"hp":100,"maxHp":100,"hunger":50,"maxHunger":100},"position":{"x":0,"y":1.6024000000000003,"z":0}}}
+
+Assertions:
+- Death overlay shown with exact text "你已死亡": PASS
+- Respawn button closes overlay: PASS
+- Respawn restores HP=100 and hunger=50: PASS
+- Respawn position x/z reset to (0,0) with terrain surface y: PASS

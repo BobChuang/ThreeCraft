@@ -5,6 +5,7 @@ import { getInventoryItemDefinition, SimulationDroppedItem, SimulationInventoryA
 import { NPCDecisionLoop, ConversationMessage } from './npc-ai';
 import { createDefaultSurvivalState, SimulationSurvivalManager } from './survival';
 import { SimulationMonsterManager, SimulationMonsterState } from './monsters';
+import { DROP_PICKUP_RADIUS, NPC_RESPAWN_DELAY_MS, NPC_REVIVAL_SPRING_POSITION, SimulationDeathManager, WORLD_DROP_DESPAWN_MS } from './death';
 
 const calculateDistance = (a: SimulationVector3, b: SimulationVector3): number => {
 	const dx = a.x - b.x;
@@ -44,9 +45,13 @@ export class SimulationEngine {
 
 	readonly monsters: SimulationMonsterManager;
 
+	readonly death: SimulationDeathManager;
+
 	private previousTickAt: number | null;
 
 	private readonly pausedNPCDecisionIds: Set<string>;
+
+	private readonly npcRespawnAtById: Map<string, number>;
 
 	constructor(bridge: ISimulationBridge, options: SimulationEngineOptions = {}) {
 		this.bridge = bridge;
@@ -57,6 +62,7 @@ export class SimulationEngine {
 		this.previousTickAt = null;
 		this.observers = options.initialObservers ?? [];
 		this.pausedNPCDecisionIds = new Set();
+		this.npcRespawnAtById = new Map();
 		this.npcRegistry = createInitialNPCRegistry();
 		this.decisionLoop = new NPCDecisionLoop(bridge, {
 			useStubBrain: this.useStubBrain,
@@ -92,6 +98,7 @@ export class SimulationEngine {
 		});
 		this.inventory = new SimulationInventoryManager();
 		this.survival = new SimulationSurvivalManager();
+		this.death = new SimulationDeathManager();
 		this.monsters = new SimulationMonsterManager({
 			onAttack: attack => {
 				const result = this.survival.applyDamage(attack.targetEntityId, attack.damage);
@@ -269,6 +276,34 @@ export class SimulationEngine {
 		return drops;
 	}
 
+	isPlayerDead(): boolean {
+		return this.death.isDead('player-local');
+	}
+
+	respawnPlayer(position: SimulationVector3): boolean {
+		if (!this.death.isDead('player-local')) return false;
+		this.death.clearDeath('player-local');
+		this.inventory.clearInventory('player-local');
+		const survival = this.survival.setState('player-local', {
+			hp: 100,
+			maxHp: 100,
+			hunger: 50,
+			maxHunger: 100,
+		});
+		this.emit('survival:update', {
+			entityId: 'player-local',
+			hp: survival.hp,
+			hunger: survival.hunger,
+		});
+		this.emit('player:respawn', {
+			entityId: 'player-local',
+			position: { ...position },
+			hp: survival.hp,
+			hunger: survival.hunger,
+		});
+		return true;
+	}
+
 	consumeFood(entityId: string, itemType: string): boolean {
 		const itemDefinition = getInventoryItemDefinition(itemType);
 		if (!itemDefinition.hungerRestore || itemDefinition.hungerRestore <= 0) return false;
@@ -295,13 +330,16 @@ export class SimulationEngine {
 		const elapsedMs = this.previousTickAt === null ? this.tickIntervalMs : now - this.previousTickAt;
 		this.previousTickAt = now;
 
-		const playerSurvival = this.survival.tickEntity('player-local', elapsedMs);
-		if (playerSurvival.changed) {
-			this.emit('survival:update', {
-				entityId: 'player-local',
-				hp: playerSurvival.state.hp,
-				hunger: playerSurvival.state.hunger,
-			});
+		if (!this.death.isDead('player-local')) {
+			const playerSurvival = this.survival.tickEntity('player-local', elapsedMs);
+			if (playerSurvival.changed) {
+				this.emit('survival:update', {
+					entityId: 'player-local',
+					hp: playerSurvival.state.hp,
+					hunger: playerSurvival.state.hunger,
+				});
+			}
+			if (playerSurvival.state.hp <= 0) this.handlePlayerDeath(now);
 		}
 
 		const npcs = [...this.npcRegistry.values()];
@@ -323,6 +361,10 @@ export class SimulationEngine {
 		});
 		const activeNPCs: SimulationNPCState[] = [];
 		npcs.forEach(npc => {
+			if (this.death.isDead(npc.id)) {
+				if (now >= (this.npcRespawnAtById.get(npc.id) ?? Number.POSITIVE_INFINITY)) this.respawnNPC(npc, now);
+				return;
+			}
 			const survivalUpdate = this.survival.tickEntity(npc.id, elapsedMs);
 			npc.survival = survivalUpdate.state;
 			if (survivalUpdate.changed) {
@@ -332,6 +374,10 @@ export class SimulationEngine {
 					hunger: npc.survival.hunger,
 				});
 			}
+			if (npc.survival.hp <= 0) {
+				this.handleNPCDeath(npc, now);
+				return;
+			}
 			npc.lastTickAt = Date.now();
 			npc.tickCount += 1;
 			const sleeping = this.shouldSleepByObserverDistance(npc.position);
@@ -339,7 +385,88 @@ export class SimulationEngine {
 			this.emit('simulation:npc-tick', { npcId: npc.id, tickCount: npc.tickCount, sleeping });
 			if (!sleeping && !this.pausedNPCDecisionIds.has(npc.id)) activeNPCs.push(npc);
 		});
+		this.inventory.purgeExpiredDrops(WORLD_DROP_DESPAWN_MS, now);
+		this.collectNearbyDrops();
 		await Promise.all(activeNPCs.map(npc => this.processNPCDecision(npc, npcs)));
+	}
+
+	private collectNearbyDrops(): void {
+		const drops = this.inventory.getWorldDrops();
+		if (drops.length === 0) return;
+		const collectors: Array<{ entityId: string; position: SimulationVector3 }> = [];
+		if (!this.death.isDead('player-local')) {
+			collectors.push({
+				entityId: 'player-local',
+				position: this.observers[0] ?? { x: 0, y: 1, z: 0 },
+			});
+		}
+		this.npcRegistry.forEach(npc => {
+			if (this.death.isDead(npc.id)) return;
+			collectors.push({
+				entityId: npc.id,
+				position: npc.position,
+			});
+		});
+		drops.forEach(drop => {
+			const collector = collectors.find(item => calculateDistance(item.position, drop.position) <= DROP_PICKUP_RADIUS);
+			if (!collector) return;
+			const collected = this.inventory.collectDrop(drop.id, collector.entityId);
+			if (!collected) return;
+			this.refreshNPCInventory(collector.entityId);
+		});
+	}
+
+	private handlePlayerDeath(now: number): void {
+		if (this.death.isDead('player-local')) return;
+		const position = this.observers[0] ?? { x: 0, y: 1, z: 0 };
+		this.death.markDead('player-local', position, now);
+		this.dropAllInventoryOnDeath('player-local', position);
+		this.emit('player:death', {
+			entityId: 'player-local',
+			position: { ...position },
+			diedAt: now,
+		});
+	}
+
+	private handleNPCDeath(npc: SimulationNPCState, now: number): void {
+		if (this.death.isDead(npc.id)) return;
+		this.death.markDead(npc.id, npc.position, now);
+		this.dropAllInventoryOnDeath(npc.id, npc.position);
+		npc.inventory = this.inventory.getInventory(npc.id);
+		npc.thinkingState = 'idle';
+		npc.isSleeping = true;
+		const respawnAt = now + NPC_RESPAWN_DELAY_MS;
+		this.npcRespawnAtById.set(npc.id, respawnAt);
+		this.decisionLoop.appendSystemHistory(npc.id, `${npc.name} died and will respawn at Revival Spring.`);
+		this.emit('npc:death', {
+			entityId: npc.id,
+			position: { ...npc.position },
+			diedAt: now,
+			respawnAt,
+		});
+	}
+
+	private respawnNPC(npc: SimulationNPCState, now: number): void {
+		this.death.clearDeath(npc.id);
+		this.npcRespawnAtById.delete(npc.id);
+		npc.position = { ...NPC_REVIVAL_SPRING_POSITION };
+		this.inventory.clearInventory(npc.id);
+		npc.inventory = this.inventory.getInventory(npc.id);
+		npc.survival = this.survival.setState(npc.id, createDefaultSurvivalState());
+		npc.thinkingState = 'idle';
+		npc.isSleeping = false;
+		npc.lastTickAt = now;
+		this.emit('survival:update', {
+			entityId: npc.id,
+			hp: npc.survival.hp,
+			hunger: npc.survival.hunger,
+		});
+		this.emit('npc:respawn', {
+			entityId: npc.id,
+			position: { ...npc.position },
+			hp: npc.survival.hp,
+			hunger: npc.survival.hunger,
+		});
 	}
 
 	private shouldSleepByObserverDistance(position: SimulationVector3): boolean {

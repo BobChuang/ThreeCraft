@@ -36,6 +36,33 @@ export interface NPCTickPayload {
 	sleeping: boolean;
 }
 
+export interface PlayerDeathPayload {
+	entityId: 'player-local';
+	position: SimulationNPCState['position'];
+	diedAt: number;
+}
+
+export interface PlayerRespawnPayload {
+	entityId: 'player-local';
+	position: SimulationNPCState['position'];
+	hp: number;
+	hunger: number;
+}
+
+export interface NPCDeathPayload {
+	entityId: string;
+	position: SimulationNPCState['position'];
+	diedAt: number;
+	respawnAt: number;
+}
+
+export interface NPCRespawnPayload {
+	entityId: string;
+	position: SimulationNPCState['position'];
+	hp: number;
+	hunger: number;
+}
+
 export type InventoryDropPayload = SimulationDroppedItem;
 
 export interface MonsterStatePayload {
@@ -56,6 +83,10 @@ export type SimulationEventType =
 	| 'simulation:npc-tick'
 	| 'simulation:lifecycle'
 	| 'inventory:drop'
+	| 'player:death'
+	| 'player:respawn'
+	| 'npc:death'
+	| 'npc:respawn'
 	| 'monster:state'
 	| 'monster:attack';
 
@@ -67,6 +98,10 @@ export type SimulationEventPayloadMap = {
 	'simulation:npc-tick': NPCTickPayload;
 	'simulation:lifecycle': Record<string, unknown>;
 	'inventory:drop': InventoryDropPayload;
+	'player:death': PlayerDeathPayload;
+	'player:respawn': PlayerRespawnPayload;
+	'npc:death': NPCDeathPayload;
+	'npc:respawn': NPCRespawnPayload;
 	'monster:state': MonsterStatePayload;
 	'monster:attack': MonsterAttackPayload;
 };

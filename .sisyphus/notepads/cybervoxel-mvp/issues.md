@@ -55,3 +55,11 @@
 
 - Playwright MCP had intermittent `Target crashed` failures during longer wait-heavy browser runs; a shorter deterministic interaction sequence (direct controller-driven positioning + dialogue trigger + immediate screenshot) was required for stable evidence capture.
 - Local Vite runtime still reports the known `registerSW.js` 404 console error during QA runs; this baseline warning is unrelated to Task 12 dialogue functionality.
+
+## 2026-02-21 Task 17
+
+- Local dev runtime still emits the known baseline `registerSW.js` 404 error while validating death overlay flows in Playwright; it remains non-blocking and unrelated to Task 17 logic.
+
+## 2026-02-21 Task 17 Retry (player death drop gap)
+
+- In respawn-at-origin flows, if death occurs very close to respawn position, the player can quickly re-collect their own drop after revival due to shared pickup rules; this is expected under current acceptance scope and does not block death-drop emission correctness.
