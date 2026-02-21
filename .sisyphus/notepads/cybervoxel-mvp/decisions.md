@@ -138,3 +138,7 @@
 - 选择仅在 `src/core/npc/renderer.ts`、`src/core/npc/entity.ts`、`src/simulation/npc-ai/behaviors/shared.ts` 做最小性能改动，避免扩大到联机/协议或其他任务范围。
 - NPC 渲染裁剪策略采用 `spawnDistance = base + 16`、`despawnDistance = base + 24`，以可预测的滞回区间平衡性能与视觉稳定性。
 - 保持现有 sleep/wake 语义不变，通过“远距离全量休眠验证 + thinking-active=0”证明离观察者过远时不会持续触发 NPC 活跃决策。
+
+## 2026-02-22 Task 26 决策补充
+
+- 将距离平方计算提取到 `renderer-math.ts`，把渲染器类中热路径数学逻辑外置，便于复用并降低 `renderer.ts` 局部复杂度。
