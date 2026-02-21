@@ -20,6 +20,8 @@ export interface NPCDialoguePayload {
 	npcId: string;
 	dialogue: string;
 	targetNpcId?: string;
+	sourceNpcId?: string;
+	sourceType?: 'npc' | 'player';
 }
 
 export interface SurvivalUpdatePayload {

@@ -3,11 +3,12 @@ import { ISimulationBridge } from '../contracts/simulation-bridge';
 import { SimulationNPCState } from '../npc-state';
 import { NPCPersonaDefinition, npcPersonas } from '../personas';
 import { getStubBrainDecision } from '../stub-brain';
-import { ConversationMessage, NPCConversationHistory } from './conversation-history';
+import { ConversationMessage, NPCConversationHistory, PairDialogueMessage } from './conversation-history';
 import { executeNPCAction, NPCActionExecutionResult } from './execute-action';
 import { observeNPCContext } from './observe';
 import { buildNPCPrompt } from './prompt-builder';
 import { validateNPCAction } from './validation';
+import type { NPCActionValidationFailure } from './validation';
 
 export interface NPCDecisionLoopOptions {
 	decisionIntervalMs?: number;
@@ -92,6 +93,8 @@ export class NPCDecisionLoop {
 
 	private readonly actionTickByNpc: Map<string, number>;
 
+	private readonly pendingPlayerDialogueByNpc: Map<string, ConversationMessage[]>;
+
 	constructor(bridge: ISimulationBridge, options: NPCDecisionLoopOptions = {}) {
 		this.bridge = bridge;
 		this.decisionIntervalMs = options.decisionIntervalMs ?? DEFAULT_DECISION_INTERVAL_MS;
@@ -108,10 +111,42 @@ export class NPCDecisionLoop {
 		this.nextDecisionAt = new Map();
 		this.correctiveContextByNpc = new Map();
 		this.actionTickByNpc = new Map();
+		this.pendingPlayerDialogueByNpc = new Map();
 	}
 
 	getHistory(npcId: string): ConversationMessage[] {
 		return this.history.get(npcId);
+	}
+
+	queuePlayerDialogue(targetNpcId: string, content: string): void {
+		const queue = this.pendingPlayerDialogueByNpc.get(targetNpcId) ?? [];
+		const entry: ConversationMessage = {
+			role: 'user',
+			content,
+			timestamp: this.now(),
+		};
+		const nextQueue = [...queue, entry].slice(-10);
+		this.pendingPlayerDialogueByNpc.set(targetNpcId, nextQueue);
+		this.history.appendPairDialogue({
+			speakerId: 'player-local',
+			listenerId: targetNpcId,
+			content,
+			timestamp: entry.timestamp,
+		});
+		this.nextDecisionAt.set(targetNpcId, this.now());
+	}
+
+	recordDialogueDelivery(speakerId: string, listenerId: string, content: string): void {
+		this.history.appendPairDialogue({
+			speakerId,
+			listenerId,
+			content,
+			timestamp: this.now(),
+		});
+	}
+
+	getPairHistory(leftNpcId: string, rightNpcId: string): PairDialogueMessage[] {
+		return this.history.getPairDialogue(leftNpcId, rightNpcId);
 	}
 
 	async runDecision(npc: SimulationNPCState, allNPCs: SimulationNPCState[]): Promise<NPCDecisionResult> {
@@ -128,13 +163,26 @@ export class NPCDecisionLoop {
 			this.emitLifecycle('npc:decision-prompt', { npcId: npc.id });
 			const persona = resolvePersona(npc);
 			const correctiveContext = this.correctiveContextByNpc.get(npc.id);
-			const prompt = buildNPCPrompt(persona, npc, observation, this.history.get(npc.id), correctiveContext);
+			const pendingPlayerMessages = this.pendingPlayerDialogueByNpc.get(npc.id) ?? [];
+			const prompt = buildNPCPrompt(persona, npc, observation, this.history.get(npc.id), this.history.getDialogueContextForNpc(npc.id), pendingPlayerMessages, correctiveContext);
 			this.correctiveContextByNpc.delete(npc.id);
+			this.pendingPlayerDialogueByNpc.set(npc.id, []);
 			this.history.append(npc.id, { role: 'user', content: prompt, timestamp: this.now() });
 
 			this.emitLifecycle('npc:decision-call', { npcId: npc.id, useStubBrain: this.useStubBrain });
+			const latestPlayerMessage = pendingPlayerMessages[pendingPlayerMessages.length - 1]?.content?.trim();
 			const rawContent = this.useStubBrain
-				? JSON.stringify(toStubAction(getStubBrainDecision(npc), npc))
+				? JSON.stringify(
+						latestPlayerMessage
+							? {
+									action: 'dialogue',
+									target: { npcId: 'player-local' },
+									dialogue: `Copy that. I heard: ${latestPlayerMessage.slice(0, 80)}`,
+									reasoning: 'Responding to nearby player message.',
+									nextGoal: 'Resume patrol after confirmation.',
+							  }
+							: toStubAction(getStubBrainDecision(npc), npc)
+				  )
 				: (await this.bridge.callLLM(prompt, { npcId: npc.id, timeoutMs: this.decisionIntervalMs })).content;
 			this.history.append(npc.id, { role: 'assistant', content: rawContent, timestamp: this.now() });
 
@@ -144,16 +192,17 @@ export class NPCDecisionLoop {
 				rawContent,
 			});
 			if (!validation.valid) {
-				this.correctiveContextByNpc.set(npc.id, validation.correctiveContext);
+				const failure = validation as NPCActionValidationFailure;
+				this.correctiveContextByNpc.set(npc.id, failure.correctiveContext);
 				this.emitLifecycle('npc:decision-warning', {
 					npcId: npc.id,
-					reason: validation.reason,
-					warning: validation.warning,
+					reason: failure.reason,
+					warning: failure.warning,
 				});
 				this.transitionThinking(npc, 'executing');
 				const fallbackAction: NPCAction = {
 					action: 'idle',
-					reasoning: `Fallback idle: ${validation.reason}`,
+					reasoning: `Fallback idle: ${failure.reason}`,
 					nextGoal: 'Retry with corrective context',
 				};
 				const fallbackExecution = await executeNPCAction(this.bridge, npc, fallbackAction, observation, {

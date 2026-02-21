@@ -50,3 +50,8 @@
 ## 2026-02-21 Task 16
 
 - Deterministic evidence generation through a temporary simulation compile still encounters pre-existing `NPCActionValidationResult` narrowing errors in `src/simulation/npc-ai/decision-loop.ts`; task evidence was produced via isolated monster-manager compilation path to avoid unrelated baseline typing noise.
+
+## 2026-02-21 Task 12
+
+- Playwright MCP had intermittent `Target crashed` failures during longer wait-heavy browser runs; a shorter deterministic interaction sequence (direct controller-driven positioning + dialogue trigger + immediate screenshot) was required for stable evidence capture.
+- Local Vite runtime still reports the known `registerSW.js` 404 console error during QA runs; this baseline warning is unrelated to Task 12 dialogue functionality.

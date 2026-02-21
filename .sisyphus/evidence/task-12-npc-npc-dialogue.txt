@@ -1,0 +1,5 @@
+command: deterministic node simulation task12 npc->npc dialogue
+dialogue_event={"npcId":"npc-01","targetNpcId":"npc-02","dialogue":"Need supplies at gate A.","sourceType":"npc"}
+pair_history_count=5
+pair_history_last={"speakerId":"npc-01","listenerId":"npc-02","content":"Need supplies at gate A.","timestamp":1771682759979}
+npc_to_npc_ok=true

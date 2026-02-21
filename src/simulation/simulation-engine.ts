@@ -205,6 +205,25 @@ export class SimulationEngine {
 		return this.decisionLoop.getHistory(npcId);
 	}
 
+	submitPlayerDialogue(targetNpcId: string, content: string): boolean {
+		const npc = this.npcRegistry.get(targetNpcId);
+		const normalized = content.trim();
+		if (!npc || !normalized) return false;
+		this.decisionLoop.queuePlayerDialogue(targetNpcId, normalized);
+		this.emit('npc:dialogue', {
+			npcId: targetNpcId,
+			dialogue: `Player: ${normalized}`,
+			targetNpcId,
+			sourceNpcId: 'player-local',
+			sourceType: 'player',
+		});
+		return true;
+	}
+
+	getNPCPairDialogueHistory(leftNpcId: string, rightNpcId: string) {
+		return this.decisionLoop.getPairHistory(leftNpcId, rightNpcId);
+	}
+
 	setNPCDecisionPaused(npcId: string, paused: boolean): void {
 		if (!this.npcRegistry.has(npcId)) return;
 		if (paused) {
@@ -347,10 +366,16 @@ export class SimulationEngine {
 			nextGoal: result.action?.nextGoal,
 		});
 		if (result.action?.action === 'dialogue' && result.action.dialogue) {
+			const targetNpcId = result.action.target?.npcId;
+			if (targetNpcId && this.npcRegistry.has(targetNpcId) && targetNpcId !== npc.id) {
+				this.decisionLoop.recordDialogueDelivery(npc.id, targetNpcId, result.action.dialogue);
+			}
 			this.emit('npc:dialogue', {
 				npcId: npc.id,
 				dialogue: result.action.dialogue,
-				targetNpcId: result.action.target?.npcId,
+				targetNpcId,
+				sourceNpcId: npc.id,
+				sourceType: 'npc',
 			});
 		}
 	}

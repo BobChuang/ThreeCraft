@@ -70,3 +70,9 @@
 - Implemented monster runtime in a dedicated `src/simulation/monsters/` module (`catalog`, `types`, `manager`, `index`) and kept AI deterministic (idle/wander, aggro at 12, melee at 2 with 2s cooldown, disengage at 20+).
 - Chose to integrate monster rendering through `src/core/npc/renderer.ts` using a new `MonsterEntity` class and typed snapshot flags (`entityType`, `monsterType`) instead of creating a separate renderer pipeline.
 - Kept death-drop logic scoped to Task 16 by adding a lightweight world-drop helper in inventory manager and triggering 50% Synth-Ration drop from `SimulationMonsterManager.damageMonster()`.
+
+## 2026-02-21 Task 12
+
+- Kept dialogue UI as a dedicated module (`src/ui/dialogue/`) and integrated it through existing UI/controller wiring instead of embedding logic in bag/action plugins.
+- Extended `npc:dialogue` event payload with `sourceNpcId`/`sourceType` so the same bridge event can represent player→NPC and NPC→NPC flows without adding new event types.
+- Chose capped (10) per-pair dialogue history keyed by normalized NPC id pair to support deterministic evidence retrieval and bounded memory usage.

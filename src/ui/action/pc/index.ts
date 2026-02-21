@@ -19,9 +19,9 @@ class ActionPluginPc {
 
 	mouseMoveListener: (e: MouseEvent) => void;
 
-	clickLeftInterval: NodeJS.Timer;
+	clickLeftInterval: ReturnType<typeof setInterval> | null;
 
-	clickRightInterval: NodeJS.Timer;
+	clickRightInterval: ReturnType<typeof setInterval> | null;
 
 	constructor(el: HTMLElement, controller: Controller) {
 		this.elem = el;
@@ -75,8 +75,9 @@ class ActionPluginPc {
 	}
 
 	// 前后左右上下按键按下时注册动作
-	static getKeyListener(self) {
-		return e => {
+	static getKeyListener(self: ActionPluginPc) {
+		return (e: KeyboardEvent) => {
+			if (self.controller.ui.dialogue.isOpen()) return;
 			if (e.key === 'Tab') {
 				e.preventDefault();
 				return;
@@ -97,11 +98,16 @@ class ActionPluginPc {
 	}
 
 	// 前后左右上下按键弹起时取消动作
-	static getKeyUpListener(self) {
-		return e => {
+	static getKeyUpListener(self: ActionPluginPc) {
+		return (e: KeyboardEvent) => {
+			if (self.controller.ui.dialogue.isOpen() && e.key !== 'Escape') return;
 			if (e.key === 'Tab') {
 				e.preventDefault();
 				self.controller.possessionController.handleToggleRequest();
+				return;
+			}
+			if (e.key === 'e' || e.key === 'E') {
+				if (!self.controller.tryOpenDialogueWithNearbyNPC()) self.controller.uiController.ui.bag.toggleBag();
 				return;
 			}
 			if (self.controller.uiController.ui.bag.bagBox.working) return;
@@ -114,8 +120,8 @@ class ActionPluginPc {
 	}
 
 	// 鼠标按下时注册动作
-	static getClickListener(self) {
-		return e => {
+	static getClickListener(self: ActionPluginPc) {
+		return (e: MouseEvent) => {
 			e.preventDefault();
 			e.stopPropagation();
 			if (!document.pointerLockElement) {
@@ -141,8 +147,8 @@ class ActionPluginPc {
 	}
 
 	// 鼠标弹起时取消动作
-	static getClickUpListener(self) {
-		return e => {
+	static getClickUpListener(self: ActionPluginPc) {
+		return (e: MouseEvent) => {
 			if (e.button === 0) {
 				if (self.clickLeftInterval) clearInterval(self.clickLeftInterval);
 				self.clickLeftInterval = null;
@@ -165,8 +171,8 @@ class ActionPluginPc {
 	}
 
 	// 鼠标移动改变视角
-	static getMouseMoveListener(self) {
-		return e => {
+	static getMouseMoveListener(self: ActionPluginPc) {
+		return (e: MouseEvent) => {
 			if (!document.pointerLockElement) return false;
 			self.controller.gameController.handleViewAction({ horizontal: e.movementX, vertical: -e.movementY });
 			return false;

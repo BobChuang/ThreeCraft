@@ -8,7 +8,7 @@ import { deepCopy } from '../utils/deep-copy';
 import weatherConfig from '../core/weather';
 import Log from './log';
 import MultiPlay from './MultiPlay';
-import { ClientSimulationBridge, SimulationEngine, SimulationNPCState } from '../simulation';
+import { ClientSimulationBridge, SimulationBridgeEvent, SimulationEngine, SimulationNPCState } from '../simulation';
 import { NPCRenderer, toNPCRenderSnapshot } from '../core/npc';
 import { PossessionController } from './possession';
 import { ObserverController } from './observer';
@@ -63,6 +63,8 @@ class Controller {
 
 	observerController: ObserverController;
 
+	readonly npcDialogueLog: string[];
+
 	constructor(el: HTMLElement) {
 		// 挂载游戏层和控制器层, 默认看不到
 		[...el.children].forEach(d => d.remove());
@@ -92,6 +94,7 @@ class Controller {
 		this.gameController = new GameController(this.core, this);
 		this.possessionController = new PossessionController(this);
 		this.observerController = new ObserverController(this);
+		this.npcDialogueLog = [];
 		this.log = new Log([]);
 
 		// 特殊处理VR部分
@@ -100,7 +103,7 @@ class Controller {
 		this.VRButtonElem = VRButton.createButton(this.core.renderer);
 		this.VRButtonElem.setAttribute('id', 'VRButton');
 		document.body.appendChild(this.VRButtonElem);
-		navigator?.xr &&
+		navigator?.xr?.isSessionSupported &&
 			navigator.xr.isSessionSupported('immersive-vr').then(() => {
 				this.core.renderer.xr.enabled = true;
 				this.vrSupport = true;
@@ -240,7 +243,9 @@ class Controller {
 
 	ensureSinglePlayerSimulation() {
 		if (this.simulationEngine || this.multiPlay.working) return;
-		const bridge = new ClientSimulationBridge(this);
+		const bridge = new ClientSimulationBridge(this, {
+			onEvent: event => this.handleSimulationEvent(event),
+		});
 		this.simulationEngine = new SimulationEngine(bridge, {
 			tickIntervalMs: 500,
 			observerSleepDistance: 128,
@@ -248,6 +253,34 @@ class Controller {
 			initialObservers: [{ x: config.state.posX, y: config.state.posY, z: config.state.posZ }],
 		});
 		this.simulationEngine.start();
+	}
+
+	tryOpenDialogueWithNearbyNPC(): boolean {
+		if (!this.simulationEngine || !this.npcRenderer) return false;
+		const nearest = this.npcRenderer.findNearestNPC({ x: config.state.posX, y: config.state.posY, z: config.state.posZ }, 24);
+		if (!nearest) return false;
+		this.ui.dialogue.open({
+			targetNpcId: nearest.id,
+			targetNpcName: nearest.displayName,
+			onSubmit: content => {
+				const accepted = this.simulationEngine?.submitPlayerDialogue(nearest.id, content);
+				if (!accepted) return;
+				this.ui.menu.setNotify(`Sent to ${nearest.displayName}`, 900, this.ui.actionControl.elem);
+			},
+		});
+		return true;
+	}
+
+	private handleSimulationEvent(event: SimulationBridgeEvent): void {
+		if (event.type !== 'npc:dialogue') return;
+		const npcId = typeof event.payload.npcId === 'string' ? event.payload.npcId : '';
+		const dialogue = typeof event.payload.dialogue === 'string' ? event.payload.dialogue : '';
+		if (!npcId || !dialogue) return;
+		this.npcRenderer?.showDialogue(npcId, dialogue, event.timestamp);
+		const sourceId = typeof event.payload.sourceNpcId === 'string' ? event.payload.sourceNpcId : npcId;
+		const targetId = typeof event.payload.targetNpcId === 'string' ? event.payload.targetNpcId : 'unknown';
+		this.npcDialogueLog.push(`${new Date(event.timestamp).toISOString()} ${sourceId} -> ${targetId}: ${dialogue}`);
+		if (this.npcDialogueLog.length > 100) this.npcDialogueLog.shift();
 	}
 
 	ensureSinglePlayerNPCs() {

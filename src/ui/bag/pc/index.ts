@@ -6,9 +6,9 @@ class BagPcPlugin {
 
 	bagInnerElem: HTMLElement;
 
-	bagItemsElem: HTMLElement[];
+	bagItemsElem!: HTMLElement[];
 
-	host: { highlight: () => void; toggleBag: () => void };
+	host: { highlight: () => void; toggleBag: () => void; bagBox: { working: boolean } };
 
 	// eslint-disable-next-line
 	clickItemEventListener: (e: MouseEvent) => void;
@@ -17,23 +17,19 @@ class BagPcPlugin {
 	keyupItemEventListener: (e: KeyboardEvent) => void;
 
 	// eslint-disable-next-line
-	keyupBagOpenEventListener: (e: KeyboardEvent) => void;
-
-	// eslint-disable-next-line
 	wheelItemEventListener: (e: WheelEvent) => void;
 
-	constructor(bagOuterElem: HTMLElement, host) {
+	constructor(bagOuterElem: HTMLElement, host: { highlight: () => void; toggleBag: () => void; bagBox: { working: boolean } }) {
 		// 清除其他插件
 		this.bagInnerElem = document.createElement('div');
 		this.bagInnerElem.classList.add('pc');
 		this.bagOuterElem = bagOuterElem;
-		[...this.bagOuterElem.children].forEach(d => !d.className.includes('bag-box') && d.remove());
+		Array.from(this.bagOuterElem.children).forEach(d => !d.className.includes('bag-box') && d.remove());
 		this.bagOuterElem.appendChild(this.bagInnerElem);
 		this.host = host;
 		// 添加事件监听
 		this.clickItemEventListener = BagPcPlugin.getClickItemEventListener(this.host);
 		this.keyupItemEventListener = BagPcPlugin.getKeyupItemEventListener(this.host);
-		this.keyupBagOpenEventListener = BagPcPlugin.getKeyupBagOpenEventListener(this.host);
 		this.wheelItemEventListener = BagPcPlugin.getWheelItemEventListener(this.host);
 	}
 
@@ -46,7 +42,6 @@ class BagPcPlugin {
 	listen() {
 		this.bagInnerElem.addEventListener('click', this.clickItemEventListener);
 		document.addEventListener('keyup', this.keyupItemEventListener);
-		document.addEventListener('keyup', this.keyupBagOpenEventListener);
 		document.addEventListener('wheel', this.wheelItemEventListener);
 	}
 
@@ -54,7 +49,6 @@ class BagPcPlugin {
 	pause() {
 		this.bagInnerElem.removeEventListener('click', this.clickItemEventListener);
 		document.removeEventListener('keyup', this.keyupItemEventListener);
-		document.removeEventListener('keyup', this.keyupBagOpenEventListener);
 		document.removeEventListener('wheel', this.wheelItemEventListener);
 	}
 
@@ -64,10 +58,11 @@ class BagPcPlugin {
 	}
 
 	// 点击背包框激活对应元素??
-	static getClickItemEventListener(host) {
-		return e => {
+	static getClickItemEventListener(host: { highlight: () => void }) {
+		return (e: MouseEvent) => {
 			e.stopPropagation();
-			const idx = Number.parseInt((e.target as HTMLElement)?.getAttribute('idx'), 10);
+			const idxValue = (e.target as HTMLElement)?.getAttribute('idx') ?? '-1';
+			const idx = Number.parseInt(idxValue, 10);
 			if (idx >= 0 && idx <= 9) {
 				config.bag.activeIndex = idx;
 				host.highlight();
@@ -77,8 +72,8 @@ class BagPcPlugin {
 	}
 
 	// 按0-9激活不同背包框
-	static getKeyupItemEventListener(host) {
-		return e => {
+	static getKeyupItemEventListener(host: { bagBox: { working: boolean }; highlight: () => void }) {
+		return (e: KeyboardEvent) => {
 			if (host.bagBox.working) return;
 			const idx = Number.parseInt(e.key, 10);
 			if (idx >= 0 && idx <= 9) {
@@ -89,9 +84,9 @@ class BagPcPlugin {
 	}
 
 	// 滚轮激活不同背包框
-	static getWheelItemEventListener(host) {
+	static getWheelItemEventListener(host: { bagBox: { working: boolean }; highlight: () => void }) {
 		let lenCnt = 0;
-		return e => {
+		return (e: WheelEvent) => {
 			if (host.bagBox.working) return;
 			if (lenCnt * e.deltaY < 0) {
 				lenCnt = e.deltaY;
@@ -99,19 +94,10 @@ class BagPcPlugin {
 				lenCnt += e.deltaY;
 			}
 			if (lenCnt >= 30 || lenCnt <= -30) {
-				config.bag.activeIndex = (config.bag.activeIndex + (e.wheelDeltaY > 0 ? -1 : 1) + 10) % 10;
+				config.bag.activeIndex = (config.bag.activeIndex + (e.deltaY < 0 ? -1 : 1) + 10) % 10;
 				lenCnt = 0;
 			}
 			host.highlight();
-		};
-	}
-
-	// 按e开关背包
-	static getKeyupBagOpenEventListener(host) {
-		return e => {
-			if (e.key === 'e' || e.key === 'E') {
-				host.toggleBag();
-			}
 		};
 	}
 }

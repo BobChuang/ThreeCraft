@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { symConfig } from '../../controller/config';
 import Player from '../player';
+import { createNPCDialogueBubble, NPCDialogueBubbleHandle } from './dialogue-bubble';
 import { createNPCNameplate } from './nameplate';
 import { NPCAnimationState } from './types';
 
@@ -12,6 +13,8 @@ export class NPCEntity extends Player {
 	readonly profession: string;
 
 	readonly nameplate: THREE.Sprite;
+
+	readonly dialogueBubble!: NPCDialogueBubbleHandle;
 
 	private animationState: NPCAnimationState;
 
@@ -40,6 +43,12 @@ export class NPCEntity extends Player {
 		this.player.name = `npc_${id}`;
 		this.nameplate = createNPCNameplate(displayName, profession);
 		this.player.add(this.nameplate);
+		this.dialogueBubble = createNPCDialogueBubble();
+		this.player.add(this.dialogueBubble.sprite);
+	}
+
+	showDialogue(text: string, now: number) {
+		this.dialogueBubble.show(text, now);
 	}
 
 	setAnimationState(state: NPCAnimationState) {
@@ -55,6 +64,7 @@ export class NPCEntity extends Player {
 		this.lastCall = performance.now();
 		delta = this.lastCall - delta;
 		this.updateReward();
+		this.dialogueBubble?.update(this.lastCall);
 
 		const isMoving = this.target.clone().sub(this.position).length() > symConfig.eps;
 		if (isMoving) {

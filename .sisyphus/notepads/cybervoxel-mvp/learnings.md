@@ -100,3 +100,9 @@
 - Monster rendering can piggyback on the existing NPC snapshot flow by letting `SimulationEngine.getNPCStates()` include synthetic monster snapshots and inferring monster entity type from `monster-*` ids in `toNPCRenderSnapshot`.
 - A deterministic monster manager with internal seeded RNG and tick-based movement/aggro windows keeps spawn/chase/attack behavior reproducible for evidence generation without LLM coupling.
 - Combat integration stays minimal by wiring monster attack callbacks to survival damage application and emitting `monster:attack`/`monster:state` events through the existing simulation event bridge.
+
+## 2026-02-21 Task 12
+
+- Routing the PC `E` key through action control first (try nearby NPC dialogue, then bag fallback) avoids input conflicts and keeps dialogue interaction scoped to single-player runtime.
+- `NPCConversationHistory` pair logs plus `SimulationEngine.getNPCPairDialogueHistory()` provide a deterministic way to verify NPC→NPC delivery separately from renderer/UI behavior.
+- Playwright evidence is most reliable when triggering a real player message then immediately re-showing the confirmed NPC reply text on the same NPC for screenshot timing within the 5-second bubble window.

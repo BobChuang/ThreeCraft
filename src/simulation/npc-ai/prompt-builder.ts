@@ -1,6 +1,6 @@
 import { NPCPersonaDefinition } from '../personas';
 import { SimulationNPCState } from '../npc-state';
-import { ConversationMessage } from './conversation-history';
+import { ConversationMessage, PairDialogueMessage } from './conversation-history';
 import { NPCObservation } from './observe';
 
 const serialize = (value: unknown): string => JSON.stringify(value);
@@ -35,7 +35,33 @@ const summarizeHistory = (history: ConversationMessage[]): string =>
 		}))
 	);
 
-export const buildNPCPrompt = (persona: NPCPersonaDefinition, npc: SimulationNPCState, observation: NPCObservation, history: ConversationMessage[], correctiveContext?: string): string => {
+const summarizeDialogueContext = (history: PairDialogueMessage[]): string =>
+	serialize(
+		history.map(message => ({
+			speakerId: message.speakerId,
+			listenerId: message.listenerId,
+			content: message.content,
+			timestamp: message.timestamp,
+		}))
+	);
+
+const summarizeIncomingPlayerMessages = (messages: ConversationMessage[]): string =>
+	serialize(
+		messages.map(message => ({
+			content: message.content,
+			timestamp: message.timestamp,
+		}))
+	);
+
+export const buildNPCPrompt = (
+	persona: NPCPersonaDefinition,
+	npc: SimulationNPCState,
+	observation: NPCObservation,
+	history: ConversationMessage[],
+	dialogueContext: PairDialogueMessage[],
+	incomingPlayerMessages: ConversationMessage[],
+	correctiveContext?: string
+): string => {
 	const worldStateLine = `[World State] Nearby blocks: ${summarizeBlocks(observation)}, Nearby NPCs: ${summarizeNearbyNPCs(observation)}, Inventory: ${serialize(npc.inventory)}, HP: ${
 		npc.survival.hp
 	}, Hunger: ${npc.survival.hunger}`;
@@ -45,6 +71,8 @@ export const buildNPCPrompt = (persona: NPCPersonaDefinition, npc: SimulationNPC
 		`[System] You are ${persona.name}, a ${persona.profession} in a cyberpunk voxel world. ${persona.backstory} ${persona.systemPrompt}`,
 		worldStateLine,
 		`[Recent History] ${summarizeHistory(history)}`,
+		`[Dialogue Context] ${summarizeDialogueContext(dialogueContext)}`,
+		`[Incoming Player Messages] ${summarizeIncomingPlayerMessages(incomingPlayerMessages)}`,
 		`[Task List] ${serialize(persona.defaultGoals)}`,
 		correctiveContext ? `[Corrective Context] ${correctiveContext}` : '',
 		instructionLine,

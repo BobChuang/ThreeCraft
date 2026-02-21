@@ -1,0 +1,34 @@
+#dialogue-panel {
+	position: fixed;
+	left: 50%;
+	bottom: 36px;
+	transform: translateX(-50%);
+	display: none;
+	align-items: center;
+	gap: 10px;
+	padding: 10px;
+	border-radius: 10px;
+	background: rgba(8, 16, 24, 0.82);
+	border: 1px solid rgba(120, 241, 255, 0.75);
+	z-index: 55;
+}
+
+#dialogue-panel.active {
+	display: flex;
+}
+
+#dialogue-target {
+	color: #9ce7f0;
+	font-size: 13px;
+	white-space: nowrap;
+}
+
+#dialogue-input {
+	width: min(560px, 62vw);
+	padding: 8px 10px;
+	outline: none;
+	border-radius: 6px;
+	border: 1px solid rgba(149, 212, 255, 0.58);
+	background: rgba(3, 7, 12, 0.9);
+	color: #e9fdff;
+}
