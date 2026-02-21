@@ -322,14 +322,14 @@ Wave FINAL（验证 — 所有任务完成后，4 个并行）：
 
 ### 智能体调度摘要
 
-| 波次  | 并行数     | 任务 → 智能体类别                                                                                                                     |
-| ----- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| 1     | **6**      | T1 → `quick`, T2 → `quick`, T3 → `writing`, T4 → `deep`, T5 → `deep`, T6 → `unspecified-high`                                        |
-| 2     | **6**      | T7 → `unspecified-high`, T8 → `unspecified-high`, T9 → `deep`, T10 → `deep`, T11 → `unspecified-high`, T12 → `visual-engineering`    |
-| 3     | **6**      | T13 → `unspecified-high`, T14 → `deep`, T15 → `visual-engineering`, T16 → `deep`, T17 → `unspecified-high`, T18 → `unspecified-high` |
-| 4     | **5**      | T19 → `visual-engineering`, T20 → `visual-engineering`, T21 → `visual-engineering`, T22 → `visual-engineering`, T23 → `deep`         |
-| 5     | **4**      | T24 → `deep`, T25 → `unspecified-high`, T26 → `deep`, T27 → `unspecified-high`                                                       |
-| FINAL | **4**      | F1 → `oracle`, F2 → `unspecified-high`, F3 → `unspecified-high`, F4 → `deep`                                                         |
+| 波次  | 并行数 | 任务 → 智能体类别                                                                                                                    |
+| ----- | ------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 1     | **6**  | T1 → `quick`, T2 → `quick`, T3 → `writing`, T4 → `deep`, T5 → `deep`, T6 → `unspecified-high`                                        |
+| 2     | **6**  | T7 → `unspecified-high`, T8 → `unspecified-high`, T9 → `deep`, T10 → `deep`, T11 → `unspecified-high`, T12 → `visual-engineering`    |
+| 3     | **6**  | T13 → `unspecified-high`, T14 → `deep`, T15 → `visual-engineering`, T16 → `deep`, T17 → `unspecified-high`, T18 → `unspecified-high` |
+| 4     | **5**  | T19 → `visual-engineering`, T20 → `visual-engineering`, T21 → `visual-engineering`, T22 → `visual-engineering`, T23 → `deep`         |
+| 5     | **4**  | T24 → `deep`, T25 → `unspecified-high`, T26 → `deep`, T27 → `unspecified-high`                                                       |
+| FINAL | **4**  | F1 → `oracle`, F2 → `unspecified-high`, F3 → `unspecified-high`, F4 → `deep`                                                         |
 
 ---
 
@@ -342,7 +342,7 @@ Wave FINAL（验证 — 所有任务完成后，4 个并行）：
 - 若 push 失败（网络/权限/冲突等）：允许先保留本地 commit，不阻塞后续任务；但必须在最终验证波次前补齐推送并记录失败原因与补推结果。
 - 每个任务的 `Commit` 小节若与本规则冲突，以本统一规则为准。
 
-- [ ] 1. 固定地图索引环境变量（调试入口）
+- [x] 1. 固定地图索引环境变量（调试入口）
 
   **做什么**：
 
@@ -416,7 +416,7 @@ Wave FINAL（验证 — 所有任务完成后，4 个并行）：
 
 ---
 
-- [ ] 2. 赛博朋克类型、方块和场景注册
+- [x] 2. 赛博朋克类型、方块和场景注册
 
   **做什么**：
 
@@ -521,7 +521,7 @@ Wave FINAL（验证 — 所有任务完成后，4 个并行）：
 
 ---
 
-- [ ] 3. NPC 角色定义（10 个角色）
+- [x] 3. NPC 角色定义（10 个角色）
 
   **做什么**：
 
@@ -602,7 +602,7 @@ Wave FINAL（验证 — 所有任务完成后，4 个并行）：
 
 ---
 
-- [ ] 4. 模拟引擎脚手架（仅单机模式）
+- [x] 4. 模拟引擎脚手架（仅单机模式）
 
   **做什么**：
 
@@ -686,11 +686,11 @@ Wave FINAL（验证 — 所有任务完成后，4 个并行）：
 
 ---
 
-- [ ] 5. A\* 寻路模块
+- [x] 5. A\* 寻路模块
 
   **做什么**：
 
-  - 在 `src/simulation/pathfinding/` 中实现 A* 寻路：
+  - 在 `src/simulation/pathfinding/` 中实现 A\* 寻路：
     - `findPath(start, target, worldQuery)` → 路径点数组或 null
     - 可通行格子：下方为实心方块的空气格（可行走表面）
     - 支持向上跳 1 格（类似 Minecraft）
@@ -710,7 +710,7 @@ Wave FINAL（验证 — 所有任务完成后，4 个并行）：
   **推荐智能体配置**：
 
   - **类别**： `deep`
-    - 原因：3D 体素网格上的 A* 算法、性能优化、缓存管理
+    - 原因：3D 体素网格上的 A\* 算法、性能优化、缓存管理
   - **技能**： []
 
   **并行化**：
@@ -724,7 +724,7 @@ Wave FINAL（验证 — 所有任务完成后，4 个并行）：
 
   **外部参考**：
 
-  - A* 寻路参考：`https://www.redblobgames.com/pathfinding/a-star/introduction.html`
+  - A\* 寻路参考：`https://www.redblobgames.com/pathfinding/a-star/introduction.html`
 
   **模式参考**：
 
@@ -772,7 +772,7 @@ Wave FINAL（验证 — 所有任务完成后，4 个并行）：
 
 ---
 
-- [ ] 6. NPC 实体系统（扩展 Player 类）
+- [x] 6. NPC 实体系统（扩展 Player 类）
 
   **做什么**：
 
@@ -859,7 +859,7 @@ Wave FINAL（验证 — 所有任务完成后，4 个并行）：
 
 ---
 
-- [ ] 7. 背包系统（物品、堆叠、丢弃）
+- [x] 7. 背包系统（物品、堆叠、丢弃）
 
   **做什么**：
 
@@ -925,7 +925,7 @@ Wave FINAL（验证 — 所有任务完成后，4 个并行）：
 
 ---
 
-- [ ] 8. 生存系统（HP、饥饿值、食物消耗）
+- [x] 8. 生存系统（HP、饥饿值、食物消耗）
 
   **做什么**：
 
@@ -994,7 +994,7 @@ Wave FINAL（验证 — 所有任务完成后，4 个并行）：
 
 ---
 
-- [ ] 9. GLM-5 API 服务（流式、速率限制、熔断器）
+- [x] 9. GLM-5 API 服务（流式、速率限制、熔断器）
 
   **做什么**：
 
@@ -1073,7 +1073,7 @@ Wave FINAL（验证 — 所有任务完成后，4 个并行）：
 
 ---
 
-- [ ] 10. NPC AI 决策循环（观察 → 提示词 → 调用 → 验证 → 执行）
+- [x] 10. NPC AI 决策循环（观察 → 提示词 → 调用 → 验证 → 执行）
 
   **做什么**：
 
@@ -1154,7 +1154,7 @@ Wave FINAL（验证 — 所有任务完成后，4 个并行）：
 
 ---
 
-- [ ] 11. NPC 建造和采集行为
+- [x] 11. NPC 建造和采集行为
 
   **做什么**：
 
@@ -1219,7 +1219,7 @@ Wave FINAL（验证 — 所有任务完成后，4 个并行）：
 
 ---
 
-- [ ] 12. NPC 对话系统（玩家对 NPC + NPC 对 NPC，聊天气泡）
+- [x] 12. NPC 对话系统（玩家对 NPC + NPC 对 NPC，聊天气泡）
 
   **做什么**：
 
@@ -1289,7 +1289,7 @@ Wave FINAL（验证 — 所有任务完成后，4 个并行）：
 
 ---
 
-- [ ] 13. 动作验证和降级系统
+- [x] 13. 动作验证和降级系统
 
   **做什么**：
 
@@ -1352,7 +1352,7 @@ Wave FINAL（验证 — 所有任务完成后，4 个并行）：
 
 ---
 
-- [ ] 14. 附身系统（附身/释放 NPC，模式切换）
+- [x] 14. 附身系统（附身/释放 NPC，模式切换）
 
   **做什么**：
 
@@ -1428,7 +1428,7 @@ Wave FINAL（验证 — 所有任务完成后，4 个并行）：
 
 ---
 
-- [ ] 15. 观察者/上帝模式（俯视相机 + NPC 选择）
+- [x] 15. 观察者/上帝模式（俯视相机 + NPC 选择）
 
   **做什么**：
 
@@ -1492,7 +1492,7 @@ Wave FINAL（验证 — 所有任务完成后，4 个并行）：
 
 ---
 
-- [ ] 16. 怪物系统（变种人 + 腐化机器人）
+- [x] 16. 怪物系统（变种人 + 腐化机器人）
 
   **做什么**：
 
