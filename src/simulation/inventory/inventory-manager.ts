@@ -56,6 +56,32 @@ export class SimulationInventoryManager {
 		return this.worldDrops.map(drop => ({ ...drop, position: { ...drop.position } }));
 	}
 
+	setInventory(entityId: string, slots: SimulationInventorySlot[]): void {
+		const inventory = this.inventories.get(entityId) ?? this.registerEntity(entityId, slots.length || 20);
+		inventory.length = 0;
+		slots.forEach(slot => {
+			inventory.push({
+				type: slot.type,
+				quantity: slot.quantity,
+				maxStack: slot.maxStack,
+			});
+		});
+	}
+
+	setWorldDrops(drops: SimulationDroppedItem[]): void {
+		this.worldDrops.length = 0;
+		drops.forEach(drop => {
+			this.worldDrops.push({
+				id: drop.id,
+				ownerId: drop.ownerId,
+				type: drop.type,
+				quantity: drop.quantity,
+				position: { ...drop.position },
+				droppedAt: drop.droppedAt,
+			});
+		});
+	}
+
 	createWorldDrop(ownerId: string, type: string, quantity: number, position: SimulationVector3): SimulationDroppedItem | null {
 		if (quantity <= 0) return null;
 		const droppedAt = Date.now();

@@ -67,6 +67,18 @@ export class SimulationMonsterManager {
 		return [...this.monsters.values()].map(monster => ({ ...monster, position: { ...monster.position }, wanderTarget: monster.wanderTarget ? { ...monster.wanderTarget } : null }));
 	}
 
+	setStates(states: SimulationMonsterState[]): void {
+		this.monsters.clear();
+		states.forEach(state => {
+			this.monsters.set(state.id, {
+				...state,
+				position: { ...state.position },
+				wanderTarget: state.wanderTarget ? { ...state.wanderTarget } : null,
+			});
+		});
+		this.spawnCounter = Math.max(this.spawnCounter, states.length);
+	}
+
 	tick(context: MonsterManagerContext): void {
 		const now = this.now();
 		this.spawnClockMs += context.elapsedMs;

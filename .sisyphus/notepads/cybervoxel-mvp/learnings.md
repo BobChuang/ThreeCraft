@@ -151,3 +151,9 @@
 - 生存 HUD 适合继续沿用现有 HUD-stage 叠层模式：单独 `src/ui/survival-hud/` 模块 + `UI.loadController` 装配 + `tryRender` 每帧 `sync(viewModel|null)`，实现显隐和状态更新解耦。
 - 玩家 HP/饥饿值来源可以稳定挂在 `Controller.handleSimulationEvent('survival:update')`，通过缓存 `player-local` 生存状态避免 UI 直接耦合 simulation internals。
 - 模式文案和活跃 NPC 计数统一在控制器组装（普通 / 观察者模式 / 附身：{NPC}），HUD 组件只负责渲染，这样后续模式扩展不会污染 UI 逻辑。
+
+## 2026-02-22 Task 23
+
+- `WorldPersistenceController` 以适配器模式接入控制器最稳妥：控制器负责读取/应用 config + log + simulation state，持久化模块只负责序列化、定时保存、beforeunload/pagehide 触发。
+- NPC/掉落物/怪物状态恢复在 `SimulationEngine.applyPersistedState()` 内集中处理，能避免把状态回填逻辑分散到 UI 或 bridge 层。
+- 为了让“方块差异”覆盖 NPC 行为建造/采集路径，`ClientSimulationBridge.modifyBlock()` 同步写入 `controller.log.insert(blockLog)` 是必要补点，否则自动存档仅包含玩家手动编辑记录。

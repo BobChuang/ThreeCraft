@@ -1,0 +1,42 @@
+Task: 23 - World persistence (client save/load)
+Date: 2026-02-22
+
+Storage implementation
+- Implemented with localStorage key `threecraft:singleplayer-world`.
+- IndexedDB was not used in this task to keep scope minimal and deterministic.
+
+Build verification
+- Command: `pnpm build`
+- Result: PASS
+- Known baseline warnings observed (non-blocking):
+  - `registerSW.js` script bundling warning
+  - large chunk size warning
+
+Playwright QA verification
+1) Single-player load + saved world restore
+- Started single-player at `http://127.0.0.1:4173`.
+- Injected a block modification (`brickBlock`) through runtime controller APIs.
+- Triggered immediate save via `controller.worldPersistence?.saveNow()`.
+- Reloaded page and re-entered single-player.
+- Verified persisted block log was restored from storage.
+
+2) Auto-save every 60s
+- Captured stored `savedAt` timestamp from localStorage.
+- Waited 65 seconds while game remained running.
+- Captured `savedAt` again and confirmed timestamp increased.
+
+3) Immediate save on leave/refresh
+- Entered single-player and captured `savedAt`.
+- Navigated away to `about:blank` then back to app (before unload path).
+- Confirmed `savedAt` increased without waiting 60s.
+
+Key observed values
+- Auto-save timestamp delta example:
+  - before: 1771697661537
+  - after:  1771697752134
+- Before-unload save example:
+  - before: 1771697752134
+  - after:  1771697844948
+
+Notes
+- Console shows known baseline `registerSW.js` 404 in dev runs; not introduced by this task.

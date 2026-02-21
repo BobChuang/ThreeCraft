@@ -1,0 +1,49 @@
+Task: 23 - NPC persistence validation
+Date: 2026-02-22
+
+Scenario
+- Environment: local dev server `http://127.0.0.1:4173`
+- Mode: single-player
+
+Steps
+1) Entered single-player.
+2) Selected `npc-01` and mutated runtime state:
+   - position -> `{ x: 3, y: 6, z: 3 }`
+   - lastAction -> `move`
+   - thinkingState set to `executing`, then NPC decision paused via `setNPCDecisionPaused('npc-01', true)`.
+3) Triggered manual persistence save via `controller.worldPersistence?.saveNow()`.
+4) Reloaded page and re-entered single-player.
+5) Read `simulationEngine.npcRegistry.get('npc-01')` and compared persisted fields.
+
+Result
+- Restored NPC state check: PASS
+- Restored block check (paired validation): PASS
+
+Captured result payload
+```json
+{
+  "initial": {
+    "block": { "type": "brickBlock", "posX": 2, "posY": 6, "posZ": 2 },
+    "npc": {
+      "id": "npc-01",
+      "position": { "x": 3, "y": 6, "z": 3 },
+      "thinkingState": "idle",
+      "lastAction": "move"
+    }
+  },
+  "restored": {
+    "restoredBlock": true,
+    "restoredNpc": true,
+    "blockActual": { "type": "brickBlock", "posX": 2, "posY": 6, "posZ": 2 },
+    "npcActual": {
+      "id": "npc-01",
+      "position": { "x": 3, "y": 6, "z": 3 },
+      "thinkingState": "idle",
+      "lastAction": "move"
+    }
+  }
+}
+```
+
+Notes
+- `thinkingState` persisted as `idle` because pausing NPC decisions sets state to idle by design.

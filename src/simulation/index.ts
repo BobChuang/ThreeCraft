@@ -10,9 +10,11 @@ export type { SimulationMonsterState, MonsterType, MonsterPhase, MonsterAttackEv
 export { ClientSimulationBridge } from './bridges/client-bridge';
 export { GLM5Service, extractJsonFromLLMText, LLMServiceError } from './llm';
 export { NPCDecisionLoop, parseAndValidateNPCAction, executeNPCAction } from './npc-ai';
+export { WorldPersistenceController, WORLD_PERSISTENCE_VERSION } from './persistence';
 export { ClientNPCEventBus, CLIENT_NPC_EVENT_TYPES, mapBridgeEventToClientNPCEvent, mapNPCStatesToClientEvents } from './events/index';
 export type { LLMServiceConfig, LLMServiceResult, LLMRequestOptions, LLMRuntimeMode, ThinkingLifecycleEvent, ThinkingLifecycleEventType } from './llm';
 export type { NPCDecisionLoopOptions, NPCDecisionResult, NPCActionExecutionResult, ConversationMessage } from './npc-ai';
+export type { PersistedNPCState, PersistedSinglePlayerWorld, PersistenceAdapter, PersistenceWorldConfig, PersistenceWorldState } from './persistence';
 export type { ClientNPCEvent, ClientNPCEventPayloadMap, ClientNPCEventType, NPCStateUpdatePayload } from './events/index';
 export type {
 	ISimulationBridge,

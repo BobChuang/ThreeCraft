@@ -90,3 +90,13 @@
 
 - 本地 HUD 运行与截图验证期间继续出现仓库基线 `registerSW.js` 404 / 非 module 提示，不影响 Task 22 功能与构建通过。
 - 默认随机地图下 HUD 可能因非赛博朋克场景按预期隐藏；为稳定采集证据，使用 `VITE_FIXED_MAP_INDEX=12` 启动临时开发服务锁定赛博朋克场景。
+
+## 2026-02-22 Task 22 主代理独立复核
+
+- 通过 Playwright 在 `VITE_FIXED_MAP_INDEX=12` + PC 模式下进入单机，确认 HUD 可见并包含：`HP` 条、`HUNGER` 条、模式文案（`普通`）、`10 个 NPC 活跃` 文本；证据截图：`.sisyphus/evidence/task-22-hud-orchestrator.png`。
+- 控制台仅见已知基线 `registerSW.js` 404 报错，本次复核未发现阻塞 HUD 验收的新问题。
+
+## 2026-02-22 Task 23
+
+- 本地 Playwright 长时间等待与多次 reload 组合场景偶发 `Target crashed/timeout`；将 60s 自动保存验证拆成独立步骤（先读时间戳、再 `wait_for`、再读取）可稳定复现。
+- 开发环境仍持续出现基线 `registerSW.js` 404 错误，与本任务持久化逻辑无关且不阻塞验收。

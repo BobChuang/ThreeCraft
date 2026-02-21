@@ -3,9 +3,10 @@ import { SimulationEvent, SimulationEventPayloadMap, SimulationEventType, toBrid
 import { createInitialNPCRegistry, SimulationNPCState } from './npc-state';
 import { getInventoryItemDefinition, SimulationDroppedItem, SimulationInventoryAddResult, SimulationInventoryManager, SimulationInventorySlot } from './inventory';
 import { NPCDecisionLoop, ConversationMessage } from './npc-ai';
-import { createDefaultSurvivalState, SimulationSurvivalManager } from './survival';
+import { createDefaultSurvivalState, SimulationSurvivalManager, SimulationSurvivalState } from './survival';
 import { SimulationMonsterManager, SimulationMonsterState } from './monsters';
 import { DROP_PICKUP_RADIUS, NPC_RESPAWN_DELAY_MS, NPC_REVIVAL_SPRING_POSITION, SimulationDeathManager, WORLD_DROP_DESPAWN_MS } from './death';
+import type { PersistedNPCState } from './persistence';
 
 const calculateDistance = (a: SimulationVector3, b: SimulationVector3): number => {
 	const dx = a.x - b.x;
@@ -186,6 +187,39 @@ export class SimulationEngine {
 
 	getMonsterStates(): SimulationMonsterState[] {
 		return this.monsters.getStates();
+	}
+
+	exportPersistedNPCStates(): PersistedNPCState[] {
+		return [...this.npcRegistry.values()].map(npc => ({
+			id: npc.id,
+			position: { ...npc.position },
+			inventory: npc.inventory.map(slot => ({ ...slot })),
+			survival: { ...npc.survival },
+			thinkingState: npc.thinkingState,
+			isSleeping: npc.isSleeping,
+			lastTickAt: npc.lastTickAt,
+			tickCount: npc.tickCount,
+			lastAction: npc.lastAction,
+		}));
+	}
+
+	applyPersistedState(snapshot: { npcs: PersistedNPCState[]; playerSurvival: SimulationSurvivalState; worldDrops: SimulationDroppedItem[]; monsters: SimulationMonsterState[] }): void {
+		this.survival.setState('player-local', snapshot.playerSurvival);
+		snapshot.npcs.forEach(item => {
+			const npc = this.npcRegistry.get(item.id);
+			if (!npc) return;
+			npc.position = { ...item.position };
+			npc.thinkingState = item.thinkingState;
+			npc.isSleeping = item.isSleeping;
+			npc.lastTickAt = item.lastTickAt;
+			npc.tickCount = item.tickCount;
+			npc.lastAction = item.lastAction;
+			this.inventory.setInventory(npc.id, item.inventory);
+			npc.inventory = this.inventory.getInventory(npc.id);
+			npc.survival = this.survival.setState(npc.id, item.survival);
+		});
+		this.inventory.setWorldDrops(snapshot.worldDrops);
+		this.monsters.setStates(snapshot.monsters);
 	}
 
 	damageMonster(monsterId: string, damage: number): boolean {

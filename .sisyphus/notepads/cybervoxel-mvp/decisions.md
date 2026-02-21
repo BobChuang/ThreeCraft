@@ -116,3 +116,9 @@
 - 采用新增 UI 模块 `src/ui/survival-hud/`（`index.ts` + `types.ts` + `css/style.less`）承载 HUD 渲染，`src/ui/index.ts` 仅做最小注册，保持现有 UI 装配模式。
 - 控制器端新增 `getSurvivalHUDState()` 统一聚合显隐门控（仅 PC + 赛博朋克）与运行态数据（生存值、模式文案、NPC 活跃数），避免 HUD 组件直接读取 simulation/controller 子系统。
 - 玩家生存值来源选择 `survival:update` 事件缓存（`player-local`），附身态优先读取当前 NPC survival，实现「普通/观察者/附身」与 HP/饥饿条动态一致更新。
+
+## 2026-02-22 Task 23
+
+- 持久化方案选择 `src/simulation/persistence/` 新模块 + 控制器最小集成：单机启动时先 `loadLatest()` 再启动 simulation，结束游戏时 `saveNow()` 并清理监听。
+- 存储介质本任务采用 localStorage（键：`threecraft:singleplayer-world`）作为最小可行实现，并在证据中明确未采用 IndexedDB。
+- 存档内容固定覆盖：方块差异（`config.log`）、NPC 状态、玩家生存状态、掉落物、怪物位置/状态，以及世界 seed/weather 与玩家位置，保证刷新后可恢复到最近一次客户端快照。

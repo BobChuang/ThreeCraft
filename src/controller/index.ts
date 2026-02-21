@@ -19,6 +19,8 @@ import {
 	SimulationBridgeEvent,
 	SimulationEngine,
 	SimulationNPCState,
+	type PersistenceAdapter,
+	WorldPersistenceController,
 } from '../simulation';
 import { NPCRenderer, toNPCRenderSnapshot } from '../core/npc';
 import { PossessionController } from './possession';
@@ -123,6 +125,8 @@ class Controller {
 
 	simulationEngine: SimulationEngine | null;
 
+	worldPersistence: WorldPersistenceController | null;
+
 	clientEventBus: ClientNPCEventBus | null;
 
 	readonly npcStateById: Map<string, SimulationNPCState>;
@@ -157,6 +161,7 @@ class Controller {
 
 		this.multiPlay = new MultiPlay(this);
 		this.simulationEngine = null;
+		this.worldPersistence = null;
 		this.clientEventBus = null;
 		this.npcStateById = new Map();
 		this.npcEventUnsubscribers = [];
@@ -273,6 +278,9 @@ class Controller {
 		this.npcTaskTrackerById.clear();
 		this.playerSurvivalState = { hp: 100, maxHp: 100, hunger: 100, maxHunger: 100 };
 		this.simulationEngine?.stop();
+		this.worldPersistence?.saveNow();
+		this.worldPersistence?.stop();
+		this.worldPersistence = null;
 		this.simulationEngine = null;
 		this.npcRenderer?.clear();
 		this.npcRenderer = null;
@@ -349,6 +357,11 @@ class Controller {
 			useStubBrain: true,
 			initialObservers: [{ x: config.state.posX, y: config.state.posY, z: config.state.posZ }],
 		});
+		this.worldPersistence = new WorldPersistenceController(this.createSinglePlayerPersistenceAdapter());
+		const snapshot = this.worldPersistence.loadLatest();
+		if (snapshot) {
+			this.log = new Log(config.log);
+		}
 		this.simulationEngine.start();
 		const playerSurvival = this.simulationEngine.getSurvivalState('player-local');
 		this.playerSurvivalState = {
@@ -356,6 +369,65 @@ class Controller {
 			maxHp: playerSurvival.maxHp,
 			hunger: playerSurvival.hunger,
 			maxHunger: playerSurvival.maxHunger,
+		};
+		this.worldPersistence.start();
+	}
+
+	private createSinglePlayerPersistenceAdapter(): PersistenceAdapter {
+		return {
+			readWorldConfig: () => ({
+				seed: config.seed,
+				cloudSeed: config.cloudSeed,
+				treeSeed: config.treeSeed,
+				weather: config.weather,
+				playerPosition: {
+					x: config.state.posX,
+					y: config.state.posY,
+					z: config.state.posZ,
+				},
+				blockLog: this.log.export(),
+			}),
+			readWorldState: () => {
+				if (!this.simulationEngine) throw new Error('Simulation engine is not ready');
+				return {
+					npcs: this.simulationEngine.exportPersistedNPCStates(),
+					playerSurvival: this.simulationEngine.getSurvivalState('player-local'),
+					worldDrops: this.simulationEngine.getWorldDrops(),
+					monsters: this.simulationEngine.getMonsterStates(),
+				};
+			},
+			applySnapshot: snapshot => {
+				if (!this.simulationEngine) throw new Error('Simulation engine is not ready');
+				const mutableConfig = config as unknown as {
+					seed: number | null;
+					cloudSeed: number | null;
+					treeSeed: number | null;
+					weather: number | null;
+					state: { posX: number; posY: number; posZ: number };
+					log: Array<{ type: string | null; posX: number; posY: number; posZ: number }>;
+				};
+				mutableConfig.seed = snapshot.seed;
+				mutableConfig.cloudSeed = snapshot.cloudSeed;
+				mutableConfig.treeSeed = snapshot.treeSeed;
+				mutableConfig.weather = snapshot.weather;
+				mutableConfig.state.posX = snapshot.playerPosition.x;
+				mutableConfig.state.posY = snapshot.playerPosition.y;
+				mutableConfig.state.posZ = snapshot.playerPosition.z;
+				mutableConfig.log = snapshot.blockLog.map(item => ({ ...item }));
+				this.core?.camera.position.set(snapshot.playerPosition.x, snapshot.playerPosition.y, snapshot.playerPosition.z);
+				this.simulationEngine.applyPersistedState({
+					npcs: snapshot.npcs,
+					playerSurvival: snapshot.playerSurvival,
+					worldDrops: snapshot.worldDrops,
+					monsters: snapshot.monsters,
+				});
+				this.playerSurvivalState = {
+					hp: snapshot.playerSurvival.hp,
+					maxHp: snapshot.playerSurvival.maxHp,
+					hunger: snapshot.playerSurvival.hunger,
+					maxHunger: snapshot.playerSurvival.maxHunger,
+				};
+			},
 		};
 	}
 

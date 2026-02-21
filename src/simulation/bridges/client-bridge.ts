@@ -24,6 +24,9 @@ interface ClientBridgeTerrain {
 
 interface ClientBridgeController {
 	core: { terrain: ClientBridgeTerrain } | null;
+	log: {
+		insert(blocklog: BlockLog): void;
+	};
 	gameController: {
 		blockController: {
 			update(blocks: BlockLog[], ignoreMultiPlay?: boolean): void;
@@ -143,6 +146,7 @@ export class ClientSimulationBridge implements ISimulationBridge {
 			posY: Math.round(position.y),
 			posZ: Math.round(position.z),
 		};
+		this.controller.log.insert(blockLog);
 		this.controller.gameController.blockController.update([blockLog], true);
 	}
 }
