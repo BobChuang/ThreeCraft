@@ -55,4 +55,20 @@ export class SimulationInventoryManager {
 	getWorldDrops(): SimulationDroppedItem[] {
 		return this.worldDrops.map(drop => ({ ...drop, position: { ...drop.position } }));
 	}
+
+	createWorldDrop(ownerId: string, type: string, quantity: number, position: SimulationVector3): SimulationDroppedItem | null {
+		if (quantity <= 0) return null;
+		const droppedAt = Date.now();
+		const normalizedType = getInventoryItemDefinition(type).type;
+		const drop: SimulationDroppedItem = {
+			id: `drop-${ownerId}-${normalizedType}-${droppedAt}-${Math.random().toString(36).slice(2, 8)}`,
+			ownerId,
+			type: normalizedType,
+			quantity,
+			position: { ...position },
+			droppedAt,
+		};
+		this.worldDrops.push(drop);
+		return drop;
+	}
 }

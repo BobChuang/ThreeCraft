@@ -64,3 +64,9 @@
 - Added `src/controller/observer/observer-controller.ts` as the single owner for god-mode toggle (`G`), OrbitControls lifecycle, marker sync/picking, and observer HUD updates.
 - Chose minimal integration points only: controller bootstrap/update/reset hooks plus observer guards in block action/highlight to enforce non-editable observer mode.
 - Reused existing possession path by delegating marker double-click directly to `possessionController.possessNPC(npcId)` and surfaced possession state in observer mode indicator text.
+
+## 2026-02-21 Task 16
+
+- Implemented monster runtime in a dedicated `src/simulation/monsters/` module (`catalog`, `types`, `manager`, `index`) and kept AI deterministic (idle/wander, aggro at 12, melee at 2 with 2s cooldown, disengage at 20+).
+- Chose to integrate monster rendering through `src/core/npc/renderer.ts` using a new `MonsterEntity` class and typed snapshot flags (`entityType`, `monsterType`) instead of creating a separate renderer pipeline.
+- Kept death-drop logic scoped to Task 16 by adding a lightweight world-drop helper in inventory manager and triggering 50% Synth-Ration drop from `SimulationMonsterManager.damageMonster()`.

@@ -94,3 +94,9 @@
 - Observer mode is safest as a dedicated controller that owns camera snapshot/restore and input hooks, while the main render loop only calls `observerController.update()`.
 - Marker picking should write `npcId` into `mesh.userData` to avoid repeated map scans during raycast hit resolution.
 - Terrain interaction gates must be applied in both block action and highlight paths; disabling only one path still leaks observer-side editing affordances.
+
+## 2026-02-21 Task 16
+
+- Monster rendering can piggyback on the existing NPC snapshot flow by letting `SimulationEngine.getNPCStates()` include synthetic monster snapshots and inferring monster entity type from `monster-*` ids in `toNPCRenderSnapshot`.
+- A deterministic monster manager with internal seeded RNG and tick-based movement/aggro windows keeps spawn/chase/attack behavior reproducible for evidence generation without LLM coupling.
+- Combat integration stays minimal by wiring monster attack callbacks to survival damage application and emitting `monster:attack`/`monster:state` events through the existing simulation event bridge.

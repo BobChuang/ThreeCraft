@@ -75,4 +75,16 @@ export class SimulationSurvivalManager {
 		this.states.set(entityId, next);
 		return { consumed: true, state: cloneState(next) };
 	}
+
+	applyDamage(entityId: string, damage: number): SurvivalTickResult {
+		const state = this.states.get(entityId) ?? this.registerEntity(entityId);
+		const previous = cloneState(state);
+		if (damage > 0) state.hp = Math.max(0, state.hp - damage);
+		const next = clampSurvivalState(state);
+		this.states.set(entityId, next);
+		return {
+			state: cloneState(next),
+			changed: next.hp !== previous.hp || next.hunger !== previous.hunger,
+		};
+	}
 }

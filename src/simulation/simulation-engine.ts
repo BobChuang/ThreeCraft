@@ -4,6 +4,7 @@ import { createInitialNPCRegistry, SimulationNPCState } from './npc-state';
 import { getInventoryItemDefinition, SimulationDroppedItem, SimulationInventoryAddResult, SimulationInventoryManager, SimulationInventorySlot } from './inventory';
 import { NPCDecisionLoop, ConversationMessage } from './npc-ai';
 import { createDefaultSurvivalState, SimulationSurvivalManager } from './survival';
+import { SimulationMonsterManager, SimulationMonsterState } from './monsters';
 
 const calculateDistance = (a: SimulationVector3, b: SimulationVector3): number => {
 	const dx = a.x - b.x;
@@ -40,6 +41,8 @@ export class SimulationEngine {
 	readonly inventory: SimulationInventoryManager;
 
 	readonly survival: SimulationSurvivalManager;
+
+	readonly monsters: SimulationMonsterManager;
 
 	private previousTickAt: number | null;
 
@@ -89,6 +92,23 @@ export class SimulationEngine {
 		});
 		this.inventory = new SimulationInventoryManager();
 		this.survival = new SimulationSurvivalManager();
+		this.monsters = new SimulationMonsterManager({
+			onAttack: attack => {
+				const result = this.survival.applyDamage(attack.targetEntityId, attack.damage);
+				if (result.changed) {
+					this.emit('survival:update', {
+						entityId: attack.targetEntityId,
+						hp: result.state.hp,
+						hunger: result.state.hunger,
+					});
+				}
+				this.emit('monster:attack', attack);
+			},
+			onDropSynthRation: monster => {
+				const drop = this.inventory.createWorldDrop(monster.id, 'synth-ration', 1, monster.position);
+				if (drop) this.emit('inventory:drop', drop);
+			},
+		});
 		this.inventory.registerEntity('player-local');
 		this.survival.registerEntity('player-local', createDefaultSurvivalState());
 		[...this.npcRegistry.values()].forEach(npc => {
@@ -130,12 +150,39 @@ export class SimulationEngine {
 	}
 
 	getNPCStates(): SimulationNPCState[] {
-		return [...this.npcRegistry.values()].map(npc => ({
+		const npcStates = [...this.npcRegistry.values()].map(npc => ({
 			...npc,
 			position: { ...npc.position },
 			inventory: npc.inventory.map(slot => ({ ...slot })),
 			survival: { ...npc.survival },
 		}));
+		const monsterAsNPCStates: SimulationNPCState[] = this.monsters.getStates().map(monster => ({
+			id: monster.id,
+			name: monster.label,
+			profession: monster.type,
+			position: { ...monster.position },
+			inventory: [],
+			survival: {
+				hp: monster.hp,
+				maxHp: monster.maxHp,
+				hunger: 0,
+				maxHunger: 100,
+			},
+			thinkingState: 'idle',
+			isSleeping: false,
+			lastTickAt: monster.updatedAt,
+			tickCount: 0,
+			lastAction: monster.phase === 'chase' ? 'move' : 'idle',
+		}));
+		return npcStates.concat(monsterAsNPCStates);
+	}
+
+	getMonsterStates(): SimulationMonsterState[] {
+		return this.monsters.getStates();
+	}
+
+	damageMonster(monsterId: string, damage: number): boolean {
+		return this.monsters.damageMonster(monsterId, damage);
 	}
 
 	getInventory(entityId: string): SimulationInventorySlot[] {
@@ -239,6 +286,22 @@ export class SimulationEngine {
 		}
 
 		const npcs = [...this.npcRegistry.values()];
+		const playerState = this.survival.getState('player-local');
+		this.monsters.tick({
+			observers: this.observers,
+			playerPosition: this.observers[0] ?? { x: 0, y: 1, z: 0 },
+			playerAlive: playerState.hp > 0,
+			elapsedMs,
+		});
+		this.monsters.getStates().forEach(monster => {
+			this.emit('monster:state', {
+				monsterId: monster.id,
+				type: monster.type,
+				position: { ...monster.position },
+				hp: monster.hp,
+				phase: monster.phase,
+			});
+		});
 		const activeNPCs: SimulationNPCState[] = [];
 		npcs.forEach(npc => {
 			const survivalUpdate = this.survival.tickEntity(npc.id, elapsedMs);

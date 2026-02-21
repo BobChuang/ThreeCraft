@@ -1,0 +1,9 @@
+command: deterministic monster manager attack simulation
+remaining_monsters=5
+remaining_mutant=3
+remaining_corrupted_bot=2
+attack_events=2
+player_hp_before=100
+player_hp_after=80
+drops_triggered=0
+attack_ok=true

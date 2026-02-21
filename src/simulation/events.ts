@@ -1,6 +1,7 @@
 import { SimulationBridgeEvent } from './contracts/simulation-bridge';
 import { SimulationNPCState, SimulationThinkingState } from './npc-state';
 import { SimulationDroppedItem } from './inventory';
+import { MonsterAttackEvent, SimulationMonsterState } from './monsters';
 
 export interface ThinkingStateChangePayload {
 	npcId: string;
@@ -35,7 +36,26 @@ export interface NPCTickPayload {
 
 export type InventoryDropPayload = SimulationDroppedItem;
 
-export type SimulationEventType = 'thinking:state' | 'npc:action' | 'npc:dialogue' | 'survival:update' | 'simulation:npc-tick' | 'simulation:lifecycle' | 'inventory:drop';
+export interface MonsterStatePayload {
+	monsterId: string;
+	type: SimulationMonsterState['type'];
+	position: SimulationMonsterState['position'];
+	hp: number;
+	phase: SimulationMonsterState['phase'];
+}
+
+export type MonsterAttackPayload = MonsterAttackEvent;
+
+export type SimulationEventType =
+	| 'thinking:state'
+	| 'npc:action'
+	| 'npc:dialogue'
+	| 'survival:update'
+	| 'simulation:npc-tick'
+	| 'simulation:lifecycle'
+	| 'inventory:drop'
+	| 'monster:state'
+	| 'monster:attack';
 
 export type SimulationEventPayloadMap = {
 	'thinking:state': ThinkingStateChangePayload;
@@ -45,6 +65,8 @@ export type SimulationEventPayloadMap = {
 	'simulation:npc-tick': NPCTickPayload;
 	'simulation:lifecycle': Record<string, unknown>;
 	'inventory:drop': InventoryDropPayload;
+	'monster:state': MonsterStatePayload;
+	'monster:attack': MonsterAttackPayload;
 };
 
 export type SimulationEvent<T extends SimulationEventType = SimulationEventType> = {
