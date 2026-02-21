@@ -1,6 +1,6 @@
 import { ISimulationBridge } from '../../contracts/simulation-bridge';
 import { NPCBehaviorExecutionContext, NPCActionExecutionResult } from './types';
-import { applyPathAsWalking, createWorldQuery, findPathToTarget, sleep, toRoundedPosition } from './shared';
+import { applyPathAsWalking, createWorldQuery, findPathToTarget, isPathReachable, sleep, toRoundedPosition } from './shared';
 
 const gatherItemFromTarget = (context: NPCBehaviorExecutionContext, targetBlockType: string): { accepted: number; rejected: number; isFull: boolean } => {
 	if (!context.addInventoryItem) {
@@ -16,6 +16,19 @@ const removeTargetBlock = async (bridge: ISimulationBridge, target: { x: number;
 export const executeGatherBehavior = async (bridge: ISimulationBridge, context: NPCBehaviorExecutionContext): Promise<NPCActionExecutionResult> => {
 	const target = toRoundedPosition(context.action.target?.position ?? context.npc.position);
 	const path = findPathToTarget(context, target);
+	if (!isPathReachable(path)) {
+		return {
+			action: 'gather',
+			applied: false,
+			position: { ...context.npc.position },
+			details: {
+				target,
+				reason: 'path-not-found',
+				pathLength: 0,
+				walkedSteps: 0,
+			},
+		};
+	}
 	const walked = applyPathAsWalking(context, path);
 
 	context.npc.lastAction = 'gather';

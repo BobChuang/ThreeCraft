@@ -53,3 +53,8 @@
 - Added a dedicated possession module at `src/controller/possession/` and kept its `index.ts` export-only so controller integration remains modular.
 - Implemented possession as instant camera/state switching with local cache restore (no transition animation), matching MVP scope and existing first-person control path.
 - Chose explicit single-player conflict handling: repeated direct possession requests while already possessing return `false` and emit a user-facing hint, while `Tab` continues to act as a possess/release toggle.
+
+## 2026-02-21 Task 11 Follow-up
+
+- Enforced strict path-first semantics in `execute-move`, `execute-gather`, and `execute-build`: actions now return `applied: false` with `reason: path-not-found` when target routing is unreachable.
+- Kept behavior wiring bridge-driven and minimal by reusing existing `findPathToTarget` + `SimulationBridge.modifyBlock` + inventory callbacks instead of adding engine-side shortcuts.

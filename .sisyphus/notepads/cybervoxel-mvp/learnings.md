@@ -83,3 +83,8 @@
 - Possession works reliably in single-player when the controller owns a local `active` snapshot: cache player camera/state on possess, pause one NPC decision loop, and restore on release.
 - Keeping AI pause as an engine-level NPC-id gate (`setNPCDecisionPaused`) preserves survival tick updates while preventing new decision/history growth during possession windows.
 - Mapping possessed NPC inventory directly into `ui.bag.items` plus periodic HUD notify (`HP/Hunger + item summary`) gives lightweight state visibility without introducing a new HUD component.
+
+## 2026-02-21 Task 11 Follow-up
+
+- For behavior executors, path reachability must be checked before side effects; otherwise gather/build can mutate blocks from unreachable positions.
+- Emitting walking updates from shared path traversal and then switching to gather/build phases keeps animation transitions deterministic for renderer state mapping.

@@ -3,6 +3,9 @@ Task 11 QA Evidence - NPC Gather Behavior
 Preparation command:
 `pnpm exec tsc --noEmit false --skipLibCheck true --module commonjs --target es2020 --moduleResolution node --outDir .sisyphus/tmp/task11-sim src/simulation/**/*.ts src/utils/types/npc.ts`
 
+Preparation note:
+- Isolated compile still reports pre-existing Task 10 baseline typing errors in `src/simulation/npc-ai/decision-loop.ts` (unrelated to Task 11 behavior executor logic).
+
 Verification command:
 `node .sisyphus/evidence/scripts/task-11-gather-check.js`
 

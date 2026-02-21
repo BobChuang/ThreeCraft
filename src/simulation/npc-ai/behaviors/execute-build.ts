@@ -1,6 +1,6 @@
 import { ISimulationBridge } from '../../contracts/simulation-bridge';
 import { NPCBehaviorExecutionContext, NPCActionExecutionResult } from './types';
-import { applyPathAsWalking, findPathToTarget, sleep, toRoundedPosition } from './shared';
+import { applyPathAsWalking, findPathToTarget, isPathReachable, sleep, toRoundedPosition } from './shared';
 
 const consumeBuildItem = (context: NPCBehaviorExecutionContext, blockType: string): number => {
 	if (!context.consumeInventoryItem) {
@@ -13,6 +13,20 @@ export const executeBuildBehavior = async (bridge: ISimulationBridge, context: N
 	const target = toRoundedPosition(context.action.target?.position ?? context.npc.position);
 	const blockType = context.action.target?.blockType ?? '1';
 	const path = findPathToTarget(context, target);
+	if (!isPathReachable(path)) {
+		return {
+			action: 'build',
+			applied: false,
+			position: { ...context.npc.position },
+			details: {
+				target,
+				blockType,
+				reason: 'path-not-found',
+				pathLength: 0,
+				walkedSteps: 0,
+			},
+		};
+	}
 	const walked = applyPathAsWalking(context, path);
 
 	context.npc.lastAction = 'build';

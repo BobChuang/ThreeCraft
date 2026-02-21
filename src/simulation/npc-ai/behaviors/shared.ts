@@ -38,6 +38,8 @@ export const applyPathAsWalking = (context: NPCBehaviorExecutionContext, path: S
 	return walked;
 };
 
+export const isPathReachable = (path: SimulationVector3[] | null): boolean => Boolean(path && path.length > 0);
+
 export const sleep = async (ms: number): Promise<void> => {
 	await new Promise<void>(resolve => {
 		setTimeout(resolve, ms);
