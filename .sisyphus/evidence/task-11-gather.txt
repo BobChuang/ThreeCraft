@@ -1,0 +1,17 @@
+Task 11 QA Evidence - NPC Gather Behavior
+
+Preparation command:
+`pnpm exec tsc --noEmit false --skipLibCheck true --module commonjs --target es2020 --moduleResolution node --outDir .sisyphus/tmp/task11-sim src/simulation/**/*.ts src/utils/types/npc.ts`
+
+Verification command:
+`node .sisyphus/evidence/scripts/task-11-gather-check.js`
+
+Observed output:
+command: node .sisyphus/evidence/scripts/task-11-gather-check.js
+remove_calls=1
+target_removed=true
+npc_item_1_quantity=1
+gather_ok=true
+
+Expected outcome:
+- NPC pathfinds to target, enters gather state, waits 2 seconds, removes target block via SimulationBridge.modifyBlock, and gains gathered item in inventory.

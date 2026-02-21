@@ -16,6 +16,9 @@ export interface NPCDecisionLoopOptions {
 	now?: () => number;
 	onLifecycle?: (eventType: string, payload: Record<string, unknown>) => void;
 	onThinkingState?: (npc: SimulationNPCState, state: SimulationNPCState['thinkingState']) => void;
+	onActionState?: (npc: SimulationNPCState, action: NPCAction['action'], payload: { position: SimulationNPCState['position']; details?: Record<string, unknown> }) => void;
+	addInventoryItem?: (npcId: string, itemType: string, quantity: number) => { accepted: number; rejected: number; isFull: boolean };
+	consumeInventoryItem?: (npcId: string, itemType: string, quantity: number) => number;
 }
 
 export interface NPCDecisionResult {
@@ -73,6 +76,12 @@ export class NPCDecisionLoop {
 
 	private readonly onThinkingState?: (npc: SimulationNPCState, state: SimulationNPCState['thinkingState']) => void;
 
+	private readonly onActionState?: (npc: SimulationNPCState, action: NPCAction['action'], payload: { position: SimulationNPCState['position']; details?: Record<string, unknown> }) => void;
+
+	private readonly addInventoryItem?: (npcId: string, itemType: string, quantity: number) => { accepted: number; rejected: number; isFull: boolean };
+
+	private readonly consumeInventoryItem?: (npcId: string, itemType: string, quantity: number) => number;
+
 	private readonly history: NPCConversationHistory;
 
 	private readonly inFlightByNpc: Set<string>;
@@ -87,6 +96,9 @@ export class NPCDecisionLoop {
 		this.now = options.now ?? (() => Date.now());
 		this.onLifecycle = options.onLifecycle;
 		this.onThinkingState = options.onThinkingState;
+		this.onActionState = options.onActionState;
+		this.addInventoryItem = options.addInventoryItem;
+		this.consumeInventoryItem = options.consumeInventoryItem;
 		this.history = new NPCConversationHistory();
 		this.inFlightByNpc = new Set();
 		this.nextDecisionAt = new Map();
@@ -120,7 +132,13 @@ export class NPCDecisionLoop {
 			this.transitionThinking(npc, 'received');
 			this.emitLifecycle('npc:decision-validate', { npcId: npc.id, action: decidedAction.action });
 			this.transitionThinking(npc, 'executing');
-			const execution = await executeNPCAction(this.bridge, npc, decidedAction, observation);
+			const execution = await executeNPCAction(this.bridge, npc, decidedAction, observation, {
+				onActionState: (action, position, details) => {
+					this.onActionState?.(npc, action, { position, details });
+				},
+				addInventoryItem: this.addInventoryItem,
+				consumeInventoryItem: this.consumeInventoryItem,
+			});
 			this.emitLifecycle('npc:decision-execute', { npcId: npc.id, action: decidedAction.action, applied: execution.applied });
 			this.nextDecisionAt.set(npc.id, this.now() + this.decisionIntervalMs);
 			this.transitionThinking(npc, 'idle');

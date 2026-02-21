@@ -65,3 +65,9 @@
 - A dedicated `SimulationSurvivalManager` with per-entity elapsed-time accumulators keeps hunger/HP progression deterministic even when tick intervals vary.
 - Wiring survival to both `player-local` and NPC ids in `SimulationEngine.tick()` ensures one shared ruleset (decay, starvation, regen) without NPC-only branching.
 - Reusing inventory catalog food metadata plus `SimulationInventoryManager.consumeItem()` provides strict food consumption semantics: item removal first, then hunger restore and `survival:update` emission.
+
+## 2026-02-21 Task 11
+
+- Splitting NPC action execution into focused behavior modules (`execute-move`, `execute-gather`, `execute-build`) keeps the decision loop clean while allowing per-action delays and side effects.
+- Emitting intermediate `npc:action` state updates from behavior executors provides visible animation transitions (walking/mining/building) before final decision completion events.
+- Deterministic Node evidence for gather/build is reliable when the bridge world state is backed by an in-memory block map that both `getWorldState` and `modifyBlock` share.

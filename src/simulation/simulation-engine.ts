@@ -65,6 +65,24 @@ export class SimulationEngine {
 					...payload,
 				});
 			},
+			onActionState: (npc, action, payload) => {
+				npc.lastAction = action;
+				this.emit('npc:action', {
+					npcId: npc.id,
+					action,
+					position: { ...payload.position },
+				});
+			},
+			addInventoryItem: (npcId, itemType, quantity) => {
+				const result = this.inventory.addItem(npcId, itemType, quantity);
+				this.refreshNPCInventory(npcId);
+				return result;
+			},
+			consumeInventoryItem: (npcId, itemType, quantity) => {
+				const consumed = this.inventory.consumeItem(npcId, itemType, quantity);
+				this.refreshNPCInventory(npcId);
+				return consumed;
+			},
 		});
 		this.inventory = new SimulationInventoryManager();
 		this.survival = new SimulationSurvivalManager();
@@ -139,29 +157,20 @@ export class SimulationEngine {
 
 	addInventoryItem(entityId: string, type: string, quantity: number, maxStack?: number): SimulationInventoryAddResult {
 		const result = this.inventory.addItem(entityId, type, quantity, maxStack);
-		if (entityId.startsWith('npc-')) {
-			const npc = this.npcRegistry.get(entityId);
-			if (npc) npc.inventory = this.inventory.getInventory(entityId);
-		}
+		this.refreshNPCInventory(entityId);
 		return result;
 	}
 
 	dropInventorySlot(entityId: string, slotIndex: number, quantity: number, position: SimulationVector3): SimulationDroppedItem | null {
 		const drop = this.inventory.dropFromSlot(entityId, slotIndex, quantity, position);
-		if (entityId.startsWith('npc-')) {
-			const npc = this.npcRegistry.get(entityId);
-			if (npc) npc.inventory = this.inventory.getInventory(entityId);
-		}
+		this.refreshNPCInventory(entityId);
 		if (drop) this.emit('inventory:drop', drop);
 		return drop;
 	}
 
 	dropAllInventoryOnDeath(entityId: string, position: SimulationVector3): SimulationDroppedItem[] {
 		const drops = this.inventory.dropAllForDeath(entityId, position);
-		if (entityId.startsWith('npc-')) {
-			const npc = this.npcRegistry.get(entityId);
-			if (npc) npc.inventory = this.inventory.getInventory(entityId);
-		}
+		this.refreshNPCInventory(entityId);
 		drops.forEach(drop => this.emit('inventory:drop', drop));
 		return drops;
 	}
@@ -253,6 +262,13 @@ export class SimulationEngine {
 				targetNpcId: result.action.target?.npcId,
 			});
 		}
+	}
+
+	private refreshNPCInventory(entityId: string): void {
+		if (!entityId.startsWith('npc-')) return;
+		const npc = this.npcRegistry.get(entityId);
+		if (!npc) return;
+		npc.inventory = this.inventory.getInventory(entityId);
 	}
 
 	private emit<T extends SimulationEventType>(type: T, payload: SimulationEventPayloadMap[T]) {

@@ -1,0 +1,17 @@
+Task 11 QA Evidence - NPC Build Behavior
+
+Preparation command:
+`pnpm exec tsc --noEmit false --skipLibCheck true --module commonjs --target es2020 --moduleResolution node --outDir .sisyphus/tmp/task11-sim src/simulation/**/*.ts src/utils/types/npc.ts`
+
+Verification command:
+`node .sisyphus/evidence/scripts/task-11-build-check.js`
+
+Observed output:
+command: node .sisyphus/evidence/scripts/task-11-build-check.js
+place_calls=1
+placed_type=9
+npc_item_9_remaining=0
+build_ok=true
+
+Expected outcome:
+- NPC pathfinds to target, enters build state, waits 1 second, consumes inventory block, and places block via SimulationBridge.modifyBlock.
