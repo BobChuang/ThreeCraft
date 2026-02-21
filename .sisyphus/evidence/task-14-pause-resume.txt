@@ -1,0 +1,60 @@
+Task 14 Playwright verification (Tab possession/release flow)
+
+Command:
+skill_mcp playwright browser_run_code (automated end-to-end flow)
+
+Result JSON:
+{
+  "setup": {
+    "npcId": "npc-01",
+    "npcName": "Neon",
+    "playerStart": {
+      "x": -7,
+      "y": 1,
+      "z": -7
+    },
+    "historyStart": 2
+  },
+  "afterPossess": {
+    "active": true,
+    "paused": true,
+    "camera": {
+      "x": -8,
+      "y": 1,
+      "z": -8
+    },
+    "npcPosition": {
+      "x": -8,
+      "y": 1,
+      "z": -8
+    },
+    "hp": 100,
+    "hunger": 100,
+    "bagItems": [null, null, null, null, null, null, null, null, null, null]
+  },
+  "pausedLenStart": 2,
+  "pausedLenEnd": 2,
+  "pausedGrowth": 0,
+  "afterRelease": {
+    "active": false,
+    "paused": false,
+    "camera": {
+      "x": -7,
+      "y": 1,
+      "z": -7
+    },
+    "cameraReturned": true,
+    "historyAtRelease": 4,
+    "bagItems": [44, 8, 12, 15, 30, 31, 46, 45, 33, 23]
+  },
+  "historyAfterResume": 6,
+  "resumedGrowth": 2
+}
+
+Interpretation:
+- Possession toggled on by Tab: active=true
+- NPC decision loop paused while possessing: paused=true
+- No conversation growth during paused window: pausedGrowth=0
+- Release toggled by Tab: active=false and paused=false
+- Camera returned to cached player position: cameraReturned=true
+- AI resumed after release: resumedGrowth=2

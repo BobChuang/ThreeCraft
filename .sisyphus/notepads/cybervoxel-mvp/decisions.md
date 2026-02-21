@@ -47,3 +47,9 @@
 - Added a modular validation pipeline at `src/simulation/npc-ai/validation/` that composes JSON/schema checks (`isValidNPCAction` reuse), prompt-injection filtering, and feasibility checks before any action execution.
 - Chose explicit fail-safe fallback behavior in `NPCDecisionLoop`: invalid/suspicious/unfeasible actions emit warning lifecycle events, force an `idle` action, and enqueue a corrective prompt hint for the next decision tick.
 - Enforced deterministic one-action-per-tick using a per-NPC `actionTickByNpc` map keyed by current `npc.tickCount`.
+
+## 2026-02-21 Task 14
+
+- Added a dedicated possession module at `src/controller/possession/` and kept its `index.ts` export-only so controller integration remains modular.
+- Implemented possession as instant camera/state switching with local cache restore (no transition animation), matching MVP scope and existing first-person control path.
+- Chose explicit single-player conflict handling: repeated direct possession requests while already possessing return `false` and emit a user-facing hint, while `Tab` continues to act as a possess/release toggle.

@@ -10,6 +10,7 @@ import Log from './log';
 import MultiPlay from './MultiPlay';
 import { ClientSimulationBridge, SimulationEngine, SimulationNPCState } from '../simulation';
 import { NPCRenderer, toNPCRenderSnapshot } from '../core/npc';
+import { PossessionController } from './possession';
 
 const fixedMapIndexRaw = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_FIXED_MAP_INDEX?.trim();
 let hasWarnedInvalidFixedMapIndex = false;
@@ -57,6 +58,8 @@ class Controller {
 
 	npcRenderer: NPCRenderer | null;
 
+	possessionController: PossessionController;
+
 	constructor(el: HTMLElement) {
 		// 挂载游戏层和控制器层, 默认看不到
 		[...el.children].forEach(d => d.remove());
@@ -84,6 +87,7 @@ class Controller {
 		// 创建UI控制器与游戏控制器
 		this.uiController = new UiController(this.ui);
 		this.gameController = new GameController(this.core, this);
+		this.possessionController = new PossessionController(this);
 		this.log = new Log([]);
 
 		// 特殊处理VR部分
@@ -167,6 +171,7 @@ class Controller {
 
 	// 结束游戏(清除当前状态)
 	endGame() {
+		this.possessionController.reset();
 		this.simulationEngine?.stop();
 		this.simulationEngine = null;
 		this.npcRenderer?.clear();
@@ -201,6 +206,7 @@ class Controller {
 			this.multiPlay.emitUpdateState();
 			this.gameController.hasChange = false;
 		}
+		this.possessionController.syncControlledNPCPosition();
 		if (this.simulationEngine) this.simulationEngine.setObservers([{ x: config.state.posX, y: config.state.posY, z: config.state.posZ }]);
 		if (this.simulationEngine && this.npcRenderer) {
 			const snapshots = this.simulationEngine.getNPCStates().map((state: SimulationNPCState) =>
@@ -214,6 +220,7 @@ class Controller {
 				})
 			);
 			this.npcRenderer.syncSnapshots(snapshots);
+			this.possessionController.syncPossessedStateFromSimulation();
 		}
 		// 补充人物运动动画
 		this.multiPlay.playersController.render();

@@ -77,6 +77,10 @@ class ActionPluginPc {
 	// 前后左右上下按键按下时注册动作
 	static getKeyListener(self) {
 		return e => {
+			if (e.key === 'Tab') {
+				e.preventDefault();
+				return;
+			}
 			if (e.key === 'Escape') {
 				self.controller.pauseGame();
 				self.controller.uiController.ui.menu.toInnerGameMenu();
@@ -95,6 +99,11 @@ class ActionPluginPc {
 	// 前后左右上下按键弹起时取消动作
 	static getKeyUpListener(self) {
 		return e => {
+			if (e.key === 'Tab') {
+				e.preventDefault();
+				self.controller.possessionController.handleToggleRequest();
+				return;
+			}
 			if (self.controller.uiController.ui.bag.bagBox.working) return;
 			if (['w', 'W', 's', 'S'].includes(e.key)) self.controller.gameController.handleMoveAction({ font: 0 });
 			else if (['a', 'A', 'd', 'D'].includes(e.key)) self.controller.gameController.handleMoveAction({ left: 0 });

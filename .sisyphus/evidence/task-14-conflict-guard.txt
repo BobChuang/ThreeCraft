@@ -1,0 +1,16 @@
+Task 14 conflict guard verification
+
+Command:
+skill_mcp playwright browser_run_code (direct repeated possession request)
+
+Result JSON:
+{
+  "first": true,
+  "second": false,
+  "notify": "已处于附身状态, 请先按 Tab 解除"
+}
+
+Interpretation:
+- First possession request succeeds.
+- Repeated possession request while already possessing is rejected.
+- User-facing conflict hint is emitted.

@@ -43,6 +43,8 @@ export class SimulationEngine {
 
 	private previousTickAt: number | null;
 
+	private readonly pausedNPCDecisionIds: Set<string>;
+
 	constructor(bridge: ISimulationBridge, options: SimulationEngineOptions = {}) {
 		this.bridge = bridge;
 		this.tickIntervalMs = options.tickIntervalMs ?? 500;
@@ -51,6 +53,7 @@ export class SimulationEngine {
 		this.tickHandle = null;
 		this.previousTickAt = null;
 		this.observers = options.initialObservers ?? [];
+		this.pausedNPCDecisionIds = new Set();
 		this.npcRegistry = createInitialNPCRegistry();
 		this.decisionLoop = new NPCDecisionLoop(bridge, {
 			useStubBrain: this.useStubBrain,
@@ -155,6 +158,31 @@ export class SimulationEngine {
 		return this.decisionLoop.getHistory(npcId);
 	}
 
+	setNPCDecisionPaused(npcId: string, paused: boolean): void {
+		if (!this.npcRegistry.has(npcId)) return;
+		if (paused) {
+			this.pausedNPCDecisionIds.add(npcId);
+			const npc = this.npcRegistry.get(npcId);
+			if (npc) npc.thinkingState = 'idle';
+			return;
+		}
+		this.pausedNPCDecisionIds.delete(npcId);
+	}
+
+	isNPCDecisionPaused(npcId: string): boolean {
+		return this.pausedNPCDecisionIds.has(npcId);
+	}
+
+	overrideNPCPosition(npcId: string, position: SimulationVector3): void {
+		const npc = this.npcRegistry.get(npcId);
+		if (!npc) return;
+		npc.position = {
+			x: position.x,
+			y: position.y,
+			z: position.z,
+		};
+	}
+
 	addInventoryItem(entityId: string, type: string, quantity: number, maxStack?: number): SimulationInventoryAddResult {
 		const result = this.inventory.addItem(entityId, type, quantity, maxStack);
 		this.refreshNPCInventory(entityId);
@@ -227,7 +255,7 @@ export class SimulationEngine {
 			const sleeping = this.shouldSleepByObserverDistance(npc.position);
 			npc.isSleeping = sleeping;
 			this.emit('simulation:npc-tick', { npcId: npc.id, tickCount: npc.tickCount, sleeping });
-			if (!sleeping) activeNPCs.push(npc);
+			if (!sleeping && !this.pausedNPCDecisionIds.has(npc.id)) activeNPCs.push(npc);
 		});
 		await Promise.all(activeNPCs.map(npc => this.processNPCDecision(npc, npcs)));
 	}
