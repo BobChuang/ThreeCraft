@@ -133,3 +133,10 @@
 - CSS2D thinking bubble auto-hide must use the same time base end-to-end (`Date.now` for show/update checks); mixing `Date.now` and `performance.now` prevents expiry from triggering.
 - Thinking stream rendering is more stable when controller caches per-NPC accumulated chunks and reuses that cache in the `received` phase, instead of replacing with placeholder text.
 - Simulation lifecycle mapping needs to accept both `eventType` (bridge LLM events) and `status` (engine lifecycle forwarding) to keep thinking-stream events reachable across both paths.
+
+
+## 2026-02-22 Task 20
+
+- 侧边栏日志面板可通过复用 `thinking:state` 与 `simulation:lifecycle` 现有事件流实现，无需新增桥接协议；并需同时兼容 `eventType` / `status` 两种字段来源。
+- 以 `activeRequestIdByNpc + rawByNpc` 维护单 NPC 请求生命周期，能够把 `thinking-stream` 分段内容聚合到 `thinking-complete/error` 的同一条目，便于详情展开查看。
+- Playwright 在该 WebGL 场景下需要启用 SwiftShader 参数（`--use-angle=swiftshader --use-gl=swiftshader`）才能稳定渲染 HUD 并完成筛选截图证据采集。

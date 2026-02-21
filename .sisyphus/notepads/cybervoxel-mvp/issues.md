@@ -75,3 +75,9 @@
 ## 2026-02-22 Task 19
 
 - Local Vite run still emits the known baseline `registerSW.js` console 404 warning during Playwright capture; it is unrelated to thinking-bubble functionality and non-blocking for acceptance.
+
+
+## 2026-02-22 Task 20
+
+- 本地自动化截图中默认 headless Chromium 可能触发 `Error creating WebGL context`，导致侧边栏面板不可见；切换到软件渲染参数后恢复稳定。
+- 开发运行期间仍存在基线 `registerSW.js` 404 / 非 module 警告，为仓库既有问题，未阻塞 Task 20 的 UI 功能与证据产出。

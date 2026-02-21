@@ -98,3 +98,10 @@
 - Adopted `CSS2DRenderer` as a global HUD overlay in `Core` and attached per-NPC `CSS2DObject` thinking bubbles under `src/core/npc/thinking-bubble/` to align with label overlay architecture.
 - Finalized end-to-end thinking lifecycle wiring in controller/event pipeline: `thinking:state` drives requesting/received/executing/idle state changes, `thinking-stream` drives live chunk updates, and `npc:action` enforces final executing text.
 - Kept scope isolated to Task 19 by excluding unrelated dirty files from commit (`.sisyphus/ralph-loop.local.md`, task-18 manual QA leftover) while appending only required notepad records.
+
+
+## 2026-02-22 Task 20
+
+- 新增 `src/ui/sidebar-log/` 独立模块（`index/types/event-reader/status-meta/entry-template/css`）承载日志面板能力，保持 `src/ui/index.ts` 仅做最小装配接入。
+- 决策状态颜色按验收要求固定映射：请求中=黄、成功=绿、执行中=蓝、错误=红，并在条目中统一展示时间戳、tokens、延迟与可展开原始响应/推理信息。
+- 控制器仅在既有 `handleSimulationEvent` 中转发事件到 `ui.sidebarLog`，不改 server/socket 与 simulation 协议边界，确保 Task 20 作用域最小化。

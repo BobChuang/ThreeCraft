@@ -6,6 +6,7 @@ import Menu from './menu';
 import ActonControl from './action';
 import DialoguePanel from './dialogue';
 import DeathOverlay from './death';
+import SidebarLog from './sidebar-log';
 import { Controller } from '../controller';
 import { config } from '../controller/config';
 
@@ -24,6 +25,8 @@ class UI {
 
 	death!: DeathOverlay;
 
+	sidebarLog!: SidebarLog;
+
 	controller!: Controller;
 
 	loadController(controller: Controller) {
@@ -41,6 +44,7 @@ class UI {
 		this.menu = new Menu(document.getElementById('app')!, this.controller);
 		this.dialogue = new DialoguePanel(document.getElementById('HUD-stage')!);
 		this.death = new DeathOverlay(document.getElementById('HUD-stage')!);
+		this.sidebarLog = new SidebarLog(document.getElementById('HUD-stage')!, npcId => this.controller.getNPCStateFromClientBus(npcId)?.name ?? npcId);
 		document.oncontextmenu = () => false;
 	}
 

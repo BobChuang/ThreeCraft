@@ -304,6 +304,7 @@ class Controller {
 	}
 
 	private handleSimulationEvent(event: SimulationBridgeEvent): void {
+		this.ui.sidebarLog.handleSimulationEvent(event);
 		const mapped = mapBridgeEventToClientNPCEvent(event);
 		if (mapped) this.clientEventBus?.dispatchBatch([mapped]);
 		if (event.type === 'player:death') {
