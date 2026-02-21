@@ -13,7 +13,7 @@ class BlockController {
 
 	host: GameController;
 
-	constructor(core: Core, host) {
+	constructor(core: Core, host: GameController) {
 		this.core = core;
 		this.host = host;
 		this.curHighlight = highLightBlockMesh;
@@ -30,6 +30,11 @@ class BlockController {
 
 	// 高亮当前块
 	highlightCurrentBlock() {
+		if (!this.curHighlight) return;
+		if (this.host.host.observerController?.isObserverMode()) {
+			this.core.scene.remove(this.curHighlight);
+			return;
+		}
 		const collision = relativeOperateCollisionCheck({
 			posX: this.core.camera.position.x,
 			posY: this.core.camera.position.y,

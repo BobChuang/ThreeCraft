@@ -11,6 +11,7 @@ import MultiPlay from './MultiPlay';
 import { ClientSimulationBridge, SimulationEngine, SimulationNPCState } from '../simulation';
 import { NPCRenderer, toNPCRenderSnapshot } from '../core/npc';
 import { PossessionController } from './possession';
+import { ObserverController } from './observer';
 
 const fixedMapIndexRaw = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_FIXED_MAP_INDEX?.trim();
 let hasWarnedInvalidFixedMapIndex = false;
@@ -60,6 +61,8 @@ class Controller {
 
 	possessionController: PossessionController;
 
+	observerController: ObserverController;
+
 	constructor(el: HTMLElement) {
 		// 挂载游戏层和控制器层, 默认看不到
 		[...el.children].forEach(d => d.remove());
@@ -88,6 +91,7 @@ class Controller {
 		this.uiController = new UiController(this.ui);
 		this.gameController = new GameController(this.core, this);
 		this.possessionController = new PossessionController(this);
+		this.observerController = new ObserverController(this);
 		this.log = new Log([]);
 
 		// 特殊处理VR部分
@@ -171,6 +175,7 @@ class Controller {
 
 	// 结束游戏(清除当前状态)
 	endGame() {
+		this.observerController.reset();
 		this.possessionController.reset();
 		this.simulationEngine?.stop();
 		this.simulationEngine = null;
@@ -207,6 +212,7 @@ class Controller {
 			this.gameController.hasChange = false;
 		}
 		this.possessionController.syncControlledNPCPosition();
+		this.observerController.update();
 		if (this.simulationEngine) this.simulationEngine.setObservers([{ x: config.state.posX, y: config.state.posY, z: config.state.posZ }]);
 		if (this.simulationEngine && this.npcRenderer) {
 			const snapshots = this.simulationEngine.getNPCStates().map((state: SimulationNPCState) =>

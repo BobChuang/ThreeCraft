@@ -70,6 +70,7 @@ class GameController {
 
 	// 请求块操作
 	handleBlockAction(key: actionBlockEvent) {
+		if (this.host.observerController?.isObserverMode()) return;
 		this.hasChange = true;
 		const collision = relativeOperateCollisionCheck({
 			posX: this.core.camera.position.x,

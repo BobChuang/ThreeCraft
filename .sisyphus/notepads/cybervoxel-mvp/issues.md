@@ -42,3 +42,7 @@
 ## 2026-02-21 Task 11 Follow-up
 
 - Isolated Task 11 evidence compilation still surfaces pre-existing `NPCActionValidationResult` narrowing errors in `src/simulation/npc-ai/decision-loop.ts`; behavior executor verification remains covered by deterministic gather/build Node scripts and successful `pnpm build`.
+
+## 2026-02-21 Task 15
+
+- In automated Playwright runs, synthetic key events did not always toggle observer mode reliably in this project’s pointer-lock gameplay flow; evidence capture depended on stabilized interaction timing and direct in-page event dispatch.

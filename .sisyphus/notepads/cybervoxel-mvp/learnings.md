@@ -88,3 +88,9 @@
 
 - For behavior executors, path reachability must be checked before side effects; otherwise gather/build can mutate blocks from unreachable positions.
 - Emitting walking updates from shared path traversal and then switching to gather/build phases keeps animation transitions deterministic for renderer state mapping.
+
+## 2026-02-21 Task 15
+
+- Observer mode is safest as a dedicated controller that owns camera snapshot/restore and input hooks, while the main render loop only calls `observerController.update()`.
+- Marker picking should write `npcId` into `mesh.userData` to avoid repeated map scans during raycast hit resolution.
+- Terrain interaction gates must be applied in both block action and highlight paths; disabling only one path still leaks observer-side editing affordances.

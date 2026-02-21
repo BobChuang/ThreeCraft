@@ -58,6 +58,12 @@ export class PossessionController {
 		return this.active !== null;
 	}
 
+	getPossessedNPCName(): string | null {
+		if (!this.active || !this.host.simulationEngine) return null;
+		const npc = this.host.simulationEngine.getNPCStates().find(item => item.id === this.active?.npcId);
+		return npc?.name ?? null;
+	}
+
 	handleToggleRequest(): void {
 		if (this.host.multiPlay.working) return;
 		if (this.active) {

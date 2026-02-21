@@ -58,3 +58,9 @@
 
 - Enforced strict path-first semantics in `execute-move`, `execute-gather`, and `execute-build`: actions now return `applied: false` with `reason: path-not-found` when target routing is unreachable.
 - Kept behavior wiring bridge-driven and minimal by reusing existing `findPathToTarget` + `SimulationBridge.modifyBlock` + inventory callbacks instead of adding engine-side shortcuts.
+
+## 2026-02-21 Task 15
+
+- Added `src/controller/observer/observer-controller.ts` as the single owner for god-mode toggle (`G`), OrbitControls lifecycle, marker sync/picking, and observer HUD updates.
+- Chose minimal integration points only: controller bootstrap/update/reset hooks plus observer guards in block action/highlight to enforce non-editable observer mode.
+- Reused existing possession path by delegating marker double-click directly to `possessionController.possessNPC(npcId)` and surfaced possession state in observer mode indicator text.
