@@ -1,0 +1,101 @@
+@import '../../common/css/tool-kits.less';
+
+.survival-hud {
+	display: none;
+	pointer-events: none;
+	font-family: mplus, sans-serif;
+
+	&.active {
+		display: block;
+	}
+
+	.survival-hud-mode {
+		position: fixed;
+		top: 0.9rem;
+		left: 50%;
+		transform: translateX(-50%);
+		padding: 0.34rem 0.86rem;
+		font-size: 0.74rem;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: #e9fcff;
+		background: linear-gradient(130deg, rgba(7, 15, 34, 0.94), rgba(17, 8, 39, 0.78));
+		border: 1px solid rgba(117, 255, 239, 0.52);
+		box-shadow: 0 0 14px rgba(48, 255, 228, 0.28), inset 0 0 14px rgba(80, 122, 255, 0.14);
+		text-shadow: 0 0 8px rgba(123, 237, 255, 0.42);
+		z-index: 105;
+	}
+
+	.survival-hud-bars {
+		position: fixed;
+		left: 1rem;
+		bottom: 1.2rem;
+		width: 280px;
+		padding: 0.45rem 0.54rem 0.5rem;
+		border: 1px solid rgba(122, 218, 255, 0.36);
+		background: linear-gradient(130deg, rgba(10, 17, 30, 0.9), rgba(4, 26, 39, 0.78));
+		box-shadow: 0 0 20px rgba(45, 153, 255, 0.2), inset 0 0 16px rgba(66, 229, 255, 0.08);
+		z-index: 104;
+	}
+
+	.survival-hud-label {
+		font-size: 0.58rem;
+		letter-spacing: 0.13em;
+		color: rgba(220, 244, 255, 0.82);
+		margin-bottom: 0.16rem;
+	}
+
+	.survival-hud-bar {
+		position: relative;
+		height: 14px;
+		background: rgba(5, 13, 23, 0.9);
+		border: 1px solid rgba(205, 241, 255, 0.16);
+		margin-bottom: 0.34rem;
+		overflow: hidden;
+
+		.survival-hud-fill {
+			display: block;
+			height: 100%;
+			width: 100%;
+			transition: width 180ms ease-out;
+		}
+
+		.survival-hud-value {
+			position: absolute;
+			right: 0.35rem;
+			top: 50%;
+			transform: translateY(-50%);
+			font-size: 0.58rem;
+			color: #ffffff;
+			text-shadow: 0 1px 4px rgba(0, 0, 0, 0.66);
+		}
+	}
+
+	.hp-bar .survival-hud-fill {
+		background: linear-gradient(90deg, #421113, #ff3047);
+		box-shadow: 0 0 12px rgba(255, 54, 88, 0.42);
+	}
+
+	.hunger-bar {
+		margin-bottom: 0;
+		.survival-hud-fill {
+			background: linear-gradient(90deg, #6f3600, #ff9f1c);
+			box-shadow: 0 0 12px rgba(255, 169, 36, 0.42);
+		}
+	}
+
+	.survival-hud-npc-count {
+		position: fixed;
+		right: 1rem;
+		bottom: 1rem;
+		padding: 0.28rem 0.55rem;
+		font-size: 0.66rem;
+		letter-spacing: 0.08em;
+		color: #d6fff8;
+		background: linear-gradient(140deg, rgba(4, 17, 31, 0.86), rgba(11, 7, 30, 0.74));
+		border: 1px solid rgba(110, 243, 232, 0.45);
+		text-shadow: 0 0 6px rgba(112, 255, 242, 0.4);
+		box-shadow: 0 0 12px rgba(0, 253, 231, 0.18);
+		z-index: 104;
+	}
+}

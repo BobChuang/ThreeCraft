@@ -85,3 +85,8 @@
 
 - 首次实现中误用了 `String.replaceAll(RegExp)`（非全局正则）导致运行时报错，已改为 `replace(/.../g, ...)` 以兼容当前运行环境。
 - Playwright 验证期间继续出现仓库基线 `registerSW.js` 404 控制台错误，不影响附身态任务列表显示/隐藏验收。
+
+## 2026-02-22 Task 22
+
+- 本地 HUD 运行与截图验证期间继续出现仓库基线 `registerSW.js` 404 / 非 module 提示，不影响 Task 22 功能与构建通过。
+- 默认随机地图下 HUD 可能因非赛博朋克场景按预期隐藏；为稳定采集证据，使用 `VITE_FIXED_MAP_INDEX=12` 启动临时开发服务锁定赛博朋克场景。

@@ -145,3 +145,9 @@
 - 任务列表 UI 以控制器侧 `nextGoal` 事件增量跟踪最稳定：将每次新 `nextGoal` 解析为 `current + upcoming`，并把被替换的旧 `current` 归档为 `done`，即可得到只读且有序的 `待办/进行中/完成` 列表。
 - 面板显隐无需新增事件，直接在渲染循环中基于 `possessionController.getPossessedNPCId()` 决定 `taskList.sync(viewModel|null)`，可确保附身即时显示、释放即时隐藏。
 - `nextGoal` 实际文本格式不固定（多行、编号、分隔符），需要做轻量标准化与多策略拆分，避免 UI 只显示原始整段字符串。
+
+## 2026-02-22 Task 22
+
+- 生存 HUD 适合继续沿用现有 HUD-stage 叠层模式：单独 `src/ui/survival-hud/` 模块 + `UI.loadController` 装配 + `tryRender` 每帧 `sync(viewModel|null)`，实现显隐和状态更新解耦。
+- 玩家 HP/饥饿值来源可以稳定挂在 `Controller.handleSimulationEvent('survival:update')`，通过缓存 `player-local` 生存状态避免 UI 直接耦合 simulation internals。
+- 模式文案和活跃 NPC 计数统一在控制器组装（普通 / 观察者模式 / 附身：{NPC}），HUD 组件只负责渲染，这样后续模式扩展不会污染 UI 逻辑。

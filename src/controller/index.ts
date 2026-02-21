@@ -23,6 +23,7 @@ import {
 import { NPCRenderer, toNPCRenderSnapshot } from '../core/npc';
 import { PossessionController } from './possession';
 import { ObserverController } from './observer';
+import type { SurvivalHUDViewModel } from '../ui/survival-hud/types';
 
 const fixedMapIndexRaw = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env?.VITE_FIXED_MAP_INDEX?.trim();
 let hasWarnedInvalidFixedMapIndex = false;
@@ -55,6 +56,13 @@ interface NPCTaskListPanelState {
 	items: Array<{ text: string; status: 'todo' | 'in-progress' | 'done' }>;
 }
 
+interface PlayerSurvivalHUDState {
+	hp: number;
+	maxHp: number;
+	hunger: number;
+	maxHunger: number;
+}
+
 const normalizeGoalText = (value: string): string =>
 	value
 		.trim()
@@ -79,6 +87,13 @@ const parseGoalListFromNextGoal = (nextGoal: string): string[] => {
 		.filter(Boolean);
 	if (segmented.length > 1) return segmented.slice(0, 8);
 	return [normalizeGoalText(normalized)].filter(Boolean);
+};
+
+const isCyberpunkSceneSelected = (): boolean => {
+	if (config.weather === null) return false;
+	const weatherType = weatherConfig[config.weather];
+	if (!weatherType) return false;
+	return weatherType[3] === 5;
 };
 
 class Controller {
@@ -126,6 +141,8 @@ class Controller {
 
 	readonly npcTaskTrackerById: Map<string, NPCTaskTracker>;
 
+	private playerSurvivalState: PlayerSurvivalHUDState;
+
 	constructor(el: HTMLElement) {
 		// 挂载游戏层和控制器层, 默认看不到
 		[...el.children].forEach(d => d.remove());
@@ -161,6 +178,7 @@ class Controller {
 		this.npcDialogueLog = [];
 		this.npcThinkingStreamById = new Map();
 		this.npcTaskTrackerById = new Map();
+		this.playerSurvivalState = { hp: 100, maxHp: 100, hunger: 100, maxHunger: 100 };
 		this.log = new Log([]);
 
 		// 特殊处理VR部分
@@ -253,6 +271,7 @@ class Controller {
 		this.npcStateById.clear();
 		this.npcThinkingStreamById.clear();
 		this.npcTaskTrackerById.clear();
+		this.playerSurvivalState = { hp: 100, maxHp: 100, hunger: 100, maxHunger: 100 };
 		this.simulationEngine?.stop();
 		this.simulationEngine = null;
 		this.npcRenderer?.clear();
@@ -307,6 +326,7 @@ class Controller {
 			this.possessionController.syncPossessedStateFromSimulation();
 		}
 		this.ui.taskList.sync(this.getPossessedNPCTaskListState());
+		this.ui.survivalHud.sync(this.getSurvivalHUDState());
 		// 补充人物运动动画
 		this.multiPlay.playersController.render();
 		if (!this.multiPlay.working) this.npcRenderer?.render();
@@ -330,6 +350,13 @@ class Controller {
 			initialObservers: [{ x: config.state.posX, y: config.state.posY, z: config.state.posZ }],
 		});
 		this.simulationEngine.start();
+		const playerSurvival = this.simulationEngine.getSurvivalState('player-local');
+		this.playerSurvivalState = {
+			hp: playerSurvival.hp,
+			maxHp: playerSurvival.maxHp,
+			hunger: playerSurvival.hunger,
+			maxHunger: playerSurvival.maxHunger,
+		};
 	}
 
 	tryOpenDialogueWithNearbyNPC(): boolean {
@@ -350,6 +377,18 @@ class Controller {
 
 	private handleSimulationEvent(event: SimulationBridgeEvent): void {
 		this.ui.sidebarLog.handleSimulationEvent(event);
+		if (event.type === 'survival:update') {
+			const entityId = typeof event.payload.entityId === 'string' ? event.payload.entityId : '';
+			if (entityId === 'player-local') {
+				const hp = typeof event.payload.hp === 'number' ? event.payload.hp : this.playerSurvivalState.hp;
+				const hunger = typeof event.payload.hunger === 'number' ? event.payload.hunger : this.playerSurvivalState.hunger;
+				this.playerSurvivalState = {
+					...this.playerSurvivalState,
+					hp,
+					hunger,
+				};
+			}
+		}
 		const mapped = mapBridgeEventToClientNPCEvent(event);
 		if (mapped) this.clientEventBus?.dispatchBatch([mapped]);
 		if (event.type === 'player:death') {
@@ -550,6 +589,30 @@ class Controller {
 		tracker.upcomingGoals = nextUpcomingGoals;
 		tracker.updatedAt = Date.now();
 		this.npcTaskTrackerById.set(npcId, tracker);
+	}
+
+	private getSurvivalHUDState(): SurvivalHUDViewModel | null {
+		if (config.controller.operation !== 'pc' || !isCyberpunkSceneSelected()) return null;
+		const possessedNpcId = this.possessionController.getPossessedNPCId();
+		const possessedNpcName = this.possessionController.getPossessedNPCName();
+		let modeText = '普通';
+		if (this.observerController.isObserverMode()) modeText = '观察者模式';
+		else if (possessedNpcName) modeText = `附身：${possessedNpcName}`;
+		const possessedNpc =
+			possessedNpcId && this.simulationEngine ? this.getNPCStateFromClientBus(possessedNpcId) ?? this.simulationEngine.getNPCStates().find(item => item.id === possessedNpcId) ?? null : null;
+		const hp = possessedNpc?.survival.hp ?? this.playerSurvivalState.hp;
+		const maxHp = possessedNpc?.survival.maxHp ?? this.playerSurvivalState.maxHp;
+		const hunger = possessedNpc?.survival.hunger ?? this.playerSurvivalState.hunger;
+		const maxHunger = possessedNpc?.survival.maxHunger ?? this.playerSurvivalState.maxHunger;
+		const activeNpcCount = this.npcStateById.size > 0 ? this.npcStateById.size : this.simulationEngine?.getNPCStates().length ?? 0;
+		return {
+			modeText,
+			hp,
+			maxHp,
+			hunger,
+			maxHunger,
+			activeNpcCount,
+		};
 	}
 }
 

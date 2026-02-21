@@ -8,6 +8,7 @@ import DialoguePanel from './dialogue';
 import DeathOverlay from './death';
 import SidebarLog from './sidebar-log';
 import TaskListPanel from './task-list';
+import SurvivalHUD from './survival-hud';
 import { Controller } from '../controller';
 import { config } from '../controller/config';
 
@@ -30,6 +31,8 @@ class UI {
 
 	taskList!: TaskListPanel;
 
+	survivalHud!: SurvivalHUD;
+
 	controller!: Controller;
 
 	loadController(controller: Controller) {
@@ -49,6 +52,7 @@ class UI {
 		this.death = new DeathOverlay(document.getElementById('HUD-stage')!);
 		this.sidebarLog = new SidebarLog(document.getElementById('HUD-stage')!, npcId => this.controller.getNPCStateFromClientBus(npcId)?.name ?? npcId);
 		this.taskList = new TaskListPanel(document.getElementById('HUD-stage')!);
+		this.survivalHud = new SurvivalHUD(document.getElementById('HUD-stage')!);
 		document.oncontextmenu = () => false;
 	}
 
@@ -65,6 +69,7 @@ class UI {
 		this.dialogue.close();
 		this.death.close();
 		this.taskList.sync(null);
+		this.survivalHud.sync(null);
 	}
 }
 

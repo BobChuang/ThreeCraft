@@ -110,3 +110,9 @@
 - 新建 `src/ui/task-list/` 独立模块（`index/render-task-items/types/css`），并只在 `src/ui/index.ts` 做装配接入，保持 UI 模块化边界。
 - 控制器端新增 `npcTaskTrackerById` 作为客户端只读任务视图状态，数据来源严格限定为 `NPC_ACTION` 事件里的 `nextGoal`，不引入玩家任务分配能力。
 - 任务面板刷新策略采用“每帧计算可见模型 + 签名去重渲染”：满足附身态自动刷新与释放即隐藏，同时避免不必要 DOM 重绘。
+
+## 2026-02-22 Task 22
+
+- 采用新增 UI 模块 `src/ui/survival-hud/`（`index.ts` + `types.ts` + `css/style.less`）承载 HUD 渲染，`src/ui/index.ts` 仅做最小注册，保持现有 UI 装配模式。
+- 控制器端新增 `getSurvivalHUDState()` 统一聚合显隐门控（仅 PC + 赛博朋克）与运行态数据（生存值、模式文案、NPC 活跃数），避免 HUD 组件直接读取 simulation/controller 子系统。
+- 玩家生存值来源选择 `survival:update` 事件缓存（`player-local`），附身态优先读取当前 NPC survival，实现「普通/观察者/附身」与 HP/饥饿条动态一致更新。
