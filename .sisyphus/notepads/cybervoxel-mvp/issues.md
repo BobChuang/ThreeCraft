@@ -146,3 +146,7 @@
 
 - `pnpm exec tsc --noEmit` 仍失败（`TSC_EXIT=2`），错误主要位于历史文件（如 `src/controller/**`、`src/core/**`、`src/ui/**` 旧代码）与类型基线（`AbortSignal` 声明冲突），非本次审查新增。
 - 本次审查范围内源码文件未发现 `as any`、`@ts-ignore`、空 catch、生产 `console.log`、注释掉代码、LOC 超限等新增问题，但由于全仓 tsc 门禁失败，F2 结论为不通过。
+
+## 2026-02-23 Task 18（closure refresh）
+
+- `pnpm build` 仍出现仓库既有 warning：`<script src="/registerSW.js"> ... can't be bundled without type="module"`；本次仅做 T18 复核与证据刷新，未引入新的阻塞构建错误。

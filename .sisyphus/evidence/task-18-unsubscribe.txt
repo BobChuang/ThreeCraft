@@ -1,4 +1,43 @@
-unsubscribe_calls_after_two_dispatches=1
-throttled_state_calls_for_same_npc=1
-assert_unsubscribe=PASS
-assert_throttle_merge=PASS
+Task 18 - QA 场景 2：Event bus unsubscribe works
+
+前置条件：
+- 已存在 `ClientNPCEventBus.subscribe/unsubscribe/dispatch`。
+- 使用事件类型：`NPC_DIALOGUE`。
+
+执行步骤：
+1. 创建 `ClientNPCEventBus`，注册 `NPC_DIALOGUE` 监听器（计数器 `calls=0`）。
+2. 首次触发 `dispatch(NPC_DIALOGUE, { npcId: 'npc-01', dialogue: 'hello before unsubscribe' })`。
+3. 执行 `unsubscribe()` 取消订阅。
+4. 再次触发 `dispatch(NPC_DIALOGUE, { npcId: 'npc-01', dialogue: 'should not be received' })`。
+5. 等待 20ms，读取回调计数并断言。
+
+关键输出：
+- event=`NPC_DIALOGUE`
+- callsAfterFirstDispatch=1
+- expectedCallsAfterUnsubscribe=1
+- callbackReceivedAfterUnsubscribe=false
+
+断言结果：
+- 断言 A：首次 subscribe 后回调触发 1 次 => PASS
+- 断言 B：unsubscribe 后再次 trigger 不再触发回调 => PASS
+
+结论：PASS
+
+---
+
+2026-02-23 回归复核（T18 closure）
+
+执行命令：
+- `node .sisyphus/tmp/task18-run/.sisyphus/tmp/task18-verify.js`
+
+关键输出（实测）：
+- unsubscribeEvent=`NPC_DIALOGUE`
+- callsAfterFirstDispatch=1
+- expectedCallsAfterUnsubscribe=1
+- callbackReceivedAfterUnsubscribe=false
+
+断言结果：
+- 断言 A：首次 subscribe 后回调触发 1 次 => PASS
+- 断言 B：unsubscribe 后再次 trigger 不再触发回调 => PASS
+
+结论：PASS（取消订阅行为符合预期）

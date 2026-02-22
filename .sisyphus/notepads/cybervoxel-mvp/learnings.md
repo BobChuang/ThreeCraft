@@ -202,3 +202,9 @@
 
 - 对“F2 是否通过”的判定应拆分为两层：新增问题检查（反模式/LOC/LSP）与全仓门禁检查（`pnpm exec tsc --noEmit`）；前者通过并不自动代表 F2 通过。
 - 在当前仓库基线下，`pnpm build` 可通过且本次改动文件可达成 0 新增问题，但 `tsc --noEmit` 仍会被历史类型噪声阻断，必须如实标记为构建失败。
+
+## 2026-02-23 Task 18（closure refresh）
+
+- T18 在当前分支已具备完整单机事件总线链路：`ClientNPCEventBus`（订阅/退订/批量派发/按事件类型+实体 key 节流）+ `mapBridgeEventToClientNPCEvent` + `mapNPCStatesToClientEvents` + `Controller.ensureClientEventBus` 消费。
+- 用最小 Node 脚本验证 `dispatchBatch(mapNPCStatesToClientEvents(...))` 可稳定产出 `NPC_STATE_UPDATE`，并能从 `lastAction` 推导 UI 动画语义（如 `move -> walking`）。
+- 收口阶段优先“复核 + 证据刷新 + 计划勾选”，避免在已达标实现上重复改架构，可降低引入回归风险。

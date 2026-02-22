@@ -1,106 +1,77 @@
+Task 18 - QA 场景 1：Event bus emits NPC state updates for UI
 
-> three-craft@1.0.0 build /Users/zhangganhui/skills/game/ThreeCraft
-> vite build
+前置条件：
+- 已存在 Task 18 事件总线实现：`ClientNPCEventBus`、`mapNPCStatesToClientEvents`、`NPC_STATE_UPDATE`。
+- 代码定位确认：
+  - `src/controller/index.ts` 存在 `clientEventBus.subscribe(CLIENT_NPC_EVENT_TYPES.NPC_STATE_UPDATE, ...)`
+  - `src/controller/index.ts` 存在 `dispatchBatch(mapNPCStatesToClientEvents(npcStates))`
 
-[36mvite v2.9.18 [32mbuilding for production...[36m[39m
-<script src="/registerSW.js"> in "/index.html" can't be bundled without type="module" attribute
-transforming...
-transforming...
-[32m✓[39m 2 modules transformed.
-rendering chunks...
-[32m✓[39m 372 modules transformed.
-rendering chunks...
-[90m[37m[2mdist/[22m[90m[39m[32mpng/acaciaLeaves-c754a553.png       [39m [2m12.23 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/andesite-00d3c7f0.png           [39m [2m16.24 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/bedrock-22bdb1bf.png            [39m [2m5.97 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/birchLeaves-dff360ec.png        [39m [2m12.26 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/coalOre-80f56a68.png            [39m [2m6.08 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/clayBlock-ecac5d17.png          [39m [2m11.38 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/brickBlock-07255cbb.png         [39m [2m12.66 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/cobblestone-613b82f7.png        [39m [2m8.54 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/diamondOre-e6c54469.png         [39m [2m9.61 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/blockDiamond-a6a8018a.png       [39m [2m9.85 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/diorite-ff88062a.png            [39m [2m13.78 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/glass-a6c5a125.png              [39m [2m4.64 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/endStone-9df1d017.png           [39m [2m13.20 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/blockGold-801c6d7a.png          [39m [2m6.27 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/gravel-0382de17.png             [39m [2m12.38 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/granite-ec21a949.png            [39m [2m16.41 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/ironOre-1f1a2018.png            [39m [2m9.25 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/lapisLazuliOre-9fe67945.png     [39m [2m11.54 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/netherBrickBlock-81c114e2.png   [39m [2m11.49 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/blockLapisLazuli-c3f4365e.png   [39m [2m13.49 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/blockIron-9c2558f1.png          [39m [2m4.66 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/netherQuartzOre-c4fa0230.png    [39m [2m19.38 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/noteBlock-9c9e43e0.png          [39m [2m13.09 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/netherrack-5f9c4be6.png         [39m [2m16.69 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/polishedDiorite-ae4b8158.png    [39m [2m12.42 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/polishedGranite-62d175b7.png    [39m [2m12.90 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/blockRedstone-440f1ae2.png      [39m [2m9.18 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/redSand-e67f2aa9.png            [39m [2m13.20 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/redstoneOre-236d8f81.png        [39m [2m9.24 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/sand-8b1ef695.png               [39m [2m15.17 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/soulsand-fd73f582.png           [39m [2m14.17 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/terracotta-1b5635d4.png         [39m [2m11.00 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/blockQuartz-3621c649.png        [39m [2m5.19 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/water-db2a988b.png              [39m [2m8.54 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/acaciaWood-e21d7b47.png         [39m [2m10.25 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/cactus-a9740386.png             [39m [2m4.19 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/birchWood-55380871.png          [39m [2m15.15 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/dispenser-bfcaa545.png          [39m [2m7.82 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/emeraldOre-aaa24f96.png         [39m [2m11.22 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/podzol-0c6d143e.png             [39m [2m12.73 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/chiseledSandstone-80a13f4c.png  [39m [2m27.12 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/grassBlock-a0e0af3c.png         [39m [2m4.20 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/redSandstone-16da80d2.png       [39m [2m14.24 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/mycelium-547e2a42.png           [39m [2m13.34 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/pumpkin-08639625.png            [39m [2m7.51 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/snowblock-e93fdeea.png          [39m [2m8.68 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/brick-c82e373e.ogg              [39m [2m18.93 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/grass-3619fdb8.ogg              [39m [2m7.29 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/gravel-55a610c8.ogg             [39m [2m6.69 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/leaves-b7636085.ogg             [39m [2m18.41 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/nether-46b2cfa0.ogg             [39m [2m20.53 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/netherrack-33f0f679.ogg         [39m [2m23.79 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/pumpkin-68fbefd3.ogg            [39m [2m16.64 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32msvg/logo-minecraft-c510db5a.svg     [39m [2m3.33 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/sand-74ef2fa1.ogg               [39m [2m5.42 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/snow-12a5dab4.ogg               [39m [2m19.66 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mjpg/background-da959051.jpg         [39m [2m393.56 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/wood-de868b31.ogg               [39m [2m6.66 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/grass-21bd69b6.ogg              [39m [2m7.62 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/water-24a2e0c4.ogg              [39m [2m4.92 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/gravel-0ab687ad.ogg             [39m [2m7.58 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/brick-d5608db8.ogg              [39m [2m21.85 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/soulsand-ea30f020.ogg           [39m [2m26.83 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/sand-1315a12d.ogg               [39m [2m5.06 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/leaves-2babd9a1.ogg             [39m [2m21.94 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/stone-95820d0b.ogg              [39m [2m7.34 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/snow-9821036a.ogg               [39m [2m21.17 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/nether-a8674a3c.ogg             [39m [2m31.73 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/netherrack-0ddb6d24.ogg         [39m [2m19.59 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/soulsand-19c8693f.ogg           [39m [2m17.97 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mogg/wood-f950e9c5.ogg               [39m [2m22.99 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/xbox-cn-44c2b154.png            [39m [2m42.77 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/ps-cn-020b6ba1.png              [39m [2m39.50 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/xbox-en-1e7e2610.png            [39m [2m37.11 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mpng/ps-en-b87369e2.png              [39m [2m34.45 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mttf/mplus_hzk_12-52c0ba5f.ttf       [39m [33m2804.33 KiB[39m
-[90m[37m[2mdist/[22m[90m[39m[32massets/worker.1949751d.js           [39m [2m3.76 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mindex.html                          [39m [2m0.98 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mmanifest.webmanifest                [39m [2m0.47 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[32mregisterSW.js                       [39m [2m0.13 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[35mcss/index-6f3216ae.css              [39m [2m82.86 KiB[22m
-[90m[37m[2mdist/[22m[90m[39m[36mjs/index-372fda32.js                [39m [33m890.97 KiB[39m
-[33m
-(!) Some chunks are larger than 500 KiB after minification. Consider:
-- Using dynamic import() to code-split the application
-- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/guide/en/#outputmanualchunks
-- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
+执行步骤：
+1. 定位关键实现：
+   - `grep "ClientNPCEventBus|mapNPCStatesToClientEvents|NPC_STATE_UPDATE|NPC_DIALOGUE" src/controller/index.ts src/simulation/events/*.ts`
+2. 运行最小复现脚本（Node）：
+   - 创建 `ClientNPCEventBus`。
+   - 订阅 `NPC_STATE_UPDATE`。
+   - 构造 2 条 NPC state（含 `position` 与 `lastAction`）。
+   - 使用 `dispatchBatch(mapNPCStatesToClientEvents(...))` 派发事件。
+   - 等待节流窗口（180ms）后统计捕获事件。
+3. 从首条事件抽取样本 payload，并按 renderer 规则由 `lastAction` 推导动画字段：
+   - `move -> walking`（与 `src/core/npc/renderer.ts` 的 `mapActionToAnimation` 一致）。
 
-PWA v0.12.8
-mode      generateSW
-precache  12 entries (978.70 KiB)
-files generated
-  dist/sw.js
-  dist/workbox-1616146e.js
+关键输出：
+- subscribedEvent=`NPC_STATE_UPDATE`
+- emittedFromMapCount=2
+- capturedCount=2
+- hasPosition=true
+- hasAnimation=true
+- 事件样本 payload：
+```json
+{
+  "type": "NPC_STATE_UPDATE",
+  "timestamp": 1700000000000,
+  "npcId": "npc-01",
+  "position": { "x": 1, "y": 2, "z": 3 },
+  "lastAction": "move",
+  "animationState": "walking"
+}
+```
+
+断言结果：
+- 断言 A：订阅后可接收状态事件（capturedCount=2）=> PASS
+- 断言 B：payload 含 position 关键字段（x/y/z 均为 number）=> PASS
+- 断言 C：payload 可得到 animation 字段（由 lastAction 映射）=> PASS
+
+结论：PASS
+
+---
+
+2026-02-23 回归复核（T18 closure）
+
+执行命令：
+- `pnpm exec tsc .sisyphus/tmp/task18-verify.ts --module commonjs --target ES2020 --skipLibCheck --outDir .sisyphus/tmp/task18-run`
+- `node .sisyphus/tmp/task18-run/.sisyphus/tmp/task18-verify.js`
+
+关键输出（实测）：
+- subscribedEvent=`NPC_STATE_UPDATE`
+- emittedFromMapCount=2
+- capturedCount=2
+- hasPosition=true
+- hasAnimation=true
+
+样本：
+```json
+{
+  "type": "NPC_STATE_UPDATE",
+  "timestamp": 1700000000000,
+  "npcId": "npc-01",
+  "position": { "x": 1, "y": 2, "z": 3 },
+  "lastAction": "move",
+  "animationState": "walking"
+}
+```
+
+构建复核：
+- 执行 `pnpm build` => PASS
+- 保持仓库既有非阻塞 warning：`<script src="/registerSW.js"> ... can't be bundled without type="module"`
+
+结论：PASS（事件总线单机内状态批量派发 + UI 可消费字段映射正常）
