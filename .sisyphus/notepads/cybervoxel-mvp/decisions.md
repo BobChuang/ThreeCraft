@@ -177,3 +177,9 @@
 - 决策：本轮收口继续坚持最小改动，仅更新 Task23 证据与 notepad 记录，不触碰持久化实现代码。
 - 决策：验收证据以“刷新后方块 marker 保持 + NPC 坐标保持 + reopen savedAt 递增”作为最终闭环判据。
 - 决策：计划文件 Task23 checkbox 已为 `[x]`，本次不做重复无效改动，避免非必要 diff。
+
+## 2026-02-23 Task 24（closure refresh）
+
+- 决策：采用“快速收口、最小改动”策略，不改任何业务代码，不执行重型 Playwright 长流程。
+- 决策：Task24 验收证据直接复用既有三份产物（`task-24-integration.png`、`task-24-backward-compat.png`、`task-24-single-stability.png`），并在本次任务中完成存在性复核。
+- 决策：本轮以 `pnpm build` 作为统一门禁复核，配合计划 checkbox 勾选与单次 commit/push 完成任务闭环。
