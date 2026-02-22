@@ -222,3 +222,9 @@
 - 主场景端口继续漂移（请求 `4173`，实际 `4185`），如果证据文件不双写端口，会导致回放链路不可追溯。
 - 本轮仍持续出现基线噪声 `registerSW.js` 404（主场景与 Classic 均复现）以及构建阶段 non-module warning，按历史问题记录为非新增回归。
 - 运行态接口可见性存在环境差异：`window.controller` 下未稳定暴露 `possessionController/simulationEngine/worldPersistenceController`，导致附身/生存/持久化集成项只能按“不可达失败”如实记录。
+
+## 2026-02-23 F4（范围一致性检查）
+
+- F4 审计确认范围蔓延：历史提交 `5adfc69` 将大量 `.sisyphus/tmp/**` 临时编译产物提交入库，同时包含计划规则文件变更，超出 T1-T27 任务交付边界。
+- 当前仓库存在未在 T1-T27 任务描述中明确说明的已跟踪文件 265 个（`.sisyphus/tmp/**` 263 个 + 两份 lockfile），需作为范围一致性风险持续跟踪。
+- `pnpm exec tsc --noEmit` 复核仍失败（exit 2），`pnpm build` 通过但保留既有 `registerSW.js` non-module warning，均为 F4 需保留的基线事实。

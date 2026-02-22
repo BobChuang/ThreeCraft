@@ -1,0 +1,75 @@
+F4 范围一致性检查（FINAL）
+日期：2026-02-23
+
+审计输入
+- 计划来源：`.sisyphus/plans/cybervoxel-mvp.md`（F4 条目 + T1-T27 提交策略）
+- 既有证据：`final-audit-f1.txt`、`final-qa/f2-code-quality.txt`、`final-qa/f3-manual-qa.txt`
+- 历史提交：`git log --oneline -80`
+- 仓库状态：`git status --short`（本轮执行前为干净工作区）
+
+一、T1-T27 “做什么”一致性（按提交映射核验）
+- T1-T27 对应的功能型提交在当前分支均可追溯到：
+  - T1 `feat(config): add VITE_FIXED_MAP_INDEX...`
+  - T2 `feat(cyberpunk): add cyberpunk blocks, types, and scene registration`
+  - T3 `feat(personas): create 10 unique cyberpunk NPC persona definitions`
+  - T4 `feat(simulation): scaffold single-player simulation engine core`
+  - T5 `feat(pathfinding): implement A* grid-based pathfinding for NPC navigation`
+  - T6 `feat(npc): implement NPC entity system extending Player class`
+  - T7 `feat(inventory): implement slot-based inventory for NPCs`
+  - T8 `feat(survival): implement HP and hunger system`
+  - T9 `feat(llm): implement GLM-5 streaming service with rate limiting`
+  - T10 `feat(ai): implement NPC decision loop with GLM-5`
+  - T11 `feat(npc-behavior): implement build and gather actions`
+  - T12 `feat(dialogue): implement P2NPC + NPC2NPC dialogue with bubbles`
+  - T13 `feat(validation): implement action validation with fallback`
+  - T14 `feat(possession): implement NPC possession and release mode switching`
+  - T15 `feat(observer): implement god mode with NPC selection`
+  - T16 `feat(monsters): implement Mutant and Corrupted Bot`
+  - T17 `feat(respawn): implement death and revival flow for player and NPCs`
+  - T18 `feat(events): add single-player NPC event bus`
+  - T19 `feat(ui): implement NPC thinking bubbles`
+  - T20 `feat(ui): implement AI sidebar log panel`
+  - T21 `feat(ui): implement NPC task list panel`
+  - T22 `feat(ui): implement survival HUD with HP/hunger bars`
+  - T23 `feat(persistence): implement client-side world save/load`
+  - T24 `feat(integration): wire all systems together`
+  - T25 `update(single-player): verify long-run stability and resume flow`
+  - T26 `optimize: optimize NPC sleep mode and rendering`
+  - T27 `feat(game): implement cyberpunk game start flow`
+- 判定：27/27 可建立“任务目标 ↔ 提交意图 ↔ 证据文件”对应关系。
+
+二、T1-T27 “禁止事项”合规性
+- 继承 F1 审计结果：禁止项 16/16 通过（未发现 RAG/知识图谱/向量库、经济系统、昼夜循环、simulation 中 socket 依赖等禁项落地）。
+- 结合 F2/F3 新证据复核：未出现新的禁项实现迹象。
+- 判定：禁止事项合规。
+
+三、范围蔓延（计划外项）
+发现 2 项：
+1) 历史提交 `5adfc69` 引入规则文件与大量临时编译产物提交，包含 `.sisyphus/tmp/task11-sim/**`、`.sisyphus/tmp/task12-sim/**`、`.sisyphus/tmp/task13-validation/**`、`.sisyphus/tmp/task16-sim/**` 等，属于任务实现外的运行中间产物入库。
+2) 同一历史段落存在 `pnpm-lock.yaml`、`server/pnpm-lock.yaml` 变更，未在 T1-T27 的任务描述中明确要求，属于额外漂移改动。
+
+四、未说明文件
+- 已跟踪但未在 T1-T27“做什么/交付”中明确说明的文件统计：265 个
+  - `.sisyphus/tmp/**`：263 个
+  - `pnpm-lock.yaml`、`server/pnpm-lock.yaml`：2 个
+
+五、本轮命令原始结论（按要求记录）
+1) `pnpm exec tsc --noEmit`
+   - 退出码：2
+   - 原始结论：失败（历史基线失败延续）
+   - 原始输出片段（verbatim）：
+     - `node_modules/.pnpm/@types+node@17.0.45/node_modules/@types/node/globals.d.ts(72,13): error TS2403: Subsequent variable declarations must have the same type.`
+     - `src/controller/game-controller/index.ts(38,2): error TS2564: Property 'hasChange' has no initializer and is not definitely assigned in the constructor.`
+2) `pnpm build`
+   - 退出码：0
+   - 原始结论：通过
+   - 原始输出片段（verbatim）：
+     - `> three-craft@1.0.0 build /Users/zhangganhui/skills/game/ThreeCraft`
+     - `> vite build`
+     - `<script src="/registerSW.js"> in "/index.html" can't be bundled without type="module" attribute`
+     - `✓ 396 modules transformed.`
+
+六、基线噪声说明
+- `registerSW.js` 404（dev 控制台）与 build non-module warning 为既有基线噪声，本轮仅如实记录，不在 F4 内做计划外修复。
+
+任务 [27/27 合规] | 范围蔓延 [2 项问题] | 未说明 [265 个文件] | 结论
