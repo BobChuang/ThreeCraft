@@ -166,3 +166,9 @@
 
 - 本次请求端口为 `4173`，开发服务实际漂移到 `4181`；证据采集全程基于实际端口执行。
 - Playwright 运行期间持续出现仓库既有 `registerSW.js` 404 控制台错误，属于非阻塞基线噪声，不影响附身态任务列表显隐验收。
+
+## 2026-02-23 Task 22（closure refresh）
+
+- 本次请求端口为 `4173`，开发服务实际漂移到 `4182`（`task-22-dev-reverify.log` 已记录连续占用与回退链路）。
+- Playwright 验证期间继续出现仓库基线 `registerSW.js` 404；同时观察到一次运行时 `TypeError: Cannot read properties of null (reading 'add')`（`BlockAction.placeBlock`，由赛博朋克开局 spring block 注入触发），本次按 Task22 最小改动策略未扩大修复范围，仅如实记录。
+- `pnpm build` 通过，但仍有既有 non-module warning：`<script src="/registerSW.js"> ... can't be bundled without type="module"`。

@@ -226,3 +226,9 @@
 - Task 21 在当前分支已具备完整闭环（附身显示/释放隐藏/nextGoal 状态序列只读），本次采用最小改动收口，仅刷新证据、计划勾选与记录，不再触碰业务源码。
 - 通过运行时直接调用 `possessionController.possessNPC/releaseActiveNPC` 可稳定触发显隐并采集 UI 证据，适合规避指针锁与随机出生点导致的自动化不稳定。
 - 任务列表面板状态可用 `#npc-task-list-panel.active` 与 `getComputedStyle(...).display` 双重校验（显示态 `active=true`，释放后 `display=none`）。
+
+## 2026-02-23 Task 22（closure refresh）
+
+- 当前分支 Task 22 的 HUD 逻辑已满足“仅 PC + 赛博朋克显示”门控：`getSurvivalHUDState()` 在 `config.controller.operation !== 'pc' || !isCyberpunkSceneSelected()` 时直接返回 `null`，因此非赛博朋克场景不受影响。
+- HUD 数据聚合保持控制器侧单一出口（模式文案、HP/饥饿值、活跃 NPC 数），`src/ui/survival-hud/` 仅负责渲染；收口阶段无需再改业务逻辑，最小改动仅刷新证据。
+- Playwright 证据采集可直接使用主菜单 `单人游戏` 进入并截全屏，截图中可审计到模式文案、HP/HUNGER 条与 NPC 活跃数文本。

@@ -159,3 +159,9 @@
 
 - 决策：采用“最小改动收口”策略，不修改 `src/ui/task-list/**` 与控制器逻辑，仅完成证据刷新、计划勾选和文档追加。
 - 决策：Task 21 验收以两张 UI 证据为主（附身显示 + 释放隐藏），并保留请求端口/实际端口漂移信息在 `task-21-dev.log` 与 issues 记录中。
+
+## 2026-02-23 Task 22（closure refresh）
+
+- 决策：采用最小改动策略，不改 `src/ui/survival-hud/**` 与控制器业务逻辑；仅执行 LSP/build 复核、Playwright 证据刷新、notepad 追加与计划勾选。
+- 决策：Task 22 证据以 `.sisyphus/evidence/task-22-hud.png` 单图收口，确保同图可审计 HP 条、饥饿条、模式文案与 NPC 活跃数。
+- 决策：端口漂移按“请求端口 + 实际端口”强制记录，本次为 `4173 -> 4182`。
