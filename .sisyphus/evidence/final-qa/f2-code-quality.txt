@@ -1,0 +1,47 @@
+F2 代码质量审查（final-wave）
+
+结论串：构建 失败 | 文件 [0 通过/0 问题] | LOC 规则 通过 | 结论 不通过（tsc 门禁失败）
+
+执行命令（原样记录）：
+1) pnpm exec tsc --noEmit
+   - 退出码：2
+   - 原始输出关键片段（verbatim）：
+     node_modules/.pnpm/@types+node@17.0.45/node_modules/@types/node/globals.d.ts(72,13): error TS2403: Subsequent variable declarations must have the same type.  Variable 'AbortSignal' must be of type '{ new (): AbortSignal; prototype: AbortSignal; abort(reason?: any): AbortSignal; timeout(milliseconds: number): AbortSignal; }', but here has type '{ new (): AbortSignal; prototype: AbortSignal; }'.
+     src/controller/game-controller/index.ts(38,2): error TS2564: Property 'hasChange' has no initializer and is not definitely assigned in the constructor.
+     src/controller/game-controller/index.ts(40,26): error TS7006: Parameter 'host' implicitly has an 'any' type.
+
+2) pnpm build
+   - 退出码：0
+   - 原始输出关键片段（verbatim）：
+     > three-craft@1.0.0 build /Users/zhangganhui/skills/game/ThreeCraft
+     > vite build
+     <script src="/registerSW.js"> in "/index.html" can't be bundled without type="module" attribute
+     ✓ 396 modules transformed.
+
+新增/修改文件审查范围（git status --porcelain）：
+- .sisyphus/evidence/task-27-dev.log
+- .sisyphus/evidence/task-21-orchestrator-hidden-2.png
+- .sisyphus/evidence/task-21-orchestrator-hidden.png
+- .sisyphus/evidence/task-21-orchestrator-visible-2.png
+- .sisyphus/evidence/task-21-orchestrator-visible.png
+- .sisyphus/evidence/task-22-orchestrator-hud-4182.png
+- .sisyphus/evidence/task-22-orchestrator-hud.png
+- .sisyphus/notepads/cybervoxel-mvp/problems.md
+- t27-orchestrator-verify.png
+
+代码文件数（.ts/.tsx/.js/.jsx/.mts/.cts）：0
+
+反模式检查（针对本次变更范围）：
+- as any / @ts-ignore / 空 catch / 生产 console.log / 注释掉代码 / TODO|FIXME|HACK：未发现
+- AST 结构检查（try...catch 模式）：未在本次变更范围发现 TypeScript 代码文件
+
+模块化规则检查（针对本次变更范围）：
+- 单文件 LOC > 200（非 prompt）：通过（无代码文件）
+- utils.ts 大杂烩：通过（无代码文件）
+- index.ts 仅入口：通过（无代码文件）
+
+AI 产物检查（过多注释、过度抽象、通用变量名）：
+- 本次变更无业务源码文件，未发现新增 AI 代码异味。
+
+最终判定：
+- 由于 `pnpm exec tsc --noEmit` 失败，F2 不通过。

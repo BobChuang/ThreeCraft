@@ -199,3 +199,8 @@
 
 - 本次 Task26 收口复核中仍存在端口漂移（请求 `4173`，实际 `4178`），证据文本已强制双写记录。
 - QA 环境持续出现仓库既有 `registerSW.js` 404 / non-module 噪声；按基线问题处理，不阻塞 Task26 验收。
+
+## 2026-02-23 F2（final-wave 复核）
+
+- `pnpm exec tsc --noEmit` 复核仍失败（exit code 2），错误分布在历史文件与类型基线（含 `AbortSignal` 声明冲突），导致 F2 门禁未通过。
+- `pnpm build` 本次可通过（exit code 0），仅保留已知 non-module warning：`<script src="/registerSW.js"> ... can't be bundled without type="module"`。

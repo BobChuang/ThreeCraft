@@ -195,3 +195,8 @@
 - 决策：本轮仅纳入 Task26 相关既有改动与证据收口文件（`renderer.ts`、task-26 两份 evidence、notepads、计划勾选），不处理 F* 与 Task27 文件。
 - 决策：Task26 验收结论以“FPS 30s 采样结果 + near/far sleep 抑制结果”双证据联合判定，避免单指标偏差。
 - 决策：执行固定单提交策略，commit message 使用 `chore(task-26): finalize performance optimization verification artifacts`。
+
+## 2026-02-23 F2（final-wave 复核）
+
+- 决策：F2 本轮仅做审计产物收口（`final-qa/f2-code-quality.txt` + notepad 追加 + 命令日志落盘），不改业务源码。
+- 决策：严格按门禁判定最终结论，采用 `构建 失败 | 文件 [N 通过/N 问题] | LOC 规则 [通过/失败] | 结论` 固定格式输出并与真实命令退出码一致。
