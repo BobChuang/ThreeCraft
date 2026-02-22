@@ -273,3 +273,9 @@
 - F3 需要在同一轮证据中同时保留“请求端口 + 实际端口”，本次为 `4173 -> 4184`，并且应与 dev 启动日志交叉可追溯。
 - Playwright 在 WebGL 场景里执行边界注入时，直接以 `simulationEngine` 运行态方法（如 `survival.setState`、`dropInventorySlot`、`possessionController`）做确定性触发，比纯键鼠脚本更稳定且可审计。
 - F3 结论应由场景/集成/边界三段联合判定，不能因 Classic 向后兼容通过而掩盖场景失败；建议报告末行固定输出统一汇总格式。
+
+## 2026-02-23 F3（真实手动 QA，final rerun）
+
+- 主场景与 Classic 兼容建议拆分为两套 dev 会话执行：主场景保留计划请求端口追踪（本轮 `4173 -> 4185`），Classic 兼容可用独立固定地图会话（本轮 `4190 -> 4190`）保证可复现。
+- 运行态验证中，`import('/src/index.ts')` + `controller.simulationEngine` 可稳定覆盖附身/生存/持久化集成检查，并可直接输出审计字段（npcCount/saveBytes）。
+- Classic 兼容若受当前环境固定地图配置影响，可通过 `VITE_FIXED_MAP_INDEX=0` 独立服务直接确认 `config.weather=0`，减少误报。

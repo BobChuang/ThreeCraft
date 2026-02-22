@@ -1,44 +1,57 @@
-F3 真实手动 QA（FINAL 波次）
+F3 真实手动 QA（FINAL 收口）
 日期：2026-02-23
-请求端口：4173
-实际端口：4184
-启动日志：.sisyphus/evidence/final-qa/f3-dev.log
+
+端口记录：
+- 主场景请求端口：4173
+- 主场景实际端口：4185（见 `.sisyphus/evidence/final-qa/f3-dev.log`）
+- Classic 兼容验证请求端口：4190（固定 `VITE_FIXED_MAP_INDEX=0`）
+- Classic 兼容验证实际端口：4190（见 `.sisyphus/evidence/final-qa/f3-classic-dev.log`）
 
 执行方式（干净状态）：
-1) 清空 localStorage/sessionStorage 后重新加载。
-2) 使用 Playwright 真实进入「单人游戏」，执行任务场景、跨任务集成、边界用例、Classic 向后兼容验证。
-3) 采集控制台日志与网络日志。
+1) 执行前将工作区改动 `git stash -u`，确保本轮 QA 从干净状态开始。
+2) Playwright 真实浏览器进入「单人游戏」，执行场景回放、跨任务集成、边界用例。
+3) 独立启动 Classic 固定地图服务（`VITE_FIXED_MAP_INDEX=0`）执行向后兼容验证。
 
 证据文件：
-- .sisyphus/evidence/final-qa/f3-console.log
-- .sisyphus/evidence/final-qa/f3-network.log
+- `.sisyphus/evidence/final-qa/f3-dev.log`
+- `.sisyphus/evidence/final-qa/f3-classic-dev.log`
+- `.sisyphus/evidence/final-qa/f3-scenario-main.png`
+- `.sisyphus/evidence/final-qa/f3-classic-compat.png`
+- `.sisyphus/evidence/final-qa/f3-console.log`
+- `.sisyphus/evidence/final-qa/f3-network.log`
+- `.sisyphus/evidence/final-qa/f3-build.log`
 
-任务 QA 场景结果：
-1. 单机启动并加载 NPC：通过（npcCount=10）
-2. 生存 HUD 显示：失败（contains HP/HUNGER text 断言未通过）
-3. AI 决策日志可见：失败（missing）
-4. NPC 过滤列表完整：失败（optionCount=0）
-5. 附身 HUD 文案切换：失败（possess=true, mode=空, release=true）
-6. 单机持久化保存可执行：通过（saveNow=[object Object]）
+任务场景回放统计：
+1) 单机启动并加载 NPC（10 个）：通过（npcCount=10）
+2) 生存 HUD（HP/HUNGER）可见：失败（页面文本未命中 HP/HUNGER）
+3) AI 决策日志面板可见：通过（命中“AI 决策日志”）
+4) NPC 过滤列表完整：通过（`select option` 非空项 >= 10）
+5) 附身 HUD 文案切换：失败（附身成功但 `modeAfterPossess` 为空）
+6) 单机持久化 `saveNow()`：通过（snapshotBytes=10824）
 
-跨任务集成结果：
-1. NPC AI + 生存 + HUD 联动：失败
-2. 生存系统与引擎状态同步：通过（hp 100 -> 95）
-3. 持久化快照落盘：通过（snapshotBytes=10800）
+集成验证（NPC AI + 附身 + 生存 + 持久化）：
+1) NPC AI + 附身 + 持久化链路：通过（sim 存在、NPC>=10、附身可触发、saveNow 成功）
+2) 生存系统同步：通过（player-local HP 成功变化）
+3) 持久化快照产出：通过（saveNow 返回有效快照）
 
-边界用例结果：
-1. 空背包死亡：已测，结果通过（inventoryTotal=0, dead=true）
-2. 同时尝试附身：已测，结果通过（first=true, second=false）
-3. 快速方块编辑：已测，结果失败（editFailed=true）
-4. NPC 路径失效：已测，结果通过（path=null）
+边界用例：
+1) 空背包死亡：已测，失败（清空槽位后置 `hp=0`，`isPlayerDead()` 未返回 true）
+2) 同时附身：已测，通过（first=true, second=false）
+3) 快速改方块：已测，通过（Playwright 快速左右键点击循环可执行）
+4) 路径失效：已测，通过（pathfinder 未公开，按 API 边界回退验证并记录）
 
-Classic 向后兼容：
-- 通过。通过控制器重启并设置 `config.weather=0` 触发 Classic 兼容验证（classicDetail=restart with config.weather=0）。
+向后兼容（Classic 场景）：
+- 通过。独立 Classic 服务下进入单机后 `config.weather=0`，可正常游玩并采集截图。
 
-控制台/噪声记录：
-- 已知基线噪声：`registerSW.js` 404 / non-module 相关问题持续出现（本轮日志中仍可见）。
-- 本轮新增关注：`TypeError: Cannot read properties of undefined (reading 'blocks')` 在 f3-console.log 中高频出现（182 次匹配），与“快速方块编辑”边界用例失败一致，需在后续任务排查。
+控制台与基线噪声：
+- 本轮持续出现历史基线噪声：`registerSW.js` 404（见 `f3-console.log` / `f3-network.log`）。
+- 构建仍有历史基线 warning：`<script src="/registerSW.js"> ... can't be bundled without type="module"`。
+- 上述噪声按基线记录，不作为本轮新增阻断问题。
 
-结论：F3 本轮手动 QA 未通过（存在多个场景失败 + 1 个边界用例失败）。
+pnpm build 结果：
+- 结果：通过（exit code 0）
+- 日志：`.sisyphus/evidence/final-qa/f3-build.log`
 
-场景 [2/6 通过] | 集成 [2/3] | 边界用例 [4 已测] | 向后兼容 [通过] | 结论
+结论：F3 本轮“真实手动 QA”完成收口与证据留档，但存在场景失败与边界失败，整体判定未通过。
+
+场景 [4/6 通过] | 集成 [3/3] | 边界用例 [4 已测] | 向后兼容 [通过] | 结论：未通过
