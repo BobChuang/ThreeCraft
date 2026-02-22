@@ -232,3 +232,9 @@
 - 当前分支 Task 22 的 HUD 逻辑已满足“仅 PC + 赛博朋克显示”门控：`getSurvivalHUDState()` 在 `config.controller.operation !== 'pc' || !isCyberpunkSceneSelected()` 时直接返回 `null`，因此非赛博朋克场景不受影响。
 - HUD 数据聚合保持控制器侧单一出口（模式文案、HP/饥饿值、活跃 NPC 数），`src/ui/survival-hud/` 仅负责渲染；收口阶段无需再改业务逻辑，最小改动仅刷新证据。
 - Playwright 证据采集可直接使用主菜单 `单人游戏` 进入并截全屏，截图中可审计到模式文案、HP/HUNGER 条与 NPC 活跃数文本。
+
+## 2026-02-23 Task 23（closure refresh）
+
+- Task23 收口可仅通过 Playwright 运行态写入 + `saveNow()` + reload/reopen 复核完成，不需要改动持久化实现代码。
+- 端口漂移仍需强制记录“请求端口 + 实际端口”；本次为 `4173 -> 4183`。
+- 在该仓库中验证 NPC 持久化时，优先使用 `simulationEngine.npcRegistry` 的运行态回读对比比深挖存储内部 schema 更稳定。

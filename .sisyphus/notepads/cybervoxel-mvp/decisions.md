@@ -165,3 +165,9 @@
 - 决策：采用最小改动策略，不改 `src/ui/survival-hud/**` 与控制器业务逻辑；仅执行 LSP/build 复核、Playwright 证据刷新、notepad 追加与计划勾选。
 - 决策：Task 22 证据以 `.sisyphus/evidence/task-22-hud.png` 单图收口，确保同图可审计 HP 条、饥饿条、模式文案与 NPC 活跃数。
 - 决策：端口漂移按“请求端口 + 实际端口”强制记录，本次为 `4173 -> 4182`。
+
+## 2026-02-23 Task 23（closure refresh）
+
+- 决策：按收口约束仅刷新两份 Task23 证据、追加 notepads、勾选 Task23 计划项，不改任何业务实现代码。
+- 决策：Playwright 验证采用短链路分步执行（saveNow/reload/pagehide/autosave 分离采样）以规避长会话超时。
+- 决策：端口记录执行“请求端口 + 实际端口”双写，本次固定写入 `4173 -> 4183`。

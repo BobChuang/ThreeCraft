@@ -40,3 +40,60 @@ Key observed values
 
 Notes
 - Console shows known baseline `registerSW.js` 404 in dev runs; not introduced by this task.
+
+---
+
+Re-validation run
+- Timestamp (UTC): 2026-02-22T15:13:28Z
+- Environment: Playwright MCP + dev server `http://127.0.0.1:4173`
+
+Observed checks
+1) Load-on-enter after reload/reopen
+- Wrote known persisted marker + manual save baseline:
+  - marker: `{ type: "brickBlock", posX: 14, posY: 6, posZ: 14 }`
+  - baseline `savedAt`: `1771773106972`
+- Reloaded page and entered single-player again.
+- Snapshot after re-enter:
+  - `savedAt`: `1771773167871`
+  - `markerFound`: `true` (marker exists in `blockLog`)
+
+2) Save on pagehide/beforeunload
+- Before navigate away: `savedAt=1771773118400` at `now=1771773158737`
+- Navigated to `about:blank`, then reopened app.
+- After reopen: `savedAt=1771773167871` at `now=1771773178775`
+- Delta: `+49471ms` (save triggered without waiting autosave interval)
+
+3) Autosave every 60s
+- Could not produce stable 60s continuous runtime sample in this run due Playwright target crash/timeout during long waits.
+- Partial sample collected while paused:
+  - t0: `now=1771772949395`, `savedAt=1771772852830`
+  - t+10s: `now=1771772959398`, `savedAt=1771772852830`
+  - t+20s: `now=1771772969401`, `savedAt=1771772852830`
+  - t+30s: `now=1771772979404`, `savedAt=1771772852830`
+- Result for autosave cadence in this run: INCONCLUSIVE (instrumentation instability).
+
+---
+
+Closure refresh run
+- Timestamp (UTC): 2026-02-23T03:40:15Z
+- Requested dev port: `4173`
+- Actual dev port: `4183` (`http://127.0.0.1:4183/`)
+
+Observed checks
+1) Reload restores persisted world/session state
+- Before reload manual save snapshot: `savedAt=1771788974414`
+- After reload + re-enter single-player: `savedAt=1771788974451`
+- Persistence readback stayed available after reload (same storage key `threecraft:singleplayer-world`).
+
+2) Save on pagehide/beforeunload
+- Before leave: `savedAt=1771788974451`
+- After `about:blank` round-trip reopen: `savedAt=1771788977058`
+- Delta: `+2607ms` (save triggered without waiting autosave interval).
+
+3) Autosave cadence (60s)
+- Autosave sample start: `savedAt=1771789060053` at `now=1771789062688`
+- Autosave sample end: `savedAt=1771789120437` at `now=1771789215624`
+- Delta: `+60384ms` on `savedAt` (consistent with periodic autosave update).
+
+Console baseline
+- Non-blocking baseline console error persists during QA: `registerSW.js` 404 on `http://127.0.0.1:4183/registerSW.js`.

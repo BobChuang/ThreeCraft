@@ -47,3 +47,51 @@ Captured result payload
 
 Notes
 - `thinkingState` persisted as `idle` because pausing NPC decisions sets state to idle by design.
+
+---
+
+Re-validation run
+- Timestamp (UTC): 2026-02-22T15:13:28Z
+- Environment: `http://127.0.0.1:4173`
+
+Runtime values observed
+1) Before reload, forced and saved NPC state:
+- `npc-01` overridden to `position={"x":7,"y":6,"z":7}`
+- Manual save baseline `savedAt=1771773106972`
+
+2) After reload + re-enter single-player:
+- `npcActual.position={"x":7,"y":6,"z":7}`
+- `npcPersisted.position={"x":7,"y":6,"z":7}`
+- Match result: PASS (position equal)
+
+3) Reopen flow (after `about:blank` pagehide trigger):
+- Snapshot `savedAt` increased from `1771773118400` to `1771773167871`
+- NPC persisted record still includes `npc-01` at `{"x":7,"y":6,"z":7}`
+
+Paired world-state marker
+- Persisted marker `{ type: "brickBlock", posX: 14, posY: 6, posZ: 14 }` found in snapshot `blockLog`: true
+
+---
+
+Closure refresh run
+- Timestamp (UTC): 2026-02-23T03:36:30Z
+- Requested dev port: `4173`
+- Actual dev port: `4183` (`http://127.0.0.1:4183/`)
+
+Runtime values observed
+1) Before reload, forced and saved NPC state:
+- `npc-01` overridden to `position={"x":11,"y":6,"z":11}`
+- Manual save baseline `savedAt=1771788974414`
+
+2) After reload + re-enter single-player:
+- `npcActual.position={"x":11,"y":6,"z":11}`
+- `savedAt=1771788974451`
+- Match result: PASS (position equal)
+
+3) Reopen flow (after `about:blank` pagehide trigger):
+- `savedAt` increased from `1771788974451` to `1771788977058`
+- Delta: `+2607ms`
+
+Notes
+- This closure run validates runtime NPC restore parity on reload; storage schema traversal remains implementation-owned and was not further refactored in closure scope.
+- Known baseline non-blocking console noise remains: `registerSW.js` 404.
