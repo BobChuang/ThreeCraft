@@ -208,3 +208,9 @@
 - T18 在当前分支已具备完整单机事件总线链路：`ClientNPCEventBus`（订阅/退订/批量派发/按事件类型+实体 key 节流）+ `mapBridgeEventToClientNPCEvent` + `mapNPCStatesToClientEvents` + `Controller.ensureClientEventBus` 消费。
 - 用最小 Node 脚本验证 `dispatchBatch(mapNPCStatesToClientEvents(...))` 可稳定产出 `NPC_STATE_UPDATE`，并能从 `lastAction` 推导 UI 动画语义（如 `move -> walking`）。
 - 收口阶段优先“复核 + 证据刷新 + 计划勾选”，避免在已达标实现上重复改架构，可降低引入回归风险。
+
+## 2026-02-23 Task 19（thinking bubble refresh）
+
+- 头顶思考气泡执行态文案可直接升级为“图标 + 动作文本”（如 `👣 移动`、`💬 对话`），不需要额外 UI 组件或事件协议改造。
+- `requesting` 动画点可在现有 `render(now)` 路径中按时间片计算（`Date.now()`），保持与自动隐藏同一时间基准，避免再次引入 `performance.now` 混用问题。
+- `received` 阶段兜底使用当前 `streamText` 可提升稳健性：即使 reasoning 字段为空，也能复用流式聚合内容展示。

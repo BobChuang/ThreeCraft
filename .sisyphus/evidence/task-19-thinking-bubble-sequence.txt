@@ -1,0 +1,33 @@
+Task 19 Thinking Bubble Lifecycle Evidence (Text Timeline)
+Date: 2026-02-23
+
+Method
+- Verified event-path wiring with source scan (`grep`) across:
+  - `thinking-start/thinking-stream/thinking-complete/thinking-error`
+  - `thinking:state`
+  - `simulation:lifecycle`
+- Confirmed dual lifecycle field compatibility in mapper:
+  - `src/simulation/events/map-bridge-event-to-client.ts`
+  - `const eventType = payload.eventType ?? payload.status`
+- Ran Playwright real runtime sampling against visible overhead bubble DOM signatures (`maxWidth=220px`, `pointerEvents=none`, `borderTopWidth=2px`).
+
+Playwright runtime sample result
+- `seen = ["💬 对话", "思考中..", "推理：Repositioning to keep patrol path active.", "👣 移动"]`
+
+Lifecycle assertions (T19)
+1) requesting
+- Observed animated-dot variant (`思考中..`) in runtime sample.
+
+2) streaming -> received
+- Lifecycle event paths include `thinking-stream` and `thinking-complete` forwarding.
+- Received-phase text observed with reasoning payload prefix (`推理：...`).
+
+3) executing
+- Action icon + text observed in runtime sample (`👣 移动`, `💬 对话`).
+
+4) auto-hide (3s)
+- Implementation constant is `HIDE_DELAY_MS = 3000` in `create-thinking-bubble.ts`.
+- Render loop hides bubble when `Date.now() >= visibleUntil` and resets phase to `idle`.
+
+Companion screenshot
+- `.sisyphus/evidence/task-19-thinking-bubble.png`

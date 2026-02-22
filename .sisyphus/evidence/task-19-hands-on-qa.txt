@@ -1,0 +1,36 @@
+Task 19 Hands-on QA (Playwright Runtime)
+Date: 2026-02-23
+Scope: T19 thinking bubble only
+
+Runtime setup
+- Dev server log: `.sisyphus/evidence/task-19-dev-server.log`
+- Requested port: `4173`; actual Vite port after fallback: `4180`
+- Browser flow: open `http://127.0.0.1:4180` -> click `单人游戏`
+
+Concrete assertions
+1) requesting phase
+- Runtime bubble sampler observed requesting text with animated dots: `思考中..`
+
+2) received phase
+- Runtime bubble sampler observed reasoning text: `推理：Repositioning to keep patrol path active.`
+
+3) executing phase icon + text
+- Runtime bubble sampler observed executing content with icon+label:
+  - `👣 移动`
+  - `💬 对话`
+
+4) stream text path is live
+- Source/event verification confirms stream events reach UI path:
+  - LLM emits `thinking-stream` (`src/simulation/llm/glm5-service.ts`)
+  - Bridge forwards to `simulation:lifecycle` with `eventType` (`src/simulation/bridges/client-bridge.ts`)
+  - Mapper accepts `eventType` and `status` (`src/simulation/events/map-bridge-event-to-client.ts`)
+  - Controller aggregates `npcThinkingStreamById` and appends bubble chunks in real time (`src/controller/index.ts`)
+
+5) auto-hide after 3 seconds
+- Code assertion: `HIDE_DELAY_MS = 3000` and expiry check uses `Date.now()` end-to-end in `create-thinking-bubble.ts`.
+
+Playwright screenshot evidence
+- `.sisyphus/evidence/task-19-thinking-bubble.png`
+
+Console noise during QA
+- Known baseline only: `registerSW.js` 404 (non-blocking)

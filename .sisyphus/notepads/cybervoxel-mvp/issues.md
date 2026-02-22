@@ -150,3 +150,8 @@
 ## 2026-02-23 Task 18（closure refresh）
 
 - `pnpm build` 仍出现仓库既有 warning：`<script src="/registerSW.js"> ... can't be bundled without type="module"`；本次仅做 T18 复核与证据刷新，未引入新的阻塞构建错误。
+
+## 2026-02-23 Task 19（thinking bubble refresh）
+
+- Playwright 在一次较长 `browser_run_code + page.evaluate(async import)` 场景中出现 `Target crashed`；恢复手段为 `browser_close` 后重开页面并改用短路径采样（DOM 过滤 + 短轮询）。
+- QA 期间持续出现仓库基线 `registerSW.js` 404 控制台错误，已记录为非阻塞噪声，未影响 T19 功能验证与截图证据。
