@@ -1,0 +1,63 @@
+# F2 代码质量审查（2026-02-23）
+
+## 审查范围
+
+- 本次工作区新增/修改文件共 24 个；其中可执行源码文件 4 个：
+  - `src/core/npc/thinking-bubble/create-thinking-bubble.ts`
+  - `src/ui/sidebar-log/css/style.less`
+  - `src/ui/sidebar-log/event-reader.ts`
+  - `src/ui/sidebar-log/index.ts`
+- 非源码证据/笔记文件不参与 `as any`、`@ts-ignore`、空 catch、生产 `console.log`、未使用导入等代码级规则判定。
+
+## 执行命令与结果
+
+1. `pnpm exec tsc --noEmit`
+   - 结果：失败（`TSC_EXIT=2`）
+   - 关键示例（历史基线）：
+     - `node_modules/.pnpm/@types+node@17.0.45/node_modules/@types/node/globals.d.ts(72,13): error TS2403`
+     - `src/controller/game-controller/index.ts(38,2): error TS2564`
+     - `src/controller/index.ts(167,7): error TS2488`
+
+2. `pnpm build`
+   - 结果：通过（`BUILD_EXIT=0`）
+   - 已知基线噪声：
+     - `<script src="/registerSW.js"> ... can't be bundled without type="module" attribute`
+     - chunk size warning（Vite 打包体积提示）
+
+3. 反模式扫描（针对上述 4 个源码文件）
+   - 扫描项：`as any` / `@ts-ignore` / 空 catch / 生产 `console.log` / 注释掉代码
+   - 结果：未发现匹配
+
+4. 模块化规则
+   - LOC（<=200）
+     - `create-thinking-bubble.ts`: 163
+     - `event-reader.ts`: 19
+     - `index.ts`: 189
+   - `utils.ts` 大杂烩：未发现新增/修改 `utils.ts`
+   - `index.ts` 入口约束：`src/ui/sidebar-log/index.ts` 为模块主装配入口，未发现跨模块杂糅新增问题
+
+5. AI 产物检查
+   - 过多注释：未见
+   - 过度抽象：未见新增无意义抽象层
+   - 通用变量名：未见新增明显 `data/temp/foo/bar` 泛化命名问题
+
+6. LSP 诊断（本次涉及 TS 源码）
+   - `src/core/npc/thinking-bubble/create-thinking-bubble.ts`：No diagnostics
+   - `src/ui/sidebar-log/event-reader.ts`：No diagnostics
+   - `src/ui/sidebar-log/index.ts`：No diagnostics
+
+## 基线与新增问题区分（强制）
+
+- baseline 已知问题（历史遗留）
+  - `pnpm exec tsc --noEmit` 全仓类型错误（大量非本次改动文件）
+  - `registerSW.js` 非 module warning（构建期已知噪声）
+
+- 本次新增问题
+  - 无（本次审查范围内未发现新增反模式、LOC 违规、LSP 报错）
+
+## F2 判定逻辑
+
+- 规则：`pnpm exec tsc --noEmit` 必须如实记录；若失败则“构建”项判定为失败，不得伪装通过。
+- 本次结论：尽管未发现新增代码质量问题，`tsc` 受历史基线阻断，F2 不通过。
+
+构建 失败 | 文件 4 通过/0 问题 | LOC 规则 通过 | 结论：不通过（受历史 baseline TypeScript 错误阻断）

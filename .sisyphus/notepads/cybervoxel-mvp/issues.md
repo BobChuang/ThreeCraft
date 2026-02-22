@@ -141,3 +141,8 @@
 
 - Playwright MCP 初次导航曾出现 `Target crashed`；执行一次 `browser_close` 后重新打开页面可恢复稳定。
 - F1 复核中持续出现仓库既有基线噪声（`registerSW.js` 404、构建阶段非 module 提示），未观察到新增阻塞错误。
+
+## 2026-02-23 F2（代码质量审查）
+
+- `pnpm exec tsc --noEmit` 仍失败（`TSC_EXIT=2`），错误主要位于历史文件（如 `src/controller/**`、`src/core/**`、`src/ui/**` 旧代码）与类型基线（`AbortSignal` 声明冲突），非本次审查新增。
+- 本次审查范围内源码文件未发现 `as any`、`@ts-ignore`、空 catch、生产 `console.log`、注释掉代码、LOC 超限等新增问题，但由于全仓 tsc 门禁失败，F2 结论为不通过。
