@@ -1,5 +1,6 @@
 import type { SimulationBridgeEvent } from '../../simulation';
-import { readEventNumber, readEventString, parseReasoningFromRaw } from './event-reader';
+import { config } from '../../controller/config';
+import { readRequestMetrics, readEventString, parseReasoningFromRaw } from './event-reader';
 import { renderEntryHTML } from './entry-template';
 import { getStatusMeta } from './status-meta';
 import type { NPCNameResolver, SidebarLogEntry, SidebarLogStatus } from './types';
@@ -70,7 +71,8 @@ class SidebarLog {
 			return;
 		}
 		if (eventType === 'thinking-complete') {
-			this.completeRequest(npcId, 'success', '请求成功', event.timestamp, readEventNumber(event.payload.completionTokens), readEventNumber(event.payload.latencyMs));
+			const { tokensUsed, latencyMs } = readRequestMetrics(event.payload);
+			this.completeRequest(npcId, 'success', '请求成功', event.timestamp, tokensUsed, latencyMs);
 			return;
 		}
 		if (eventType === 'thinking-error' || eventType === 'npc:decision-error' || eventType === 'llm-missing-key-fallback') {
@@ -153,6 +155,8 @@ class SidebarLog {
 	}
 
 	private render(): void {
+		this.syncVisibility();
+		if (this.root.classList.contains('pc-hidden')) return;
 		this.countElem.textContent = `AI 决策日志 (${this.entries.length})`;
 		this.entries.forEach(item => {
 			item.npcName = this.resolveNPCName(item.npcId);
@@ -175,6 +179,10 @@ class SidebarLog {
 		this.root.classList.toggle('minimized', this.isMinimized);
 		const toggle = this.root.querySelector('#sidebar-log-toggle');
 		if (toggle) toggle.textContent = this.isMinimized ? '最大化' : '最小化';
+	}
+
+	private syncVisibility(): void {
+		this.root.classList.toggle('pc-hidden', config.controller.operation !== 'pc');
 	}
 }
 

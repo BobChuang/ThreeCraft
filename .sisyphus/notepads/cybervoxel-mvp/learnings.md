@@ -214,3 +214,9 @@
 - 头顶思考气泡执行态文案可直接升级为“图标 + 动作文本”（如 `👣 移动`、`💬 对话`），不需要额外 UI 组件或事件协议改造。
 - `requesting` 动画点可在现有 `render(now)` 路径中按时间片计算（`Date.now()`），保持与自动隐藏同一时间基准，避免再次引入 `performance.now` 混用问题。
 - `received` 阶段兜底使用当前 `streamText` 可提升稳健性：即使 reasoning 字段为空，也能复用流式聚合内容展示。
+
+## 2026-02-23 Task 20（sidebar log refresh）
+
+- 侧边栏日志在当前代码中已满足 T20 核心能力：`thinking:state` + `simulation:lifecycle` 双流消费、`eventType/status` 兼容、请求指标（token/latency）展示、筛选与最小化。
+- 在 WebGL 场景下，展开详情按钮可能被 `#controller` 覆层拦截；自动化验证可通过 `page.evaluate(() => btn.click())` 稳定触发展开，避免 pointer-intercept flake。
+- T20 筛选验收更稳的断言方式是直接采集 `#sidebar-log-list .npc` 并做 `unique` 校验（本次 `Wrench -> unique=["Wrench"]`），比视觉肉眼判断更可审计。

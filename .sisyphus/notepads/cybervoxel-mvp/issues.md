@@ -155,3 +155,9 @@
 
 - Playwright 在一次较长 `browser_run_code + page.evaluate(async import)` 场景中出现 `Target crashed`；恢复手段为 `browser_close` 后重开页面并改用短路径采样（DOM 过滤 + 短轮询）。
 - QA 期间持续出现仓库基线 `registerSW.js` 404 控制台错误，已记录为非阻塞噪声，未影响 T19 功能验证与截图证据。
+
+## 2026-02-23 Task 20（sidebar log refresh）
+
+- `pnpm dev --host 127.0.0.1 --port 4173` 启动时端口连续占用并自动回退至 `4181`；证据采集已按实际端口执行。
+- Playwright 交互中 `.sidebar-expand` 点击会被 `#controller` 覆层拦截（pointer events）；通过 DOM 内触发 click 可稳定完成详情展开验证。
+- 运行期仍存在仓库基线 `registerSW.js` 404 与构建时非 module warning，均为非阻塞噪声，未影响 T20 验收。

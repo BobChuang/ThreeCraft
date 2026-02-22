@@ -1,0 +1,17 @@
+Task: T20 sidebar NPC filter deterministic assertion
+Date: 2026-02-23
+Server: http://127.0.0.1:4181/ (dev requested on 4173, auto-fallback due to occupied ports)
+
+Procedure:
+1) Opened local dev server and entered single-player.
+2) In AI sidebar log panel, switched filter combobox to `Wrench` (`npc-03`).
+3) Extracted visible list items from `#sidebar-log-list .npc`.
+
+Evidence payload (Playwright DOM extraction):
+- selected combobox value: npc-03
+- total visible entries sampled: 12
+- unique rendered NPC names:
+  ["Wrench"]
+
+Assertion result:
+PASS — all visible entries are Wrench (npc-03).

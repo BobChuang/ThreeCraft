@@ -1,0 +1,28 @@
+Task: T20 independent filter verification (orchestrator QA)
+Date: 2026-02-23
+
+Dev Server
+- Requested port: 4173
+- Actual port: 4181
+- Base URL used: http://127.0.0.1:4181/
+
+UI Flow (fresh run)
+1) Opened http://127.0.0.1:4181/
+2) Clicked "单人游戏"
+3) Waited for sidebar to appear and auto-populate entries
+4) Set filter combobox value to `Wrench` (`npc-03`)
+5) Extracted visible `#sidebar-log-list .npc` identities from DOM
+
+Filter Evidence
+- Selected filter value: npc-03
+- Raw visible NPC names from DOM:
+  ["Wrench","Wrench","Wrench","Wrench","Wrench","Wrench","Wrench","Wrench","Wrench","Wrench","Wrench","Wrench"]
+- Unique visible NPC names:
+  ["Wrench"]
+
+Console Noise
+- Baseline non-blocking error observed: `registerSW.js` 404
+
+Final Assertion
+- allVisibleEntriesAreNpc03 = true
+- PASS = true
