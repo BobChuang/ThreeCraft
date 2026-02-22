@@ -220,3 +220,9 @@
 - 侧边栏日志在当前代码中已满足 T20 核心能力：`thinking:state` + `simulation:lifecycle` 双流消费、`eventType/status` 兼容、请求指标（token/latency）展示、筛选与最小化。
 - 在 WebGL 场景下，展开详情按钮可能被 `#controller` 覆层拦截；自动化验证可通过 `page.evaluate(() => btn.click())` 稳定触发展开，避免 pointer-intercept flake。
 - T20 筛选验收更稳的断言方式是直接采集 `#sidebar-log-list .npc` 并做 `unique` 校验（本次 `Wrench -> unique=["Wrench"]`），比视觉肉眼判断更可审计。
+
+## 2026-02-23 Task 21（closure refresh）
+
+- Task 21 在当前分支已具备完整闭环（附身显示/释放隐藏/nextGoal 状态序列只读），本次采用最小改动收口，仅刷新证据、计划勾选与记录，不再触碰业务源码。
+- 通过运行时直接调用 `possessionController.possessNPC/releaseActiveNPC` 可稳定触发显隐并采集 UI 证据，适合规避指针锁与随机出生点导致的自动化不稳定。
+- 任务列表面板状态可用 `#npc-task-list-panel.active` 与 `getComputedStyle(...).display` 双重校验（显示态 `active=true`，释放后 `display=none`）。

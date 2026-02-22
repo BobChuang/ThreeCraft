@@ -161,3 +161,8 @@
 - `pnpm dev --host 127.0.0.1 --port 4173` 启动时端口连续占用并自动回退至 `4181`；证据采集已按实际端口执行。
 - Playwright 交互中 `.sidebar-expand` 点击会被 `#controller` 覆层拦截（pointer events）；通过 DOM 内触发 click 可稳定完成详情展开验证。
 - 运行期仍存在仓库基线 `registerSW.js` 404 与构建时非 module warning，均为非阻塞噪声，未影响 T20 验收。
+
+## 2026-02-23 Task 21（closure refresh）
+
+- 本次请求端口为 `4173`，开发服务实际漂移到 `4181`；证据采集全程基于实际端口执行。
+- Playwright 运行期间持续出现仓库既有 `registerSW.js` 404 控制台错误，属于非阻塞基线噪声，不影响附身态任务列表显隐验收。

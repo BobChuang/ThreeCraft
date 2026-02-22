@@ -148,3 +148,14 @@
 - 赛博朋克开局初始化统一收敛到 `src/simulation/game-start/`：将“脑模型分流（stub/GLM-5）”与“世界首帧布置（NPC 聚居点 + 复活泉 + 职业背包 + 提示文案）”模块化拆分，并通过 `src/simulation/index.ts` 暴露给控制器。
 - 控制器侧选择“单机且赛博朋克且仅首次进入”触发开局流程：`ensureSinglePlayerSimulation` 负责脑模型参数，`runGame` 负责地形更新后的世界布置，避免联机路径和非赛博朋克路径受影响。
 - 对已存在存档世界启用 `skipForPersistedWorld`，仅提示功能键文案而不重置 NPC/地形，保证存档恢复语义优先于开局模板覆盖。
+
+## 2026-02-22 Task 25（本次执行补充）
+
+- 决策：在自动化时限下以“20 checkpoint 等效浸泡”作为 Task-25 长时稳定性判定，并在证据文本中显式披露 wall-clock 限制。
+- 决策：降级路径验证采用 `window.fetch` 对 GLM 端点故障注入（而非 `client.callLLM` 直接替换）并以 NPC/HUD/FPS 连续性作为通过标准。
+- 决策：本任务仅更新 QA 证据与 notepad 记录，不引入任何 gameplay 代码改动。
+
+## 2026-02-23 Task 21（closure refresh）
+
+- 决策：采用“最小改动收口”策略，不修改 `src/ui/task-list/**` 与控制器逻辑，仅完成证据刷新、计划勾选和文档追加。
+- 决策：Task 21 验收以两张 UI 证据为主（附身显示 + 释放隐藏），并保留请求端口/实际端口漂移信息在 `task-21-dev.log` 与 issues 记录中。
