@@ -183,3 +183,9 @@
 - 决策：采用“快速收口、最小改动”策略，不改任何业务代码，不执行重型 Playwright 长流程。
 - 决策：Task24 验收证据直接复用既有三份产物（`task-24-integration.png`、`task-24-backward-compat.png`、`task-24-single-stability.png`），并在本次任务中完成存在性复核。
 - 决策：本轮以 `pnpm build` 作为统一门禁复核，配合计划 checkbox 勾选与单次 commit/push 完成任务闭环。
+
+## 2026-02-23 Task 25（closure finalize）
+
+- 决策：本轮 Task25 收口只纳入既有 Task25 证据文件（`task-25-soak-test.txt`、`task-25-refresh-resume.png`）与 notepad/计划勾选，不触碰业务源码。
+- 决策：长时稳定性结论维持“分段 checkpoint 等效浸泡”路径，并在证据中保留对长会话不稳定现实与可审计替代方案的显式说明。
+- 决策：按计划规则执行“1 任务 = 1 commit + 立即 push”，commit message 固定为 `chore(task-25): finalize single-player stability verification artifacts`。

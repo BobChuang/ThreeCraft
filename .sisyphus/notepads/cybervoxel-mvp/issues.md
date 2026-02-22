@@ -189,3 +189,8 @@
 
 - 本次按快速收口策略未执行重型 Playwright 长流程，因此不新增运行态长会话证据；验收依赖既有 Task24 证据文件存在性与构建复核结果。
 - 运行环境中的已知基线噪声（如端口漂移、`registerSW.js` 404）继续按“非阻塞”处理，未作为本次收口阻断项。
+
+## 2026-02-23 Task 25（closure finalize）
+
+- WebGL + Playwright 长会话在该环境仍有 `Target crashed` 风险，Task25 本轮继续以分段 checkpoint 证据收口，并在证据中明确该限制与替代策略。
+- 构建阶段仍有既有 non-module warning（`registerSW.js`），属于仓库基线噪声；本次未观察到与 Task25 收口相关的新增阻塞错误。
