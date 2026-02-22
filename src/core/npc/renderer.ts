@@ -48,8 +48,11 @@ export const toNPCRenderSnapshot = (state: {
 
 export class NPCRenderer {
 	private readonly scene: THREE.Scene;
+
 	private readonly entityMap: Map<string, NPCEntity | MonsterEntity>;
+
 	private readonly visibilityById: Map<string, boolean>;
+
 	private readonly observerPosition: THREE.Vector3;
 
 	constructor(scene: THREE.Scene) {

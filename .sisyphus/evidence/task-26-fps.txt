@@ -1,16 +1,31 @@
-Task 26 FPS evidence
-Date: 2026-02-22
-Server: pnpm dev with VITE_FIXED_MAP_INDEX=12
-URL: http://127.0.0.1:4180/
+Task 26 FPS evidence (30s window)
+Date: 2026-02-23
+Server start command: pnpm dev --port 4173
+Port record: requested 4173, actual 4178 (from /tmp/task26-dev.log)
+URL: http://127.0.0.1:4178/
 
-Scenario:
-1) Open game and click "单人游戏"
-2) Wait for runtime stabilization (2s)
-3) Sample #fps text every 500ms for 12 samples (~6s)
+Known baseline noise:
+- registerSW.js 404 appears on load; treated as baseline non-blocking noise.
 
-Samples: 121, 121, 120, 120, 121, 121, 121, 121, 118, 118, 121, 121
-Average FPS: 120.33
-Min FPS: 118
-Max FPS: 121
+Steps:
+1) Open URL and click "单人游戏".
+2) Confirm in-game HUD visible and #fps is readable.
+3) Read #fps every 500ms for 30s total (split into two contiguous 15s captures, 60 samples).
 
-Result: FPS remained stable (>100) during NPC runtime after performance optimizations.
+Raw stats summary (30s):
+- sampleCount: 60
+- averageFps: 117.02
+- minFps: 53
+- maxFps: 122
+
+Raw samples (60):
+120,120,121,121,115,115,121,121,120,120,121,121,120,120,109,109,121,121,121,121,120,120,120,120,120,120,97,97,121,121,53,53,122,122,120,120,121,121,121,121,121,121,121,121,121,120,120,121,121,121,121,120,120,121,121,120,120,121,121,120
+
+Conclusion:
+- This evidence now uses a full 30-second sampling window.
+- FPS remains around ~120 on average, with occasional short dips.
+
+Closure note (2026-02-23):
+- Task26 performance target is considered met in this environment: average FPS 117.02 (>30 FPS target) under 10 NPC runtime.
+- Environment limitations: local Vite port drift occurred (requested 4173 -> actual 4178), and baseline `registerSW.js` 404 noise remained present; both are treated as non-blocking baseline constraints.
+- Scope limitation: sampling is browser runtime based (HUD `#fps`) without external profiler attachment.

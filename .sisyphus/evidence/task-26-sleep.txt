@@ -1,18 +1,44 @@
-Task 26 NPC sleep/wake evidence
-Date: 2026-02-22
-Server: pnpm dev with VITE_FIXED_MAP_INDEX=12
-URL: http://127.0.0.1:4180/
+Task 26 NPC sleep/wake evidence (30s near/far)
+Date: 2026-02-23
+Server start command: pnpm dev --port 4173
+Port record: requested 4173, actual 4178 (from /tmp/task26-dev.log)
+URL: http://127.0.0.1:4178/
 
-Scenario:
-1) Enter single-player and read simulation NPC states near spawn
-2) Teleport observer/player camera to far coordinate (4096, 80, 4096)
-3) Wait 2.5s (>= several simulation ticks)
-4) Read simulation NPC states again
+Known baseline noise:
+- registerSW.js 404 appears on load; treated as baseline non-blocking noise.
 
-Metrics:
-- Near spawn: sleeping=0, active=10
-- Far away: sleeping=10, active=0
-- Far away thinking-active NPCs: 0
-- Total NPCs observed: 10
+Metric definition:
+- "LLM calls" are measured via `simulationEngine.decisionLoop.runDecision` invocation count delta
+  in each 30s window (same instrumentation method for near/far).
 
-Result: all off-range NPCs transitioned to sleep mode and stopped active thinking/decision activity while far from the observer.
+Near window (30s):
+1) Enter single-player at spawn (normal observer position).
+2) Patch runDecision counter, record start count.
+3) Observe for 30s.
+
+Near raw stats:
+- startCount: 0
+- endCount: 720
+- nearCallDelta(30s): 720
+- NPC state snapshot: total=10, sleeping=0, active=10
+
+Far window (30s):
+1) Keep same session and instrumentation.
+2) Force observer to far coordinate `{x:4096,y:80,z:4096}` continuously.
+3) Observe for 30s.
+
+Far raw stats:
+- startCount: 0
+- endCount: 10
+- farCallDelta(30s): 10
+- NPC state snapshot after 30s: total=10, sleeping=10, active=0
+
+Conclusion:
+- 30s near/far comparison shows strong suppression of decision activity in far mode
+  (near 720 vs far 10 under identical counter method).
+- Far snapshot confirms NPCs transitioned to sleeping state.
+
+Closure note (2026-02-23):
+- Sleep optimization conclusion: far-window decision activity is strongly suppressed (720 -> 10 in 30s), and far snapshot reached `sleeping=10/10`.
+- Environment limitations: port drift (4173 -> 4178) and baseline `registerSW.js` 404 noise persisted during QA, recorded as non-blocking baseline constraints.
+- Scope limitation: this evidence validates decision-loop suppression and sleep-state transition, not GPU-side render-thread profiling.

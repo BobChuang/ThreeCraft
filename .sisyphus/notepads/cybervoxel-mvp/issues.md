@@ -194,3 +194,8 @@
 
 - WebGL + Playwright 长会话在该环境仍有 `Target crashed` 风险，Task25 本轮继续以分段 checkpoint 证据收口，并在证据中明确该限制与替代策略。
 - 构建阶段仍有既有 non-module warning（`registerSW.js`），属于仓库基线噪声；本次未观察到与 Task25 收口相关的新增阻塞错误。
+
+## 2026-02-23 Task 26（closure finalize）
+
+- 本次 Task26 收口复核中仍存在端口漂移（请求 `4173`，实际 `4178`），证据文本已强制双写记录。
+- QA 环境持续出现仓库既有 `registerSW.js` 404 / non-module 噪声；按基线问题处理，不阻塞 Task26 验收。

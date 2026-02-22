@@ -189,3 +189,9 @@
 - 决策：本轮 Task25 收口只纳入既有 Task25 证据文件（`task-25-soak-test.txt`、`task-25-refresh-resume.png`）与 notepad/计划勾选，不触碰业务源码。
 - 决策：长时稳定性结论维持“分段 checkpoint 等效浸泡”路径，并在证据中保留对长会话不稳定现实与可审计替代方案的显式说明。
 - 决策：按计划规则执行“1 任务 = 1 commit + 立即 push”，commit message 固定为 `chore(task-25): finalize single-player stability verification artifacts`。
+
+## 2026-02-23 Task 26（closure finalize）
+
+- 决策：本轮仅纳入 Task26 相关既有改动与证据收口文件（`renderer.ts`、task-26 两份 evidence、notepads、计划勾选），不处理 F* 与 Task27 文件。
+- 决策：Task26 验收结论以“FPS 30s 采样结果 + near/far sleep 抑制结果”双证据联合判定，避免单指标偏差。
+- 决策：执行固定单提交策略，commit message 使用 `chore(task-26): finalize performance optimization verification artifacts`。
