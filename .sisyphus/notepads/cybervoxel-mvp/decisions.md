@@ -171,3 +171,9 @@
 - 决策：按收口约束仅刷新两份 Task23 证据、追加 notepads、勾选 Task23 计划项，不改任何业务实现代码。
 - 决策：Playwright 验证采用短链路分步执行（saveNow/reload/pagehide/autosave 分离采样）以规避长会话超时。
 - 决策：端口记录执行“请求端口 + 实际端口”双写，本次固定写入 `4173 -> 4183`。
+
+## 2026-02-23 Task 23（finalize refresh）
+
+- 决策：本轮收口继续坚持最小改动，仅更新 Task23 证据与 notepad 记录，不触碰持久化实现代码。
+- 决策：验收证据以“刷新后方块 marker 保持 + NPC 坐标保持 + reopen savedAt 递增”作为最终闭环判据。
+- 决策：计划文件 Task23 checkbox 已为 `[x]`，本次不做重复无效改动，避免非必要 diff。

@@ -97,3 +97,30 @@ Observed checks
 
 Console baseline
 - Non-blocking baseline console error persists during QA: `registerSW.js` 404 on `http://127.0.0.1:4183/registerSW.js`.
+
+---
+
+Closure refresh run (this execution)
+- Timestamp (UTC): 2026-02-23T03:49:06Z
+- Requested dev port: `4173`
+- Actual dev port: `4183` (`http://127.0.0.1:4183/`)
+
+Observed checks
+1) Refresh keeps persisted block state
+- Before reload manual save snapshot: `savedAt=1771789736062`
+- Injected marker before save: `{ type: "brickBlock", posX: 23, posY: 6, posZ: 23 }`
+- After reload + re-enter single-player: `savedAt=1771789736093`
+- Marker readback in persisted payload: `markerFound=true`
+
+2) Reopen/pagehide save still triggers immediately
+- Before leave (`about:blank`): `savedAt=1771789736093`
+- After reopen + re-enter: `savedAt=1771789742130`
+- Delta: `+6037ms` (did not wait autosave interval)
+
+3) Paired NPC persistence snapshot in same storage payload
+- NPC before reload: `npc-01 @ {"x":11,"y":6,"z":11}`
+- NPC after reload: `npc-01 @ {"x":11,"y":6,"z":11}`
+- Position parity: `sameNpcPosition=true`
+
+Console baseline
+- Non-blocking baseline console error observed in run: `registerSW.js` 404 (`http://127.0.0.1:4183/registerSW.js`).

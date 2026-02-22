@@ -95,3 +95,30 @@ Runtime values observed
 Notes
 - This closure run validates runtime NPC restore parity on reload; storage schema traversal remains implementation-owned and was not further refactored in closure scope.
 - Known baseline non-blocking console noise remains: `registerSW.js` 404.
+
+---
+
+Closure refresh run (this execution)
+- Timestamp (UTC): 2026-02-23T03:49:06Z
+- Requested dev port: `4173`
+- Actual dev port: `4183` (`http://127.0.0.1:4183/`)
+
+Runtime values observed
+1) Before reload, forced save with paired marker write:
+- `savedAt=1771789736062`
+- Marker written: `{ type: "brickBlock", posX: 23, posY: 6, posZ: 23 }`
+- NPC snapshot in persisted payload: `npc-01.position={"x":11,"y":6,"z":11}`
+
+2) After reload + re-enter single-player:
+- `savedAt=1771789736093`
+- Persisted marker still present: `markerFound=true`
+- `npc-01.position={"x":11,"y":6,"z":11}`
+- Match result: PASS (`sameNpcPosition=true`)
+
+3) Reopen flow (after `about:blank` pagehide trigger):
+- `savedAt` increased from `1771789736093` to `1771789742130`
+- Delta: `+6037ms`
+
+Notes
+- This run re-confirms NPC persistence parity across refresh/reopen without code changes.
+- Known baseline non-blocking console noise remains: `registerSW.js` 404.

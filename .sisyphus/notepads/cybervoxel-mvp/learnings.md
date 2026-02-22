@@ -238,3 +238,9 @@
 - Task23 收口可仅通过 Playwright 运行态写入 + `saveNow()` + reload/reopen 复核完成，不需要改动持久化实现代码。
 - 端口漂移仍需强制记录“请求端口 + 实际端口”；本次为 `4173 -> 4183`。
 - 在该仓库中验证 NPC 持久化时，优先使用 `simulationEngine.npcRegistry` 的运行态回读对比比深挖存储内部 schema 更稳定。
+
+## 2026-02-23 Task 23（finalize refresh）
+
+- 在收口复核里，采用“同一次 `saveNow()` 同步写入方块 marker + 读取 NPC 持久化快照”的方式，可一次性覆盖方块与 NPC 两类恢复证据。
+- 若自动化长等待不稳定，Task23 结论仍可由“reload 恢复 + reopen 触发 pagehide 保存”两个短链路步骤稳定证明。
+- 本次端口记录保持双写（请求 `4173` / 实际 `4183`）可直接满足计划审计对可追溯性的要求。
