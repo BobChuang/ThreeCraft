@@ -204,3 +204,9 @@
 
 - `pnpm exec tsc --noEmit` 复核仍失败（exit code 2），错误分布在历史文件与类型基线（含 `AbortSignal` 声明冲突），导致 F2 门禁未通过。
 - `pnpm build` 本次可通过（exit code 0），仅保留已知 non-module warning：`<script src="/registerSW.js"> ... can't be bundled without type="module"`。
+
+## 2026-02-23 F3（真实手动 QA）
+
+- F3 手动 QA 期间仍持续出现仓库基线噪声 `registerSW.js` 404 / non-module 警告（本轮日志仍可见），按既有基线记录为非阻断项。
+- 在“快速方块编辑”边界用例中出现 `TypeError: Cannot read properties of undefined (reading 'blocks')` 高频错误（f3-console.log 中 182 次匹配），并导致该边界用例失败；本轮按最小改动策略仅如实记录，不在 F3 内扩展修复。
+- 本轮 F3 场景与集成存在多项失败，结论为不通过，需后续任务继续排查 HUD/日志面板可见性与 block 编辑稳定性。
