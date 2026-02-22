@@ -1,0 +1,80 @@
+F1 计划合规审计（当前分支）
+日期：2026-02-23
+
+审计范围
+- 计划文件：`.sisyphus/plans/cybervoxel-mvp.md`（F1 条目与“必须具备/禁止事项”）
+- 代码目录：`src/`
+- 证据目录：`.sisyphus/evidence/`
+
+一、必须具备核验（9/9）
+1) 单机模拟在客户端运行：通过
+   - 证据：`src/controller/index.ts:374` 初始化 `new SimulationEngine(...)`
+   - 证据：`src/controller/index.ts:223` 单机 `startGame(...)` 入口存在
+
+2) LLM→Action JSON Schema 契约与验证：通过
+   - 证据：`src/utils/types/npc.ts:38` `isValidNPCAction`
+   - 证据：`src/simulation/npc-ai/validation/schema-validation.ts:1,24`
+
+3) 每 NPC 速率限制（不高于高频决策）：通过
+   - 证据：`src/simulation/npc-ai/decision-loop.ts:32` 默认 `DEFAULT_DECISION_INTERVAL_MS = 5_000`
+   - 证据：`src/simulation/npc-ai/decision-loop.ts:162-163` `inFlight` 与 `cadence` 双重门控
+
+4) 全局预算上限（请求/分钟、token/分钟）：通过
+   - 证据：`src/simulation/llm/glm5-service.ts:45` `MinuteLimiter(requestPerMinuteLimit, tokenPerMinuteLimit, ...)`
+   - 证据：`src/simulation/llm/minute-limiter.ts` 存在分钟级预算实现
+
+5) 熔断机制：通过
+   - 证据：`src/simulation/llm/glm5-service.ts:46` `PerNPCCircuitBreaker(...)`
+   - 证据：`src/simulation/llm/circuit-breaker.ts` 存在熔断实现
+
+6) 桩大脑模式：通过
+   - 证据：`src/simulation/stub-brain.ts`
+   - 证据：`src/simulation/npc-ai/decision-loop.ts:5,183` 可切换 stub 决策
+
+7) 流式响应与思考状态：通过
+   - 证据：`src/simulation/llm/glm5-service.ts:128` `stream: true`
+   - 证据：`src/simulation/llm/glm5-service.ts:88,168,99,103` 发射 `thinking-start/stream/complete/error`
+
+8) 10 个独特 NPC 人设：通过
+   - 证据：`src/simulation/personas/index.ts:22` `npcPersonas` 含 10 个角色导出
+   - 证据目录：`.sisyphus/evidence/task-3-persona-files.txt`（历史任务证据）
+
+9) 向后兼容：通过
+   - 构建：`pnpm build` 成功
+   - 回归：Playwright 冒烟（Classic 单人进入 + 移动 + 左/右键交互）完成
+
+二、禁止事项核验（16/16）
+- 扫描命令（摘要）：
+  - `grep`：RAG/knowledge graph/vector store/embedding → 无命中
+  - `grep`：crafting/economy/trading/quest → 无功能命中（仅角色背景文案出现“trades”词）
+  - `grep`：day-night/dayNight/day_cycle/night_cycle → 无命中
+  - `grep`：socket.io/websocket（simulation 目录）→ 无命中
+  - `grep`：texture atlas / Divine Voxel Engine → 无命中
+  - `src/simulation/monsters/catalog.ts:10,12,19` 仅两种怪物 `mutant`、`corrupted-bot`
+
+三、任务证据完整性（27/27）
+- 命令：`for i in $(seq 1 27); do ls .sisyphus/evidence/task-${i}-*; done`
+- 结果：`TASK_EVIDENCE_OK 27/27`
+
+四、向后兼容 Playwright 冒烟记录（Classic）
+- 启动命令：`pnpm dev --host 127.0.0.1 --port 4173`
+- 端口漂移：请求端口 4173；实际端口 4178
+  - 证据：`.sisyphus/evidence/final-audit-f1-dev.log:5-13`
+- Playwright MCP 操作：
+  1) 打开 `http://127.0.0.1:4178`
+  2) 点击“单人游戏”
+  3) 等待进入场景
+  4) 执行移动键（W/D）
+  5) 执行左键破坏/右键放置冒烟交互
+- 控制台检查：
+  - 仅观测到已知基线错误：`registerSW.js` 404
+  - 未见新的阻塞错误
+  - 快照：`.sisyphus/evidence/final-audit-f1-playwright-snapshot.md`
+
+五、构建核验
+- 命令：`pnpm build`
+- 结果：通过
+- 备注：出现已知基线 warning：`<script src="/registerSW.js"> ... can't be bundled without type="module"`（非阻塞）
+
+六、审计结论行（计划要求格式）
+必须具备 [9/9] | 禁止项 [16/16] | 任务 [27/27] | 向后兼容 [通过] | 结论：通过

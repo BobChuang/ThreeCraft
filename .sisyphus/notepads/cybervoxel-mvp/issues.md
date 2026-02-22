@@ -136,3 +136,8 @@
 
 - 本次 `pnpm dev --host 127.0.0.1 --port 4173` 启动时端口连续占用，Vite 自动漂移到 `4177`；证据与日志已按实际端口执行。
 - Playwright 会话仍出现仓库既有 `registerSW.js` 404 控制台噪声，为基线问题，未阻塞 T27 启动流验收。
+
+## 2026-02-23 F1（计划合规审计）
+
+- Playwright MCP 初次导航曾出现 `Target crashed`；执行一次 `browser_close` 后重新打开页面可恢复稳定。
+- F1 复核中持续出现仓库既有基线噪声（`registerSW.js` 404、构建阶段非 module 提示），未观察到新增阻塞错误。
