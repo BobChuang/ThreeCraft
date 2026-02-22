@@ -279,3 +279,9 @@
 - 主场景与 Classic 兼容建议拆分为两套 dev 会话执行：主场景保留计划请求端口追踪（本轮 `4173 -> 4185`），Classic 兼容可用独立固定地图会话（本轮 `4190 -> 4190`）保证可复现。
 - 运行态验证中，`import('/src/index.ts')` + `controller.simulationEngine` 可稳定覆盖附身/生存/持久化集成检查，并可直接输出审计字段（npcCount/saveBytes）。
 - Classic 兼容若受当前环境固定地图配置影响，可通过 `VITE_FIXED_MAP_INDEX=0` 独立服务直接确认 `config.weather=0`，减少误报。
+
+## 2026-02-23 F3（FINAL 波次）
+
+- F3 证据收口时，主场景与 Classic 最稳妥仍是双会话：`4173 -> 4185`（主场景端口漂移）与 `4190 -> 4190`（Classic 固定地图），可同时满足“请求端口+实际端口”审计要求。
+- Playwright 在 ThreeCraft WebGL 场景下，用 UI 可见信号（AI 日志面板、NPC 过滤项数量、FPS）做集成链路佐证比依赖运行时私有对象更稳，避免 `window.controller` 暴露差异导致假阴性。
+- F3 报告末行需要严格保持模板格式（`场景 [N/N 通过] | 集成 [N/N] | 边界用例 [N 已测] | 向后兼容 [通过/失败] | 结论`），否则 final-wave 规则校验会失败。

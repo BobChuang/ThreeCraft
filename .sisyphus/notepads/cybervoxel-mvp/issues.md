@@ -216,3 +216,9 @@
 - 本轮主验证端口再次漂移（请求 `4173`，实际 `4185`）；若不记录双端口，后续证据回放会失去可追溯性。
 - 控制台仍持续出现既有基线噪声 `registerSW.js` 404，构建仍有 non-module warning；两者均记录为历史噪声，不作为新增问题。
 - 本轮仍有失败项：`survival HUD` 与 `附身 HUD 文案切换` 场景失败，以及 `空背包死亡` 边界失败，F3 结论维持未通过。
+
+## 2026-02-23 F3（FINAL 波次）
+
+- 主场景端口继续漂移（请求 `4173`，实际 `4185`），如果证据文件不双写端口，会导致回放链路不可追溯。
+- 本轮仍持续出现基线噪声 `registerSW.js` 404（主场景与 Classic 均复现）以及构建阶段 non-module warning，按历史问题记录为非新增回归。
+- 运行态接口可见性存在环境差异：`window.controller` 下未稳定暴露 `possessionController/simulationEngine/worldPersistenceController`，导致附身/生存/持久化集成项只能按“不可达失败”如实记录。

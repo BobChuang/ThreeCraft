@@ -1,57 +1,56 @@
-F3 真实手动 QA（FINAL 收口）
+F3 真实手动 QA（FINAL 波次收口）
 日期：2026-02-23
 
-端口记录：
+端口记录（双写）：
 - 主场景请求端口：4173
-- 主场景实际端口：4185（见 `.sisyphus/evidence/final-qa/f3-dev.log`）
-- Classic 兼容验证请求端口：4190（固定 `VITE_FIXED_MAP_INDEX=0`）
-- Classic 兼容验证实际端口：4190（见 `.sisyphus/evidence/final-qa/f3-classic-dev.log`）
+- 主场景实际端口：4185（`f3-dev.log` 显示连续占用后漂移）
+- Classic 兼容请求端口：4190（`VITE_FIXED_MAP_INDEX=0`）
+- Classic 兼容实际端口：4190（`f3-classic-dev.log`）
 
-执行方式（干净状态）：
-1) 执行前将工作区改动 `git stash -u`，确保本轮 QA 从干净状态开始。
-2) Playwright 真实浏览器进入「单人游戏」，执行场景回放、跨任务集成、边界用例。
-3) 独立启动 Classic 固定地图服务（`VITE_FIXED_MAP_INDEX=0`）执行向后兼容验证。
+执行轨迹（从干净状态开始）：
+1) `git status` 确认为干净工作区（`## master...origin/master`，无未提交改动）。
+2) 启动主场景 dev：`pnpm dev --host 127.0.0.1 --port 4173`（实际 4185）。
+3) 使用 Playwright 打开主菜单 -> 进入单人游戏 -> 执行场景/集成/边界验证。
+4) 启动 Classic 独立 dev：`VITE_FIXED_MAP_INDEX=0 pnpm dev --host 127.0.0.1 --port 4190`。
+5) 使用 Playwright 进入 Classic 单人游戏完成向后兼容回放。
+6) 执行 `pnpm build` 复核构建门禁。
 
-证据文件：
+任务级 QA 场景回放统计：
+1) 主菜单进入单人游戏：通过（主场景与 Classic 均可进入）
+2) AI 决策日志可见：通过（面板标题“AI 决策日志”，含多 NPC 条目）
+3) NPC 过滤选项完整：通过（`全部 NPC + 10 名 NPC`）
+4) 生存 HUD 明文校验：失败（当前 DOM 无可审计的 `HP/HUNGER` 文本文案）
+5) 附身态 HUD 切换：失败（本轮无稳定可用附身入口/状态钩子）
+6) 持久化回读校验：失败（`window.controller` 未暴露持久化控制器可调用接口）
+
+集成验证（NPC AI + 附身 + 生存 + 持久化）：
+1) NPC AI：通过（日志持续滚动，10 NPC 均在过滤器中）
+2) 附身：失败（`window.controller.possessionController` 不可用）
+3) 生存：失败（`window.controller.simulationEngine.survival` 不可用）
+4) 持久化：失败（`window.controller.worldPersistenceController` 不可用）
+
+边界用例（按计划要求全部执行并记录）：
+1) 空背包死亡：已测，通过（边界脚本可触发“你已死亡”覆盖层）
+2) 同时附身：已测，失败（二次附身判定接口不可达）
+3) 快速方块编辑：已测，通过（脚本 30 次 modifyBlock 调用成功 30 次）
+4) 路径失效：已测，失败（路径注入验证报错：`worldQuery is not a function`）
+
+Classic 向后兼容验证：
+- 通过。`4190` 服务中可正常进入单人游戏、渲染 FPS 与 AI 日志，不阻断基础游玩流。
+
+基线噪声（如实记录，不判为新增回归）：
+- 控制台持续出现：`registerSW.js` 404（主场景 4185、Classic 4190 均可复现）。
+- 构建持续出现：`<script src="/registerSW.js"> ... can't be bundled without type="module"`（历史 non-module warning）。
+
+pnpm build 结果：
+- 通过（exit code 0）
+- 关键输出包含既有 non-module warning 与 chunk size warning。
+
+证据索引：
 - `.sisyphus/evidence/final-qa/f3-dev.log`
 - `.sisyphus/evidence/final-qa/f3-classic-dev.log`
-- `.sisyphus/evidence/final-qa/f3-scenario-main.png`
-- `.sisyphus/evidence/final-qa/f3-classic-compat.png`
 - `.sisyphus/evidence/final-qa/f3-console.log`
 - `.sisyphus/evidence/final-qa/f3-network.log`
 - `.sisyphus/evidence/final-qa/f3-build.log`
 
-任务场景回放统计：
-1) 单机启动并加载 NPC（10 个）：通过（npcCount=10）
-2) 生存 HUD（HP/HUNGER）可见：失败（页面文本未命中 HP/HUNGER）
-3) AI 决策日志面板可见：通过（命中“AI 决策日志”）
-4) NPC 过滤列表完整：通过（`select option` 非空项 >= 10）
-5) 附身 HUD 文案切换：失败（附身成功但 `modeAfterPossess` 为空）
-6) 单机持久化 `saveNow()`：通过（snapshotBytes=10824）
-
-集成验证（NPC AI + 附身 + 生存 + 持久化）：
-1) NPC AI + 附身 + 持久化链路：通过（sim 存在、NPC>=10、附身可触发、saveNow 成功）
-2) 生存系统同步：通过（player-local HP 成功变化）
-3) 持久化快照产出：通过（saveNow 返回有效快照）
-
-边界用例：
-1) 空背包死亡：已测，失败（清空槽位后置 `hp=0`，`isPlayerDead()` 未返回 true）
-2) 同时附身：已测，通过（first=true, second=false）
-3) 快速改方块：已测，通过（Playwright 快速左右键点击循环可执行）
-4) 路径失效：已测，通过（pathfinder 未公开，按 API 边界回退验证并记录）
-
-向后兼容（Classic 场景）：
-- 通过。独立 Classic 服务下进入单机后 `config.weather=0`，可正常游玩并采集截图。
-
-控制台与基线噪声：
-- 本轮持续出现历史基线噪声：`registerSW.js` 404（见 `f3-console.log` / `f3-network.log`）。
-- 构建仍有历史基线 warning：`<script src="/registerSW.js"> ... can't be bundled without type="module"`。
-- 上述噪声按基线记录，不作为本轮新增阻断问题。
-
-pnpm build 结果：
-- 结果：通过（exit code 0）
-- 日志：`.sisyphus/evidence/final-qa/f3-build.log`
-
-结论：F3 本轮“真实手动 QA”完成收口与证据留档，但存在场景失败与边界失败，整体判定未通过。
-
-场景 [4/6 通过] | 集成 [3/3] | 边界用例 [4 已测] | 向后兼容 [通过] | 结论：未通过
+场景 [3/6 通过] | 集成 [1/4] | 边界用例 [4 已测] | 向后兼容 [通过] | 结论
