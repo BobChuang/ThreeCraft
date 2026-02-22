@@ -1,0 +1,24 @@
+Task: T27 游戏启动流程（出生点，NPC 放置，复活泉）
+Date: 2026-02-23
+
+Requested dev command:
+pnpm dev --host 127.0.0.1 --port 4173
+
+Actual dev startup output:
+- Port 4173 is in use, trying another one...
+- Port 4174 is in use, trying another one...
+- Port 4175 is in use, trying another one...
+- Port 4176 is in use, trying another one...
+- Local: http://127.0.0.1:4177/
+
+Playwright QA observations:
+1) 场景：赛博朋克游戏随 NPC 启动
+   - 在单机运行态可见 AI 决策面板的 NPC 下拉项：Blaze/Doc/Drill/Flash/Neon/Nix/Rust/Skyline/Viper/Wrench（共 10 个）
+   - 证据截图：.sisyphus/evidence/task-27-start-flow.png
+
+2) 场景：原点处存在复活泉
+   - 进入观察者模式（G）后采集复活泉场景截图
+   - 证据截图：.sisyphus/evidence/task-27-revival-spring.png
+
+Console notes:
+- Baseline non-blocking warning observed: GET /registerSW.js 404 (known repository baseline noise)

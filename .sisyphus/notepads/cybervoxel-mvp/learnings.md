@@ -185,3 +185,9 @@
 - 赛博朋克开局收口可复用单机启动钩子：在 `runGame` 的 `terrain.updateState()` 后执行一次 `initializeCyberpunkGameStart`，可稳定覆盖 NPC 初始聚居点、职业背包和复活泉落块。
 - `resolveCyberpunkBrainBootstrap` 通过本地 `zhipu_api_key/ZHIPU_API_KEY/glm_api_key` 自动分流 stub 与 `glm-5`，无需改动 server/socket 路径。
 - Playwright 证据采集在 WebGL 场景下应避免动态重复导入 `'/src/index.ts'`（会触发重复控制器实例）；短路径“直接进单机并立即截图”更稳。
+
+## 2026-02-23 Task 27（本次验收收口）
+
+- T27 启动流在当前分支已就绪，最小改动策略可以仅做“证据刷新 + 构建复核 + 计划勾选”，无需再次触碰启动逻辑源码。
+- 运行证据日志必须明确记录“请求端口与实际端口”；本次 `4173` 连续占用后漂移到 `4177`，仍可稳定完成 Playwright QA。
+- 对“10 个 NPC 启动可见”可用 AI 日志面板的 NPC 过滤下拉项（10 个唯一名字）做快速可审计佐证，避免依赖不稳定的运行时全局对象读取。

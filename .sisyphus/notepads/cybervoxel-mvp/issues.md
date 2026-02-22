@@ -131,3 +131,8 @@
 - 本地 `pnpm dev --port 4173` 端口被占用后自动回退到 `4174`，本次证据采集已按实际端口执行。
 - 开发运行期继续出现仓库既有 `registerSW.js` 404 基线 warning；未发现阻塞 T27 验收的新构建错误。
 - Playwright 中若动态导入 `'/src/index.ts'` 会触发重复控制器实例并刷出大量 `TypeError: undefined is not iterable` 控制台错误；已改为短链路直接进入单机截图规避。
+
+## 2026-02-23 Task 27（本次验收）
+
+- 本次 `pnpm dev --host 127.0.0.1 --port 4173` 启动时端口连续占用，Vite 自动漂移到 `4177`；证据与日志已按实际端口执行。
+- Playwright 会话仍出现仓库既有 `registerSW.js` 404 控制台噪声，为基线问题，未阻塞 T27 启动流验收。
