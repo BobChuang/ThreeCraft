@@ -80,6 +80,14 @@ export class NPCEntity extends Player {
 		this.animationState = state;
 	}
 
+	setPosition(v: { x: number; y: number; z: number }) {
+		this.target = new THREE.Vector3(v.x, v.y, v.z);
+		if (Math.abs(this.position.y - v.y) > symConfig.eps) {
+			this.position.y = v.y;
+			this.player.position.y = v.y;
+		}
+	}
+
 	getAnimationState() {
 		return this.animationState;
 	}

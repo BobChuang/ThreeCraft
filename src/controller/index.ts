@@ -335,6 +335,7 @@ class Controller {
 		this.observerController.update();
 		if (this.simulationEngine) this.simulationEngine.setObservers([{ x: config.state.posX, y: config.state.posY, z: config.state.posZ }]);
 		if (this.simulationEngine && this.npcRenderer) {
+			this.alignSinglePlayerNPCsToTerrain();
 			const npcStates = this.simulationEngine.getNPCStates();
 			this.clientEventBus?.dispatchBatch(mapNPCStatesToClientEvents(npcStates));
 			const snapshots = npcStates.map((state: SimulationNPCState) =>
@@ -384,6 +385,7 @@ class Controller {
 			this.log = new Log(config.log);
 		}
 		this.simulationEngine.start();
+		this.alignSinglePlayerNPCsToTerrain();
 		const playerSurvival = this.simulationEngine.getSurvivalState('player-local');
 		this.playerSurvivalState = {
 			hp: playerSurvival.hp,
@@ -392,6 +394,94 @@ class Controller {
 			maxHunger: playerSurvival.maxHunger,
 		};
 		this.worldPersistence.start();
+	}
+
+	private alignSinglePlayerNPCsToTerrain(): void {
+		if (this.multiPlay.working || !this.simulationEngine) return;
+		const terrain = this.core?.terrain;
+		if (!terrain) return;
+		this.simulationEngine
+			.getNPCStates()
+			.filter(npc => npc.id.startsWith('npc-'))
+			.forEach(npc => {
+				const groundedY = this.resolveStandableYFromTerrainColumn(npc.position.x, npc.position.z);
+				if (Math.abs(npc.position.y - groundedY) < 1e-3) return;
+				this.simulationEngine?.overrideNPCPosition(npc.id, {
+					x: npc.position.x,
+					y: groundedY,
+					z: npc.position.z,
+				});
+			});
+	}
+
+	private resolveStandableYFromTerrainColumn(x: number, z: number): number {
+		const terrain = this.core?.terrain;
+		if (!terrain) return 1;
+		const columnPairs = Controller.getGroundingColumnPairs(x, z);
+		let bestTop = Number.NEGATIVE_INFINITY;
+		columnPairs.forEach(([cx, cz]) => {
+			const estimatedFloor = Math.round(terrain.getFloorHeight(cx, cz));
+			if (!Number.isFinite(estimatedFloor)) return;
+			const top = this.findTopSolidYAtColumn(cx, cz, estimatedFloor);
+			if (top > bestTop) bestTop = top;
+		});
+		if (!Number.isFinite(bestTop)) {
+			const fallback = Math.round(terrain.getFloorHeight(Math.round(x), Math.round(z)));
+			return (Number.isFinite(fallback) ? fallback : 0) + 1;
+		}
+		return bestTop + 1;
+	}
+
+	private static getGroundingColumnPairs(x: number, z: number): Array<[number, number]> {
+		const roundedX = Math.round(x);
+		const roundedZ = Math.round(z);
+		const candidates: Array<[number, number]> = [
+			[Math.floor(x), Math.floor(z)],
+			[Math.floor(x), Math.ceil(z)],
+			[Math.ceil(x), Math.floor(z)],
+			[Math.ceil(x), Math.ceil(z)],
+			[roundedX, roundedZ],
+		];
+		const keySet = new Set<string>();
+		const pairs: Array<[number, number]> = [];
+		candidates.forEach(([cx, cz]) => {
+			const key = `${cx}:${cz}`;
+			if (keySet.has(key)) return;
+			keySet.add(key);
+			pairs.push([cx, cz]);
+		});
+		return pairs;
+	}
+
+	private findTopSolidYAtColumn(x: number, z: number, estimatedFloor: number): number {
+		if (![x, z, estimatedFloor].every(Number.isFinite)) return estimatedFloor;
+		let highestSolid = Number.NEGATIVE_INFINITY;
+		for (let y = estimatedFloor + 8; y >= estimatedFloor - 8; y -= 1) {
+			if (this.safeTerrainHasBlock(x, z, y)) {
+				if (!Number.isFinite(highestSolid)) highestSolid = y;
+				if (!this.safeTerrainHasBlock(x, z, y + 1)) return y;
+			}
+		}
+		if (Number.isFinite(highestSolid)) return highestSolid;
+		return estimatedFloor;
+	}
+
+	private safeTerrainHasBlock(x: number, z: number, y: number): boolean {
+		const terrain = this.core?.terrain as
+			| {
+					hasBlock?: (tx: number, tz: number, ty: number) => unknown;
+					fragmentSize?: number;
+					blockFragments?: unknown;
+			  }
+			| undefined;
+		if (!terrain || typeof terrain.hasBlock !== 'function') return false;
+		if (!Number.isFinite(terrain.fragmentSize) || (terrain.fragmentSize ?? 0) <= 0) return false;
+		if (!Array.isArray(terrain.blockFragments)) return false;
+		try {
+			return Boolean(terrain.hasBlock(x, z, y));
+		} catch {
+			return false;
+		}
 	}
 
 	private ensureCyberpunkGameStartFlow(): void {

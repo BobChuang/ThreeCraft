@@ -228,3 +228,22 @@
 - F4 审计确认范围蔓延：历史提交 `5adfc69` 将大量 `.sisyphus/tmp/**` 临时编译产物提交入库，同时包含计划规则文件变更，超出 T1-T27 任务交付边界。
 - 当前仓库存在未在 T1-T27 任务描述中明确说明的已跟踪文件 265 个（`.sisyphus/tmp/**` 263 个 + 两份 lockfile），需作为范围一致性风险持续跟踪。
 - `pnpm exec tsc --noEmit` 复核仍失败（exit 2），`pnpm build` 通过但保留既有 `registerSW.js` non-module warning，均为 F4 需保留的基线事实。
+
+## 2026-02-23 NPC 嵌地最小修复
+
+- 首轮运行态截图仍显示 NPC 普遍嵌地；在保留 `floor+1` 语义前提下，最终定位为 `NPCEntity` 继承 `Player.setPosition(y-0.25)` 的隐藏偏移导致渲染下沉。
+- Playwright 会话中仍存在仓库基线 `registerSW.js` 404 控制台报错（非阻塞）；本次验收结论以进入单机后的 NPC 站位截图与构建结果为准。
+
+## 2026-02-23 NPC 嵌地修复独立验收（本轮）
+
+- 本轮独立运行态验收（请求 `4173`，实际 `4186`）中，截图 `.sisyphus/evidence/task-npc-grounding-qa.png` 仍可见至少 1 名 NPC 半身嵌地，验收结论为失败。
+- 会话中继续出现仓库既有基线噪声 `registerSW.js` 404；该噪声不构成本次失败主因。
+
+## 2026-02-23 NPC 嵌地修复 retry-2（grounding 原子补丁）
+
+- Playwright MCP 本轮在 `browser_navigate` 到 `http://127.0.0.1:4173` 与 `https://example.com` 均直接 `Target/Page crashed`，导致“补丁后新截图”自动化复核受阻；该问题已与业务逻辑分离记录。
+- 在补丁前截图 `tmp-npc-ground-check-retry.png` 中，中心偏左位置仍可见 1 名 NPC 下半身嵌地；本轮已对 grounding 增加“上方空气”判定，但受 Playwright 崩溃影响，尚缺补丁后同场景截图证据。
+
+## 2026-02-23 NPC 嵌地最终验收闭环（阻断项）
+
+- 本轮 Playwright 在截图成功落盘后，执行 `browser_console_messages` 时再次出现 `Target crashed`；该崩溃发生于证据采集后段，未阻断本次 PASS 结论，但仍属自动化稳定性风险。
