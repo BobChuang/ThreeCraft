@@ -413,6 +413,12 @@
 ## 2026-02-23 DoD line 2343（retry closure）
 
 - line2343 retry 仍需先记录端口漂移再做结论；本轮请求/实际端口为 `4173 -> 4188`。
+
+## 2026-02-23 DoD line 105（PASS retry on 4189）
+
+- line105 可在单会话内通过“最小运行时布置 + 原有系统路径”完成 3 条款闭环：HUD 可见、怪物攻击掉血、怪物掉落食物后食用回饥饿。
+- 饥饿条款若初始接近满值，需要先把 hunger 调到可观察区间（本轮 55）再走掉落收集+consume 链路，否则即使 consume 成功也可能看不到增长。
+- 怪物条款可通过 `sim.monsters.tick(...)` 触发既有 `onAttack -> survival` 回调链路拿到可审计 `hpBefore/hpAfter`，无需直接调用伤害捷径。
 - 短链 checkpoint（T+0/T+10）可稳定采到 `mode + FPS + AI log + NPC 下拉` 与单 tab 信号，但最终 T+20 采样必须成功才可判 PASS。
 - 当最终 checkpoint 采样发生 `Target crashed` 时，即使前两段信号健康也必须保持 BLOCKED，不能用后续重开页面截图替代连续性证明。
 

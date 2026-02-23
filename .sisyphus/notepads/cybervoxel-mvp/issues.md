@@ -333,6 +333,11 @@
 ## 2026-02-23 DoD line 2343（retry closure）
 
 - 本轮 retry 在 T+20 结论采样阶段再次触发 `page.evaluate: Target crashed`，导致“短链连续稳定”证据中断，line2343 无法勾选。
+
+## 2026-02-23 DoD line 105（PASS retry on 4189）
+
+- Playwright 在本轮前段多次出现 `Target crashed` / evaluate timeout；通过缩短脚本窗口并保留单次关键链路采样后，证据采集恢复稳定。
+- 运行态仍有基线 `registerSW.js` 404 / non-module 噪声，已与 line105 功能结论分离记录为非阻断项。
 - `pnpm exec tsc --noEmit` 本轮仍失败（exit code 2，历史基线类型问题），`pnpm build` 通过（exit code 0）。
 - 运行期继续存在基线 `registerSW.js` 404/non-module 噪声，已与 line2343 阻断原因显式分离。
 
