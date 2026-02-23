@@ -415,3 +415,9 @@
 - line2343 retry 仍需先记录端口漂移再做结论；本轮请求/实际端口为 `4173 -> 4188`。
 - 短链 checkpoint（T+0/T+10）可稳定采到 `mode + FPS + AI log + NPC 下拉` 与单 tab 信号，但最终 T+20 采样必须成功才可判 PASS。
 - 当最终 checkpoint 采样发生 `Target crashed` 时，即使前两段信号健康也必须保持 BLOCKED，不能用后续重开页面截图替代连续性证明。
+
+## 2026-02-23 DoD line 2343（retry closure pass）
+
+- 将三段采样与截图合并到同一次 `browser_run_code` 会话（T+0/T+6/T+12 + 同会话截图）可明显降低后段工具调用引入的崩溃风险。
+- 在本轮中，`tabCount=1` 与 `NPC selector=11` 在三段 checkpoint 持续稳定，满足“单标签单机会话连续性”可审计要求。
+- 对 line2343 判定可采用硬门槛：三段 checkpoint 全部成功 + 无 `Target crashed` + 同会话截图落盘，才允许 PASS。

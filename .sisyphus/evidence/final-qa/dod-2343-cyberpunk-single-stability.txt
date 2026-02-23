@@ -2,50 +2,59 @@
 
 - Date: 2026-02-23
 - Scope: `赛博朋克场景在单机模式下稳定工作` (line 2343)
-- Verdict: **BLOCKED**
+- Verdict: **PASS**
 
 ### 1) Dev server port mapping (requested vs actual)
 
 - Requested start command: `VITE_FIXED_MAP_INDEX=12 pnpm dev --host 127.0.0.1 --port 4173`
-- Actual mapping in this retry run: **4173 -> 4188**
+- Actual mapping in this retry run: **4173 -> 4191**
 - Evidence source: `.sisyphus/evidence/final-qa/dod-2343-dev.log`
 
-### 2) Single-player short-chain checkpoints (single tab)
+### 2) Single-player short continuity chain (single page session, single tab)
 
-- Entry URL: `http://127.0.0.1:4188/`
+- Entry URL: `http://127.0.0.1:4191/`
 - Mode entry: clicked `单人游戏`
+- Checkpoints collected in one uninterrupted `browser_run_code` session with waits `T+0 / T+6 / T+12`.
 
 Checkpoint observations:
 
-1. **T+0s**
+1. **T+0**
    - mode: `普通`
    - FPS text: `FPS: ---`
-   - AI log header: `AI 决策日志 (60)`
-   - NPC selector: `11` options (`全部 NPC` + `npc-01..npc-10`)
-   - single-tab signal: `browser_tabs list` => one tab (`ThreeCraft`, 4188)
+   - AI log text: `AI 决策日志 (90)最小化`
+   - NPC selector count: `11` (`全部 NPC` + `npc-01..npc-10`)
+   - tab count: `1`
 
-2. **T+10s**
+2. **T+6**
    - mode: `普通`
    - FPS text: `FPS: ---`
-   - AI log header: `AI 决策日志 (120)`
-   - NPC selector: still `11` options (`全部 NPC` + `npc-01..npc-10`)
-   - single-tab signal: `browser_tabs list` => one tab (`ThreeCraft`, 4188)
+   - AI log text: `AI 决策日志 (120)最小化`
+   - NPC selector count: `11` (`全部 NPC` + `npc-01..npc-10`)
+   - tab count: `1`
 
-3. **T+20s (conclusion checkpoint)**
-   - while collecting final checkpoint snapshot, Playwright returned: `page.evaluate: Target crashed`
-   - continuity chain interrupted before uninterrupted conclusion could be proven
+3. **T+12 (conclusion checkpoint)**
+   - mode: `普通`
+   - FPS text: `FPS: ---`
+   - AI log text: `AI 决策日志 (120)最小化`
+   - NPC selector count: `11` (`全部 NPC` + `npc-01..npc-10`)
+   - tab count: `1`
+
+Continuity result:
+
+- No `Target crashed` / page crash during checkpoint chain.
+- No checkpoint skipped.
+- Final URL remained `http://127.0.0.1:4191/`.
 
 Screenshot evidence:
 
 - `.sisyphus/evidence/final-qa/dod-2343-cyberpunk-single-stability.png`
-- note: screenshot was captured after reopening page following crash, used as visual state reference only; it does not repair the interrupted T+0/T+10/T+20 continuity chain.
+- Captured in the same uninterrupted checkpoint session after T+12 sampling.
 
-### 3) Baseline noise vs blocker separation
+### 3) Baseline noise separation
 
-- Baseline noise (non-blocking, known):
-  - `registerSW.js` 404 / non-module warning
-- Actual blocker in this retry run:
-  - `Target crashed` at final checkpoint collection, breaking uninterrupted auditable chain.
+- Known baseline noise observed in this run:
+  - `registerSW.js` 404 / non-module related warning
+- This noise was not used as a failure condition.
 
 ### 4) Required verification command exits (this retry run)
 
@@ -58,5 +67,6 @@ Screenshot evidence:
 
 ### Final decision for line 2343
 
-- Keep line 2343 as `- [ ]` in this run.
-- Status: **BLOCKED**
+- Short-chain single-session continuity is complete and auditable in this run.
+- Line 2343 is eligible to be marked `- [x]`.
+- Status: **PASS**

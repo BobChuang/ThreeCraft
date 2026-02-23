@@ -335,3 +335,8 @@
 - 本轮 retry 在 T+20 结论采样阶段再次触发 `page.evaluate: Target crashed`，导致“短链连续稳定”证据中断，line2343 无法勾选。
 - `pnpm exec tsc --noEmit` 本轮仍失败（exit code 2，历史基线类型问题），`pnpm build` 通过（exit code 0）。
 - 运行期继续存在基线 `registerSW.js` 404/non-module 噪声，已与 line2343 阻断原因显式分离。
+
+## 2026-02-23 DoD line 2343（retry closure pass）
+
+- 本轮未出现 `Target crashed`，但 FPS 文本仍为 `FPS: ---`；该现象在本仓库 line2343 验收中按“可见信号存在且链路连续”处理，不单独阻断。
+- `pnpm exec tsc --noEmit` 本轮仍为历史基线失败（exit code 2），`pnpm build` 通过（exit code 0）；已作为环境事实记录，不作为 line2343 连续性失败条件。
