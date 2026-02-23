@@ -311,3 +311,9 @@
 - 本轮请求端口 `4173` 被占用并漂移到 `4183`，若证据不双写端口映射会影响回放追溯。
 - 运行期仍持续出现仓库基线噪声 `registerSW.js` 404 / non-module warning；本次已与 line107 功能结论分离记录为非阻断项。
 - `pnpm exec tsc --noEmit` 仍为历史基线失败（exit code 2），`pnpm build` 通过（exit code 0）；line107 是否勾选以本轮持久化前后值证据判定。
+
+## 2026-02-23 DoD line 105（closure attempt refresh）
+
+- 本轮 HUD 条款阻断：`#survival-hud` 存在但 `display:none`，未形成“可见”证据。
+- 本轮怪物条款阻断：采样窗口内 `monsterCount=0`，HP 前后值 `100 -> 100`，未观察到怪物攻击导致的 HP 下降。
+- 饥饿值出现 `48 -> 78` 数值上升，但链路依赖 runtime-assisted 调用（非纯黑盒玩家采集/食用 UI 流），不足以单独支持 line105 勾选。
