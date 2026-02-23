@@ -288,3 +288,9 @@
 - 本轮 `pnpm dev --host 127.0.0.1 --port 4173` 发生端口漂移到 `4178`，需在证据中持续双写端口映射以保证回放可追溯。
 - Playwright 控制台仍出现仓库既有 `registerSW.js` 404（见 `dod-103-console.log`），按历史非阻断噪声记录。
 - `pnpm exec tsc --noEmit` 依旧是基线失败（`TSC_EXIT_CODE=2`），但 `pnpm build` 通过（`BUILD_EXIT_CODE=0`）；line103 结论依赖功能链路证据，不以全仓 tsc 清零为前提。
+
+## 2026-02-23 DoD line 104（单标签页单人交互稳定性）
+
+- 本轮 `pnpm dev --host 127.0.0.1 --port 4173` 再次端口漂移到 `4181`，证据文件需继续强制记录“请求端口 + 实际端口”。
+- Playwright 控制台存在仓库基线 `registerSW.js` 404（非阻断）；此外一次早期 QA 脚本错误动态导入 `/src/controller/config.ts` 产生额外控制台报错，已与功能结论隔离记录。
+- `pnpm exec tsc --noEmit` 本轮仍为基线失败（exit code 2），`pnpm build` 通过（exit code 0）；line104 结论按运行态交互证据判定，不以全仓 tsc 清零为前提。

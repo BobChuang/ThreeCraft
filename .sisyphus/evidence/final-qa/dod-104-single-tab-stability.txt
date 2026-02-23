@@ -1,0 +1,51 @@
+DoD line 104 verification (single-tab single-player NPC/player interaction stability)
+
+Date: 2026-02-23
+Requested dev URL: http://127.0.0.1:4173
+Actual dev URL: http://127.0.0.1:4181
+Port mapping: 4173 -> 4181
+
+Scope
+- Single tab only.
+- Single-player session (`单人游戏`).
+- Verify no blocking crash during interaction flow.
+- Verify at least one player->NPC interaction signal.
+- Verify at least one NPC autonomous update signal.
+
+Runtime procedure (Playwright)
+1) Navigate to `http://127.0.0.1:4181` and click `单人游戏`.
+2) Wait for world runtime initialization.
+3) Sample NPC states twice (5s interval) to detect autonomous movement/action updates.
+4) Trigger nearby interaction with `controller.tryOpenDialogueWithNearbyNPC()`.
+5) Submit player input (`你好，状态如何？`) via dialogue input Enter key.
+6) Collect runtime dialogue tail and interaction flags.
+7) Capture screenshot + console log + network log from same run.
+
+Observed signals (from same run)
+- npcCount: 10
+- opened dialogue with nearby NPC: true
+- player message submitted: true
+- NPC autonomous signal count (position or action changed between snapshots): 10
+- autonomous sample:
+  - npc-01: lastAction=dialogue, position changed/updated
+  - npc-02: lastAction=dialogue, position changed/updated
+  - npc-03: lastAction=dialogue, position changed/updated
+- player->NPC entry observed:
+  - `2026-02-23T05:41:00.628Z player-local -> npc-08: Player: 你好，状态如何？`
+- NPC reply observed in same tail:
+  - `2026-02-23T05:41:00.786Z npc-08 -> player-local: Copy that. I heard: 你好，状态如何？`
+
+Stability judgment for line 104
+- PASS: single-tab single-player session remained interactive (no blocking crash in this run).
+- PASS: at least one player->NPC interaction observed.
+- PASS: at least one NPC autonomous update observed.
+
+Artifacts from this run
+- Screenshot: `.sisyphus/evidence/final-qa/dod-104-single-tab-stability.png`
+- Dev log: `.sisyphus/evidence/final-qa/dod-104-dev.log`
+- Console log: `.sisyphus/evidence/final-qa/dod-104-console.log`
+- Network log: `.sisyphus/evidence/final-qa/dod-104-network.log`
+
+Notes
+- Known baseline noise `registerSW.js` 404 is present in console logs.
+- One extra console error was introduced by an early failed QA-side dynamic import (`/src/controller/config.ts`); this did not block gameplay flow or interaction verification.

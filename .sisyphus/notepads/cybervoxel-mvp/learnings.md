@@ -367,3 +367,9 @@
 
 - 观察者模式验收可直接用 `#observer-mode-indicator` 做最小可审计链路：同会话按 `g` 验证 `普通 -> 观察者模式 -> 普通`，无需改动业务源码。
 - line103 收口建议固定证据组合为 `txt + png + dev/console/network + tsc/build`，并在文本里显式记录端口映射（本轮 `4173 -> 4178`）。
+
+## 2026-02-23 DoD line 104（单标签页单人交互稳定性）
+
+- line104 收口可采用“运行态双信号”最小证据链：同一轮采样内同时拿到 `player-local -> npc-*` 对话日志与 NPC 自主更新（位置或 `lastAction` 变化），即可形成可审计稳定性证明。
+- 对话触发可复用 `controller.tryOpenDialogueWithNearbyNPC()` + `#dialogue-input` Enter 提交，避免依赖长键鼠路径与指针锁不稳定因素。
+- 端口漂移依然高频，本轮必须继续双写 `4173 -> 4181`，并在证据中显式区分“基线 `registerSW.js` 404”与 QA 脚本引入的额外控制台噪声。
