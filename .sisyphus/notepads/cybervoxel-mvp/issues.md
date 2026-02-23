@@ -317,3 +317,9 @@
 - 本轮 HUD 条款阻断：`#survival-hud` 存在但 `display:none`，未形成“可见”证据。
 - 本轮怪物条款阻断：采样窗口内 `monsterCount=0`，HP 前后值 `100 -> 100`，未观察到怪物攻击导致的 HP 下降。
 - 饥饿值出现 `48 -> 78` 数值上升，但链路依赖 runtime-assisted 调用（非纯黑盒玩家采集/食用 UI 流），不足以单独支持 line105 勾选。
+
+## 2026-02-23 DoD line 2343（cyberpunk single stability closure attempt）
+
+- 本轮 `pnpm dev --host 127.0.0.1 --port 4173` 再次端口漂移到 `4186`；若证据未双写端口会影响回放追溯。
+- 运行阶段虽可持续采到 `FPS`、AI 日志增长与 10 NPC 下拉项，但 Playwright 后段出现 `Target crashed`，导致本轮“连续稳定”证据链中断。
+- `pnpm exec tsc --noEmit` 仍为仓库基线失败（exit code 2），`pnpm build` 通过（exit code 0）；`registerSW.js` 噪声继续作为非阻断基线记录。

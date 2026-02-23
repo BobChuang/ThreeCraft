@@ -397,3 +397,9 @@
 - line105 本轮仍需三条同轮闭环才可勾选；任一条款缺失时必须保持 BLOCKED，不能沿用历史通过片段替代本轮证据。
 - 端口漂移记录仍是强制项，本轮为 `4173 -> 4185`，并可直接从 `dod-105-dev.log` 回放。
 - 在当前自动化链路里，`#survival-hud` 结构存在但可见性为 `display:none`，必须把“存在”与“可见”分开判定，避免误报 HUD 可见。
+
+## 2026-02-23 DoD line 2343（cyberpunk single stability closure attempt）
+
+- line2343 收口证据仍需严格双写端口映射；本轮再次发生漂移（`4173 -> 4186`）。
+- 对“单机稳定”可审计信号可用三段 checkpoint 固定采样：`模式文案 + FPS + AI 日志计数 + 10 NPC 下拉项`，比只留单张截图更稳。
+- `registerSW.js` 404/non-module 需继续与结论解耦；本轮真正阻断来自 Playwright 后段 `Target crashed` 导致连续性证据中断。

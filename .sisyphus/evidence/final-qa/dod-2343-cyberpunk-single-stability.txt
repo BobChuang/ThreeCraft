@@ -1,0 +1,56 @@
+## DoD Line 2343 Closure Attempt (Fresh Evidence)
+
+- Date: 2026-02-23
+- Scope: `赛博朋克场景在单机模式下稳定工作` (line 2343)
+- Verdict: **BLOCKED**
+
+### 1) Dev server port mapping (requested vs actual)
+
+- Requested start command: `pnpm dev --host 127.0.0.1 --port 4173` (with `VITE_FIXED_MAP_INDEX=12`)
+- Actual mapping from this run: **4173 -> 4186**
+- Evidence source: `.sisyphus/evidence/final-qa/dod-2343-dev.log`
+
+### 2) Single-player runtime checkpoints (single tab)
+
+- Entry: Playwright navigated to `http://127.0.0.1:4186/` and clicked `单人游戏`.
+- Single-tab signal at start: `browser_tabs list` returned one current tab (`ThreeCraft`, 4186).
+
+Checkpoint summary from fresh run:
+
+1. **T+0s**
+   - UI visible: mode text `普通`, `FPS: 122`, AI panel header `AI 决策日志 (30)`
+   - NPC selector options visible: `全部 NPC` + 10 named NPCs (`Blaze/Doc/Drill/Flash/Neon/Nix/Rust/Skyline/Viper/Wrench`)
+2. **T+15s**
+   - UI visible: mode text `普通`, `FPS: 121`, AI panel header `AI 决策日志 (120)`
+   - NPC action rows continued updating (`move/dialogue/idle` cycles visible)
+3. **T+30s**
+   - UI visible: `FPS: 120`
+   - AI log list continued appending/updating with fresh timestamps and NPC entries
+
+Screenshot evidence (fresh):
+
+- `.sisyphus/evidence/final-qa/dod-2343-cyberpunk-single-stability.png`
+
+### 3) Stability outcome for this closure attempt
+
+- During this same run, Playwright page/session later produced `Target crashed` while attempting additional post-checkpoint interactions.
+- Because this closure attempt could not maintain an uninterrupted, auditable single-tab run through final checks, line 2343 cannot be safely marked PASS in this attempt.
+
+### 4) Baseline noise vs blocker separation
+
+- Baseline noise (non-blocking, known):
+  - `registerSW.js` 404 / non-module warning (seen in runtime/build outputs)
+- Actual blocker for this attempt:
+  - Playwright target crash during final-stage stability verification, breaking continuous-run auditability.
+
+### 5) Required verification command exits (this run)
+
+- `pnpm exec tsc --noEmit` => **exit code 2**
+  - Log: `.sisyphus/evidence/final-qa/dod-2343-tsc.log`
+- `pnpm build` => **exit code 0**
+  - Log: `.sisyphus/evidence/final-qa/dod-2343-build.log`
+
+### Final decision for line 2343
+
+- Keep line 2343 as `- [ ]` in this run.
+- Status: **BLOCKED**
