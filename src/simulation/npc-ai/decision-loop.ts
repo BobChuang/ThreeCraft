@@ -7,6 +7,7 @@ import { ConversationMessage, NPCConversationHistory, PairDialogueMessage } from
 import { executeNPCAction, NPCActionExecutionResult } from './execute-action';
 import { observeNPCContext } from './observe';
 import { buildNPCPrompt } from './prompt-builder';
+import { getInitialDecisionAt, getRecurringDecisionAt } from './decision-cadence';
 import { validateNPCAction } from './validation';
 import type { NPCActionValidationFailure } from './validation';
 
@@ -159,6 +160,9 @@ export class NPCDecisionLoop {
 	}
 
 	async runDecision(npc: SimulationNPCState, allNPCs: SimulationNPCState[]): Promise<NPCDecisionResult> {
+		if (!this.nextDecisionAt.has(npc.id)) {
+			this.nextDecisionAt.set(npc.id, getInitialDecisionAt(this.now(), this.decisionIntervalMs, npc.id));
+		}
 		if (this.inFlightByNpc.has(npc.id)) return { status: 'skipped', reason: 'in-flight' };
 		if ((this.nextDecisionAt.get(npc.id) ?? 0) > this.now()) return { status: 'skipped', reason: 'cadence' };
 		if (this.actionTickByNpc.get(npc.id) === npc.tickCount) return { status: 'skipped', reason: 'one-action-per-tick' };
@@ -242,7 +246,7 @@ export class NPCDecisionLoop {
 			});
 			this.emitLifecycle('npc:decision-execute', { npcId: npc.id, action: decidedAction.action, applied: execution.applied });
 			this.actionTickByNpc.set(npc.id, npc.tickCount);
-			this.nextDecisionAt.set(npc.id, this.now() + this.decisionIntervalMs);
+			this.nextDecisionAt.set(npc.id, getRecurringDecisionAt(this.now(), this.decisionIntervalMs, npc.id));
 			this.transitionThinking(npc, 'idle');
 			return { status: 'executed', action: decidedAction, execution };
 		} catch (error) {
@@ -250,7 +254,7 @@ export class NPCDecisionLoop {
 				npcId: npc.id,
 				error: error instanceof Error ? error.message : String(error),
 			});
-			this.nextDecisionAt.set(npc.id, this.now() + this.decisionIntervalMs);
+			this.nextDecisionAt.set(npc.id, getRecurringDecisionAt(this.now(), this.decisionIntervalMs, npc.id));
 			this.transitionThinking(npc, 'idle');
 			return { status: 'skipped', reason: 'error' };
 		} finally {

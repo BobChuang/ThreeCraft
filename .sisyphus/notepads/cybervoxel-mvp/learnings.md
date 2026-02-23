@@ -321,3 +321,9 @@
 - `NPCEntity.setPosition` 在保留 `x/z` 插值的同时，直接同步 `position.y/player.position.y` 到目标高度，可消除地形台阶与移动更新交叠时的短时下沉视觉。
 - 单机验收必须覆盖两段：进入场景后的 spawn 站位 + 一次短程移动后的稳态站位，两段都通过才算闭环。
 - 本轮端口未漂移（请求 `4173` / 实际 `4173`），但 Playwright 会话在截图后仍可能 `Target crashed`；证据文本需明确崩溃时点以避免误判截图无效。
+
+## 2026-02-23 NPC 决策节奏去同步（cadence staggering）
+
+- 通过对 `npc.id` 做稳定哈希并映射到固定抖动窗口（`decisionIntervalMs * 0.2`），可以在不改 observe/prompt/validate/execute 管线的前提下打散同频触发峰值。
+- 初始调度与循环调度都应使用同一抖动规则：初始仅偏移 `jitter`，循环使用 `interval + jitter`，从而保持每个 NPC 的稳定相位差。
+- 玩家对话触发保持即时（`nextDecisionAt = now`）可保留交互响应性，同时不会破坏常规 cadence 去同步策略。

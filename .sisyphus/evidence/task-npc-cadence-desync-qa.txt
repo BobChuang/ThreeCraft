@@ -1,0 +1,43 @@
+NPC Cadence De-sync Runtime QA Report
+Date: 2026-02-23
+
+Scope
+- Runtime QA only for NPC cadence de-sync.
+- No source code edits performed.
+
+Ports
+- Requested port: 4173
+- Actual port used by Vite: 4175
+- Evidence: `.sisyphus/evidence/npc-cadence-dev.log` shows fallback from 4173/4174 to 4175.
+
+Methods used
+1. Started dev server with log capture:
+   - `pnpm dev --host 127.0.0.1 --port 4173 > .sisyphus/evidence/npc-cadence-dev.log 2>&1 &`
+2. Opened app in Playwright at `http://127.0.0.1:4175/`, entered Single Player ("单人游戏").
+3. Observed `AI 决策日志` and extracted latest per-NPC `执行动作` timestamps via page evaluation.
+4. Captured full-page screenshot of active runtime decision log panel.
+5. Stopped QA server processes cleanly (PIDs 77058, 77085).
+
+Observed timestamp samples (same observation window)
+- Nix: 11:52:01
+- Flash: 11:52:01
+- Skyline: 11:52:01
+- Doc: 11:52:01
+- Drill: 11:51:57
+- Rust: 11:51:57
+- Viper: 11:51:57
+- Wrench: 11:51:57
+- Neon: 11:51:57
+- Blaze: 11:51:55
+
+Decision execute timestamp de-sync proof (>=3 NPC)
+- Blaze 11:51:55 vs Drill 11:51:57 vs Nix 11:52:01.
+- These are different execute timestamps across NPCs within the same capture window, i.e., not a single fully timestamp-aligned burst for all NPCs.
+
+Verdict
+- PASS: Decision-call/execute timestamps differ across NPCs in the same observation window.
+
+Artifacts
+- Text report: `.sisyphus/evidence/task-npc-cadence-desync-qa.txt`
+- Runtime log: `.sisyphus/evidence/npc-cadence-dev.log`
+- Screenshot: `.sisyphus/evidence/task-npc-cadence-desync.png`
