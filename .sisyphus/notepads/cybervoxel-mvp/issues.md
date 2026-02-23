@@ -323,3 +323,9 @@
 - 本轮 `pnpm dev --host 127.0.0.1 --port 4173` 再次端口漂移到 `4186`；若证据未双写端口会影响回放追溯。
 - 运行阶段虽可持续采到 `FPS`、AI 日志增长与 10 NPC 下拉项，但 Playwright 后段出现 `Target crashed`，导致本轮“连续稳定”证据链中断。
 - `pnpm exec tsc --noEmit` 仍为仓库基线失败（exit code 2），`pnpm build` 通过（exit code 0）；`registerSW.js` 噪声继续作为非阻断基线记录。
+
+## 2026-02-23 DoD line 2343（retry closure）
+
+- 本轮 retry 在 T+20 结论采样阶段再次触发 `page.evaluate: Target crashed`，导致“短链连续稳定”证据中断，line2343 无法勾选。
+- `pnpm exec tsc --noEmit` 本轮仍失败（exit code 2，历史基线类型问题），`pnpm build` 通过（exit code 0）。
+- 运行期继续存在基线 `registerSW.js` 404/non-module 噪声，已与 line2343 阻断原因显式分离。

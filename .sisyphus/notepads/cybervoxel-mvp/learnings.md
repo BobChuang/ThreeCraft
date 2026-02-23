@@ -403,3 +403,9 @@
 - line2343 收口证据仍需严格双写端口映射；本轮再次发生漂移（`4173 -> 4186`）。
 - 对“单机稳定”可审计信号可用三段 checkpoint 固定采样：`模式文案 + FPS + AI 日志计数 + 10 NPC 下拉项`，比只留单张截图更稳。
 - `registerSW.js` 404/non-module 需继续与结论解耦；本轮真正阻断来自 Playwright 后段 `Target crashed` 导致连续性证据中断。
+
+## 2026-02-23 DoD line 2343（retry closure）
+
+- line2343 retry 仍需先记录端口漂移再做结论；本轮请求/实际端口为 `4173 -> 4188`。
+- 短链 checkpoint（T+0/T+10）可稳定采到 `mode + FPS + AI log + NPC 下拉` 与单 tab 信号，但最终 T+20 采样必须成功才可判 PASS。
+- 当最终 checkpoint 采样发生 `Target crashed` 时，即使前两段信号健康也必须保持 BLOCKED，不能用后续重开页面截图替代连续性证明。

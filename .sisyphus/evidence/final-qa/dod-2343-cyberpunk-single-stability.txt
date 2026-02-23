@@ -1,4 +1,4 @@
-## DoD Line 2343 Closure Attempt (Fresh Evidence)
+## DoD Line 2343 Retry Closure Attempt (Fresh Evidence)
 
 - Date: 2026-02-23
 - Scope: `赛博朋克场景在单机模式下稳定工作` (line 2343)
@@ -6,49 +6,55 @@
 
 ### 1) Dev server port mapping (requested vs actual)
 
-- Requested start command: `pnpm dev --host 127.0.0.1 --port 4173` (with `VITE_FIXED_MAP_INDEX=12`)
-- Actual mapping from this run: **4173 -> 4186**
+- Requested start command: `VITE_FIXED_MAP_INDEX=12 pnpm dev --host 127.0.0.1 --port 4173`
+- Actual mapping in this retry run: **4173 -> 4188**
 - Evidence source: `.sisyphus/evidence/final-qa/dod-2343-dev.log`
 
-### 2) Single-player runtime checkpoints (single tab)
+### 2) Single-player short-chain checkpoints (single tab)
 
-- Entry: Playwright navigated to `http://127.0.0.1:4186/` and clicked `单人游戏`.
-- Single-tab signal at start: `browser_tabs list` returned one current tab (`ThreeCraft`, 4186).
+- Entry URL: `http://127.0.0.1:4188/`
+- Mode entry: clicked `单人游戏`
 
-Checkpoint summary from fresh run:
+Checkpoint observations:
 
 1. **T+0s**
-   - UI visible: mode text `普通`, `FPS: 122`, AI panel header `AI 决策日志 (30)`
-   - NPC selector options visible: `全部 NPC` + 10 named NPCs (`Blaze/Doc/Drill/Flash/Neon/Nix/Rust/Skyline/Viper/Wrench`)
-2. **T+15s**
-   - UI visible: mode text `普通`, `FPS: 121`, AI panel header `AI 决策日志 (120)`
-   - NPC action rows continued updating (`move/dialogue/idle` cycles visible)
-3. **T+30s**
-   - UI visible: `FPS: 120`
-   - AI log list continued appending/updating with fresh timestamps and NPC entries
+   - mode: `普通`
+   - FPS text: `FPS: ---`
+   - AI log header: `AI 决策日志 (60)`
+   - NPC selector: `11` options (`全部 NPC` + `npc-01..npc-10`)
+   - single-tab signal: `browser_tabs list` => one tab (`ThreeCraft`, 4188)
 
-Screenshot evidence (fresh):
+2. **T+10s**
+   - mode: `普通`
+   - FPS text: `FPS: ---`
+   - AI log header: `AI 决策日志 (120)`
+   - NPC selector: still `11` options (`全部 NPC` + `npc-01..npc-10`)
+   - single-tab signal: `browser_tabs list` => one tab (`ThreeCraft`, 4188)
+
+3. **T+20s (conclusion checkpoint)**
+   - while collecting final checkpoint snapshot, Playwright returned: `page.evaluate: Target crashed`
+   - continuity chain interrupted before uninterrupted conclusion could be proven
+
+Screenshot evidence:
 
 - `.sisyphus/evidence/final-qa/dod-2343-cyberpunk-single-stability.png`
+- note: screenshot was captured after reopening page following crash, used as visual state reference only; it does not repair the interrupted T+0/T+10/T+20 continuity chain.
 
-### 3) Stability outcome for this closure attempt
-
-- During this same run, Playwright page/session later produced `Target crashed` while attempting additional post-checkpoint interactions.
-- Because this closure attempt could not maintain an uninterrupted, auditable single-tab run through final checks, line 2343 cannot be safely marked PASS in this attempt.
-
-### 4) Baseline noise vs blocker separation
+### 3) Baseline noise vs blocker separation
 
 - Baseline noise (non-blocking, known):
-  - `registerSW.js` 404 / non-module warning (seen in runtime/build outputs)
-- Actual blocker for this attempt:
-  - Playwright target crash during final-stage stability verification, breaking continuous-run auditability.
+  - `registerSW.js` 404 / non-module warning
+- Actual blocker in this retry run:
+  - `Target crashed` at final checkpoint collection, breaking uninterrupted auditable chain.
 
-### 5) Required verification command exits (this run)
+### 4) Required verification command exits (this retry run)
 
 - `pnpm exec tsc --noEmit` => **exit code 2**
   - Log: `.sisyphus/evidence/final-qa/dod-2343-tsc.log`
+  - Exit file: `.sisyphus/evidence/final-qa/dod-2343-tsc.exit`
 - `pnpm build` => **exit code 0**
   - Log: `.sisyphus/evidence/final-qa/dod-2343-build.log`
+  - Exit file: `.sisyphus/evidence/final-qa/dod-2343-build.exit`
 
 ### Final decision for line 2343
 
