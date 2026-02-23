@@ -318,6 +318,12 @@
 - 本轮怪物条款阻断：采样窗口内 `monsterCount=0`，HP 前后值 `100 -> 100`，未观察到怪物攻击导致的 HP 下降。
 - 饥饿值出现 `48 -> 78` 数值上升，但链路依赖 runtime-assisted 调用（非纯黑盒玩家采集/食用 UI 流），不足以单独支持 line105 勾选。
 
+## 2026-02-23 DoD line 105（retry run on 4189）
+
+- 本轮 HUD 条款仍阻断：`#survival-hud` 在同轮前后均为 `display:none`，未达到“可见”要求。
+- 本轮饥饿条款阻断：`hungerBefore=100`、`consumeResult=true` 但 `hungerAfter=100`（`delta=0`），无可审计上升值。
+- 本轮怪物条款阻断：45 秒轮询内 `maxMonsterCount=0`，未触发怪物攻击链路，HP 保持 `100 -> 100`。
+
 ## 2026-02-23 DoD line 2343（cyberpunk single stability closure attempt）
 
 - 本轮 `pnpm dev --host 127.0.0.1 --port 4173` 再次端口漂移到 `4186`；若证据未双写端口会影响回放追溯。

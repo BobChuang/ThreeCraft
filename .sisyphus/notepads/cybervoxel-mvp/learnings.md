@@ -398,6 +398,12 @@
 - 端口漂移记录仍是强制项，本轮为 `4173 -> 4185`，并可直接从 `dod-105-dev.log` 回放。
 - 在当前自动化链路里，`#survival-hud` 结构存在但可见性为 `display:none`，必须把“存在”与“可见”分开判定，避免误报 HUD 可见。
 
+## 2026-02-23 DoD line 105（retry run on 4189）
+
+- line105 收口必须坚持“同轮 3 条款全通过”门槛；本轮三条都未形成通过证据时应直接维持 BLOCKED，避免部分通过误勾选。
+- 饥饿条款在 `hungerBefore=100` 时即使 `consumeFood` 成功也不会产生上升量，证据文本必须记录 `hungerDelta=0`，不能只写“consume 成功”。
+- 怪物条款应同时记录“轮询窗口长度 + maxMonsterCount + hpDelta”；本轮 `45s + maxMonsterCount=0 + hpDelta=0` 可直接形成不可通过证据链。
+
 ## 2026-02-23 DoD line 2343（cyberpunk single stability closure attempt）
 
 - line2343 收口证据仍需严格双写端口映射；本轮再次发生漂移（`4173 -> 4186`）。

@@ -2,53 +2,52 @@
 
 Date: 2026-02-23
 Requested dev URL: http://127.0.0.1:4173
-Actual dev URL: http://127.0.0.1:4185
-Port mapping: 4173 -> 4185
+Actual dev URL: http://127.0.0.1:4189
+Port mapping: 4173 -> 4189
 
-Scope (line 105 only)
-- This run attempts to close only DoD line 105.
-- Evidence files refreshed in this run: text + screenshot.
-- Verdict rule: all 3 clauses must be proven in this run, otherwise BLOCKED.
+Scope (line 105 only, fresh run)
+- Verify all three clauses in one auditable run.
+- Verdict rule: PASS only if 3/3 clauses proven in this run.
 
-Runtime procedure (Playwright)
-1) Open `http://127.0.0.1:4185/`, click `单人游戏`.
-2) Read HUD DOM state (`#survival-hud`) for visibility.
-3) Attempt hunger recovery chain with explicit before/after values:
-   - before: read player survival hunger
-   - chain attempt: `addInventoryItem('player-local','synth-ration',1)` -> `consumeFood('player-local','synth-ration')`
-   - after: read player survival hunger
-4) Attempt monster clause with explicit HP before/after values:
-   - before: read player HP
-   - sample monsters: `getMonsterStates()`
-   - wait for observed monster-attack-driven HP drop window
+Runtime procedure (single Playwright run)
+1) Open `http://127.0.0.1:4189/` and click `单人游戏`.
+2) Read HUD visibility from `#survival-hud` computed style (before and after checks).
+3) Hunger clause attempt (auditable chain in same run):
+   - capture `hungerBefore`
+   - run `addInventoryItem('player-local','synth-ration',1)` then `consumeFood('player-local','synth-ration')`
+   - capture `hungerAfter`
+4) Monster clause attempt in same run:
+   - capture `hpBefore`
+   - poll `getMonsterStates()` for 45s
+   - if found, move near first monster and watch HP for 15s
+   - capture `hpAfterMonsterWindow`
 5) Capture screenshot from same run.
 
 Clause-by-clause evidence (explicit before/after)
 1) HUD visible proof
-- `#survival-hud` exists: true
-- `hudDisplay` before check: `none`
-- `hudDisplay` after run checks: `none`
-- HUD text content snapshot: `HPHUNGER`
-- Result: **NOT PROVEN** (`display:none` in this run)
+- `hudBefore.exists = true`
+- `hudBefore.display = 'none'`
+- `hudAfter.display = 'none'`
+- `hudBefore.visible = false`, `hudAfter.visible = false`
+- HUD raw text snapshot: `HPHUNGER`
+- Verdict: **FAIL** (HUD exists but is not visible)
 
 2) Hunger increase proof after gather/consume chain
-- `hungerBefore = 48`
-- chain result:
-  - `gatherResult = { accepted: 1, rejected: 0, isFull: false }`
-  - `consumeResult = true`
-- `hungerAfter = 78`
-- `hungerDelta = +30`
-- Result: **PARTIAL / NOT ACCEPTED FOR CLOSURE**
-  - Numeric hunger increase is observed.
-  - But this is not a pure black-box player gather UI path; it is runtime-assisted injection + consume call.
+- `hungerBefore = 100`
+- `gatherResult = { accepted: 1, rejected: 0, isFull: false }`
+- `consumeResult = true`
+- `hungerAfter = 100`
+- `hungerDelta = 0`
+- Verdict: **FAIL** (no measurable hunger increase in this run)
 
-3) Monster attack decreases HP proof
+3) Monster attack lowers HP
 - `hpBefore = 100`
-- `monsterCount = 0` during this run window
-- `hpAfter = 100`
+- `maxMonsterCount = 0` (45s polling window)
+- `selectedMonster = null`
+- `hpAfterMonsterWindow = 100`
 - `hpDelta = 0`
-- `monsterAttackObserved = false`
-- Result: **NOT PROVEN** in this run.
+- `hpDropObserved = false`
+- Verdict: **FAIL** (monster attack HP decrease not observed in this run)
 
 Artifacts
 - Screenshot: `.sisyphus/evidence/final-qa/dod-105-hp-hunger-monster.png`
@@ -60,14 +59,10 @@ Build/typecheck verification (this run)
 - `pnpm build` => exit code 0
   - log: `.sisyphus/evidence/final-qa/dod-105-build.log`
 
-Noise separation (explicit)
-- Baseline runtime noise (`registerSW.js` 404 / non-module) remains pre-existing.
-- This baseline noise is NOT the blocker for line 105 in this run.
+Noise separation
+- Baseline runtime/build noise (`registerSW.js` 404 / non-module) is pre-existing and not treated as the functional blocker.
 
 Final verdict for line 105 (this run only)
 - **BLOCKED**
-- Blocking reasons:
-  - Clause 1 (HUD visible) not proven (`display:none`)
-  - Clause 3 (monster attack lowers HP) not proven (`hpDelta=0`, `monsterCount=0`)
-  - Clause 2 hunger increase exists numerically but does not satisfy strict black-box gather/consume proof standard for closure
+- Clause status: `HUD visible = FAIL` | `hunger increase after gather/consume = FAIL` | `monster attack lowers HP = FAIL`
 - Plan line 105 must remain `- [ ]`.
