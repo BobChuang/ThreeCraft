@@ -270,3 +270,9 @@
 - `pnpm exec tsc --noEmit` 本轮仍失败（exit 2），主要是仓库历史类型基线问题；即便 DoD 对账主要看功能证据，也需如实记录该门禁失败事实。
 - 运行时继续存在基线 `registerSW.js` 404 与构建 non-module warning；本轮按历史噪声记录，未作为 DoD 失败主因。
 - `import('/src/index.ts')` 在本轮会话中未提供稳定可审计控制器钩子（如附身/观察者/持久化链路），导致相关 DoD 条目无法形成“可直接证明”的证据闭环。
+
+## 2026-02-23 DoD line 99（赛博朋克场景）
+
+- 本轮 `pnpm dev --host 127.0.0.1 --port 4173` 端口再次漂移到 `4176`，若不写清映射会导致 Playwright 证据链接不可回放。
+- 控制台仍有基线噪声 `registerSW.js 404`（`dod-99-console.log`），需持续按“历史非阻断问题”记录，避免误报为 line 99 回归。
+- `pnpm exec tsc --noEmit` 继续被仓库历史类型问题阻断（exit 2）；本条 DoD 结论依赖新鲜功能证据与 `pnpm build` 通过，而非全仓 tsc 清零。

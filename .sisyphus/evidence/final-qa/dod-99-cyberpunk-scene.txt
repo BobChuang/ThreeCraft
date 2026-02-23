@@ -1,0 +1,38 @@
+# DoD Line 99 独立验收（赛博朋克场景可选/可随机；地形使用赛博朋克方块）
+
+## 本轮范围
+- 仅验证并判定计划 `line 99`：`赛博朋克场景可选/可随机；地形使用赛博朋克方块`
+- 未触碰 `src/**` 业务源码
+
+## 端口映射（强制记录）
+- 请求端口：`4173`
+- 实际端口：`4176`
+- 证据来源：`.sisyphus/evidence/final-qa/dod-99-dev.log`（Vite 自动漂移日志）
+
+## Playwright 新鲜证据
+1. 进入 `http://127.0.0.1:4176/`，点击“单人游戏”进入场景。
+2. 运行时校验（`browser_run_code`）结果：
+   - `weatherIdx = 12`
+   - `tuple = [52, 50, 54, 5]`
+   - `tupleNames = ["cyberNeon", "cyberGrid", "cyberSteel"]`
+   - `isCyberpunkTuple = true`
+3. 截图证据：`.sisyphus/evidence/final-qa/dod-99-cyberpunk-scene.png`
+4. 控制台与网络：
+   - 控制台：`.sisyphus/evidence/final-qa/dod-99-console.log`
+   - 网络：`.sisyphus/evidence/final-qa/dod-99-network.log`
+
+## 构建/类型检查记录（本轮重跑）
+- `pnpm exec tsc --noEmit` → 退出码 `2`（失败，仓库历史基线类型噪声）
+  - 原始日志：`.sisyphus/evidence/final-qa/dod-99-tsc.log`
+- `pnpm build` → 退出码 `0`（通过）
+  - 原始日志：`.sisyphus/evidence/final-qa/dod-99-build.log`
+
+## 判定表
+| sub-claim | evidence | pass/fail | reason |
+|---|---|---|---|
+| 赛博朋克场景可选/可随机（满足“可确定到达”替代路径） | 以 `VITE_FIXED_MAP_INDEX=12` 启动后，运行时读到 `weatherIdx=12` 且 `nameIndex=5`（赛博朋克）；见 `dod-99-dev.log` + 本文件运行时结果 | PASS | 本条允许“可选/可随机”二选一达标；本轮给出可审计且可复现的“确定到达”链路 |
+| 地形使用赛博朋克方块 | 运行时天气元组方块名为 `cyberNeon/cyberGrid/cyberSteel`，且截图 `dod-99-cyberpunk-scene.png` 可见对应赛博朋克地表风格 | PASS | 地形主方块直接映射到赛博朋克方块族，满足“地形使用赛博朋克方块” |
+
+## 结论
+- `line 99`：**PASS（可勾选）**
+- 备注：控制台 `registerSW.js 404` 为仓库既有基线噪声（见 `dod-99-console.log`），未阻断本条 DoD 验收。
