@@ -192,7 +192,7 @@
 
 ## 2026-02-23 Task 26（closure finalize）
 
-- 决策：本轮仅纳入 Task26 相关既有改动与证据收口文件（`renderer.ts`、task-26 两份 evidence、notepads、计划勾选），不处理 F* 与 Task27 文件。
+- 决策：本轮仅纳入 Task26 相关既有改动与证据收口文件（`renderer.ts`、task-26 两份 evidence、notepads、计划勾选），不处理 F\* 与 Task27 文件。
 - 决策：Task26 验收结论以“FPS 30s 采样结果 + near/far sleep 抑制结果”双证据联合判定，避免单指标偏差。
 - 决策：执行固定单提交策略，commit message 使用 `chore(task-26): finalize performance optimization verification artifacts`。
 
@@ -232,3 +232,8 @@
 ## 2026-02-23 最终检查清单状态同步
 
 - 决策：依据 `final-audit-f1.txt` 的“必须具备/禁止事项/向后兼容=通过”与 `final-qa/f3-manual-qa.txt` 的“赛博朋克单机稳定性未通过、10 NPC 条目可通过”结论，仅同步 `最终检查清单` 5 个复选框状态为 `x/x/x/空/x`，不改动任何条目文案与其他计划内容。
+
+## 2026-02-23 Task 27（GLM endpoint localStorage wiring）
+
+- 决策：改动严格收敛在 `src/simulation/game-start/brain-bootstrap.ts`，只做 endpoint override wiring，不改 `glm-5` 模型选择与 API key 逻辑。
+- 决策：endpoint 只支持本地覆盖键 `glm_endpoint` / `GLM_ENDPOINT`，空字符串按未配置处理，维持 GLM service 默认 endpoint 回退路径。

@@ -291,3 +291,9 @@
 - F4 审计最稳妥的核验链路是“三点合一”：计划 F4 条目 + T1-T27 提交策略表 + F1/F2/F3 证据结论交叉对照。
 - `pnpm exec tsc --noEmit` 在当前仓库仍是基线失败（exit 2），F4 需按原始结论如实记录，不在本任务内扩展修复。
 - 末行格式必须严格收束为 `任务 [N/N 合规] | 范围蔓延 [无/N 项问题] | 未说明 [无/N 个文件] | 结论`，否则不满足 final-wave 输出约束。
+
+## 2026-02-23 Task 27（GLM endpoint localStorage wiring）
+
+- 在脑模型 bootstrap 侧新增 endpoint 解析即可完成能力扩展：GLM service 已内置默认 endpoint 回退，不需要改 service 实现。
+- localStorage endpoint 值应统一 `trim()` 并将空字符串归一为 `undefined`，避免把空值显式传入请求配置。
+- 通过对象条件展开仅在有值时注入 `llmConfig.endpoint`，可保持既有 API key 分流与默认行为不变。
