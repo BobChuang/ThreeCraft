@@ -264,3 +264,9 @@
 - 本轮主场景与 Classic 两个 dev 会话均出现端口占用漂移（`4173->4175`、`4190->4191`），需在所有 QA 证据文本中强制双写端口避免追溯歧义。
 - 运行态 `window.controller` 未稳定暴露 `possessionController/simulationEngine/worldPersistenceController`，导致附身/生存/持久化集成项与边界注入项无法通过可审计接口验证。
 - 依然存在仓库基线噪声：`registerSW.js` 404（运行态）与 non-module warning（构建态），本轮已记录为非新增回归。
+
+## 2026-02-23 Final DoD reconciliation
+
+- `pnpm exec tsc --noEmit` 本轮仍失败（exit 2），主要是仓库历史类型基线问题；即便 DoD 对账主要看功能证据，也需如实记录该门禁失败事实。
+- 运行时继续存在基线 `registerSW.js` 404 与构建 non-module warning；本轮按历史噪声记录，未作为 DoD 失败主因。
+- `import('/src/index.ts')` 在本轮会话中未提供稳定可审计控制器钩子（如附身/观察者/持久化链路），导致相关 DoD 条目无法形成“可直接证明”的证据闭环。

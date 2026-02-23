@@ -1,0 +1,52 @@
+Final DoD 对账（fresh run）
+日期：2026-02-23
+
+范围说明
+- 本次仅对以下 11 个复选项做 fresh evidence 对账。
+- 结论规则：仅当“本轮可审计证据直接证明”时标记 PASS 并允许计划项改为 `[x]`；否则 FAIL 并保持 `[ ]`。
+
+端口与会话
+- 请求端口：4173
+- 实际端口：4175（见 `.sisyphus/evidence/final-qa/final-dod-dev.log`）
+- Playwright 会话：单次会话，进入单人游戏并执行可见性核验
+
+构建/类型验证（本轮原始执行）
+1) `pnpm exec tsc --noEmit`
+   - 退出码：2
+   - 结论：失败（历史基线类型错误延续）
+   - 关键片段（verbatim）：
+     - `node_modules/.pnpm/@types+node@17.0.45/node_modules/@types/node/globals.d.ts(72,13): error TS2403...`
+     - `src/controller/game-controller/index.ts(38,2): error TS2564...`
+2) `pnpm build`
+   - 退出码：0
+   - 结论：通过
+   - 关键片段（verbatim）：
+     - `vite v2.9.18 building for production...`
+     - `<script src="/registerSW.js"> in "/index.html" can't be bundled without type="module" attribute`
+     - `✓ 397 modules transformed.`
+
+DoD 对账表
+item | evidence source | pass/fail | reason
+--- | --- | --- | ---
+`pnpm dev` 启动客户端；现有游戏功能正常 | `final-dod-dev.log` + Playwright 会话（进入“单人游戏”后游戏界面可交互） | PASS | 本轮成功启动并进入可游玩态；AI 日志/FPS 正常刷新，未见阻断性崩溃。
+赛博朋克场景可选/可随机；地形使用赛博朋克方块 | 本轮 Playwright 快速会话 | FAIL | 本轮未执行“场景切换/随机多次比对”与“赛博朋克方块地形目视确认”的专门步骤，证据不足。
+10 个 NPC 在赛博朋克场景中明显执行自主动作 | Playwright snapshot（AI 决策日志 + NPC 过滤器） | PASS | 过滤器含 10 个唯一 NPC（Blaze/Doc/Drill/Flash/Neon/Nix/Rust/Skyline/Viper/Wrench），日志持续出现“执行中/执行动作”。
+NPC 思考气泡和侧边栏日志显示 LLM 请求生命周期 | Playwright snapshot（头顶气泡 + 侧栏状态） | PASS | 头顶出现思考气泡（如“⏸ 待机”）；侧栏出现“执行中/成功/响应已接收”等生命周期状态。
+玩家可以附身任意 NPC 并以第一人称控制 | 本轮 Playwright 快速会话 | FAIL | 本轮未拿到可审计附身入口/控制器钩子，无法证明“任意 NPC + 第一人称控制”。
+玩家可以切换观察者/上帝模式并返回 | 本轮 Playwright 快速会话 | FAIL | 本轮未形成可审计的观察者模式切换与回退证据链。
+单标签页单人模式下，NPC 与玩家交互稳定运行 | 本轮 Playwright 快速会话 | FAIL | 仅证明 NPC 自主循环与界面刷新；未完成玩家↔NPC交互稳定性链路（对话/附身/动作往返）验证。
+HP/饥饿条可见；采集恢复饥饿值；怪物攻击降低 HP | 本轮 Playwright 快速会话 | FAIL | 本轮未完成采集恢复与怪物攻击导致 HP 下降的可审计步骤；证据不足。
+死亡后在复活泉重生；物品掉落在死亡位置 | 本轮 Playwright 快速会话 | FAIL | 本轮未执行死亡触发→复活→死亡点掉落回查的完整链路。
+重新打开页面后世界状态保持（方块、NPC 位置、背包） | 本轮 Playwright 快速会话 | FAIL | 虽有 reload，但未对“方块/NPC 位置/背包”三项做前后对照取证。
+赛博朋克场景在单机模式下稳定工作 | 本轮 Playwright 快速会话 | FAIL | 本轮未明确锁定并验证赛博朋克场景稳定性（仅证明单机会话可运行）。
+
+基线噪声（本轮）
+- `registerSW.js` 404（见 `.sisyphus/evidence/final-qa/final-dod-console.log` 与 `.sisyphus/evidence/final-qa/final-dod-network.log`）
+- 判定：仓库既有噪声，未单独作为本次 DoD 失败主因。
+
+计划复选框更新结果（仅本次允许范围）
+- 由本轮 fresh evidence 置为 `[x]`：
+  - `pnpm dev` 启动客户端；现有游戏功能正常
+  - 10 个 NPC 在赛博朋克场景中明显执行自主动作
+  - NPC 思考气泡和侧边栏日志显示 LLM 请求生命周期
+- 其余目标保持 `[ ]`。
