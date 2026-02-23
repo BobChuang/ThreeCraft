@@ -305,3 +305,9 @@
 
 - `pnpm exec tsc --noEmit` 本轮仍因仓库历史类型基线失败（exit code 2）；`pnpm build` 通过（exit code 0）。
 - 运行态仍有既有基线噪声 `registerSW.js` 404 / non-module warning；已在证据中与 line106 功能结论显式分离。
+
+## 2026-02-23 DoD line 107（重新打开后持久化）
+
+- 本轮请求端口 `4173` 被占用并漂移到 `4183`，若证据不双写端口映射会影响回放追溯。
+- 运行期仍持续出现仓库基线噪声 `registerSW.js` 404 / non-module warning；本次已与 line107 功能结论分离记录为非阻断项。
+- `pnpm exec tsc --noEmit` 仍为历史基线失败（exit code 2），`pnpm build` 通过（exit code 0）；line107 是否勾选以本轮持久化前后值证据判定。

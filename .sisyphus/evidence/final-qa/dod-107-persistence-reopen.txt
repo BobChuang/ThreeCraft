@@ -1,0 +1,75 @@
+DoD line 107 verification（重新打开页面后世界状态保持：方块、NPC 位置、背包）
+
+Date: 2026-02-23
+Requested dev URL: http://127.0.0.1:4173
+Actual dev URL: http://127.0.0.1:4183
+Port mapping: 4173 -> 4183
+
+Scope
+- Verify all 3 persistence dimensions in one coherent run chain:
+  1) block marker persistence
+  2) NPC position/state persistence
+  3) inventory persistence
+
+Deterministic runtime procedure (Playwright, one coherent run)
+1) Enter single-player session (`单人游戏`).
+2) Inject deterministic block marker and force world log sync:
+   - marker: `{ type: 'brickBlock', posX: 40, posY: 6, posZ: 40 }`
+   - apply via `controller.log.insert(marker)` + `blockController.update([marker], true)`
+3) Pin deterministic NPC sample:
+   - npcId: `npc-01`
+   - target position: `{ x: 28, y: 0, z: 28 }`
+   - decision paused: `true`
+4) Inject deterministic inventory sample on same NPC:
+   - slot sample target: `{ type: 'synth-ration', quantity: 11, maxStack: 16 }`
+5) Persist explicitly: `controller.worldPersistence.saveNow()`.
+6) Assert before-reload baseline values.
+7) Reload current tab and re-enter single-player session; assert after-reload values.
+8) Close tab and reopen app; re-enter single-player session; assert after-reopen values.
+
+Before/after captured values
+- Block marker sample:
+  - before reload: `{ type: 'brickBlock', posX: 40, posY: 6, posZ: 40 }`
+  - after reload: `{ type: 'brickBlock', posX: 40, posY: 6, posZ: 40 }`
+  - after reopen: `{ type: 'brickBlock', posX: 40, posY: 6, posZ: 40 }`
+
+- NPC snapshot sample (`npc-01`):
+  - before reload: `{ position: { x: 28, y: 0, z: 28 }, decisionPaused: true }`
+  - after reload: `{ position: { x: 28, y: 0, z: 28 }, decisionPaused: true }`
+  - after reopen: `{ position: { x: 28, y: 0, z: 28 }, decisionPaused: true }`
+
+- Inventory slot sample (`npc-01`):
+  - before reload: `{ type: 'synth-ration', quantity: 11, maxStack: 16 }`
+  - after reload: `{ type: 'synth-ration', quantity: 11, maxStack: 16 }`
+  - after reopen: `{ type: 'synth-ration', quantity: 11, maxStack: 16 }`
+
+Assertion booleans (same run chain)
+- `sameMarkerReload = true`
+- `sameMarkerReopen = true`
+- `sameNpcXZReload = true`
+- `sameNpcXZReopen = true`
+- `sameInventoryReload = true`
+- `sameInventoryReopen = true`
+
+Clause verdicts
+- Clause A（方块状态持久化）: PASS
+- Clause B（NPC 位置/状态持久化）: PASS
+- Clause C（背包持久化）: PASS
+
+Overall verdict for line 107
+- PASS（line 107 can be checked）
+
+Artifacts
+- Screenshot: `.sisyphus/evidence/final-qa/dod-107-persistence-reopen.png`
+- Dev log: `.sisyphus/evidence/final-qa/dod-107-dev.log`
+
+Build/typecheck verification (this run)
+- `pnpm exec tsc --noEmit` => exit code 2
+  - log: `.sisyphus/evidence/final-qa/dod-107-tsc.log`
+- `pnpm build` => exit code 0
+  - log: `.sisyphus/evidence/final-qa/dod-107-build.log`
+
+Noise separation (explicit)
+- Baseline runtime noise: `registerSW.js` 404 / non-module warning remains pre-existing.
+- This baseline noise is NOT the blocker in this run.
+- DoD 107 verdict is based on the deterministic persistence checks above.
