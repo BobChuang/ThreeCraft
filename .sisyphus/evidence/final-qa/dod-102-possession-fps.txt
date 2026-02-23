@@ -1,0 +1,53 @@
+# DoD Line 102 独立验收（玩家可附身任意 NPC 并以第一人称控制）
+
+## 本轮范围
+- 仅验证并判定计划 `line 102`：`玩家可以附身任意 NPC 并以第一人称控制`
+- 未修改 `src/**` 业务源码
+
+## 端口映射（强制记录）
+- 请求端口：`4173`
+- 实际端口：`4177`
+- 证据来源：`.sisyphus/evidence/final-qa/dod-102-dev.log`
+
+## 新鲜 QA 证据（本轮 Playwright）
+1. 进入 `http://127.0.0.1:4177/`，点击“单人游戏”。
+2. 在同一轮运行中，对两个不同 NPC id 执行附身：`npc-01`、`npc-02`。
+3. 对每个目标均执行第一人称控制链路（通过运行时控制器同一输入/移动通道）：
+   - `moveController.positionMove({ font: 1, left: 0, up: 0 })`（前进）
+   - `moveController.viewDirectionMove({ viewHorizontal: 20, viewVertical: -6 })`（视角变化）
+   - `possessionController.syncControlledNPCPosition()`（附身态同步）
+
+### 关键结果（原始返回摘录）
+- `npc-01`
+  - `possessOk = true`
+  - `possessedId: npc-01 -> npc-01`
+  - `camera z delta = -0.32`, `yaw delta = -0.1`, `pitch delta = +0.0157`
+  - `npc z delta = -0.32`（与相机位移同步）
+- `npc-02`
+  - `possessOk = true`
+  - `possessedId: npc-02 -> npc-02`
+  - `camera z delta = -0.32`, `yaw delta = -0.1`, `pitch delta = +0.0157`
+  - `npc z delta = -0.32`（与相机位移同步）
+
+## 证据文件
+- 文本结论：`.sisyphus/evidence/final-qa/dod-102-possession-fps.txt`
+- 截图：`.sisyphus/evidence/final-qa/dod-102-possession-fps.png`
+- 开发日志：`.sisyphus/evidence/final-qa/dod-102-dev.log`
+- 控制台：`.sisyphus/evidence/final-qa/dod-102-console.log`
+- 网络：`.sisyphus/evidence/final-qa/dod-102-network.log`
+
+## 构建/类型检查（本轮重跑）
+- `pnpm exec tsc --noEmit` → 退出码 `2`（失败，仓库历史基线类型噪声）
+  - 日志：`.sisyphus/evidence/final-qa/dod-102-tsc.log`
+- `pnpm build` → 退出码 `0`（通过）
+  - 日志：`.sisyphus/evidence/final-qa/dod-102-build.log`
+
+## 判定表
+| sub-claim | evidence | pass/fail | reason |
+|---|---|---|---|
+| 可附身任意 NPC（至少 2 个不同 id） | 同一轮验证中 `npc-01` 与 `npc-02` 均 `possessOk=true` 且 `possessedId` 匹配目标 id | PASS | 满足“任意 NPC”可达性最低可审计标准（多目标、同轮） |
+| 附身后第一人称控制可用 | 两个目标均出现视角变化（`yaw/pitch delta != 0`）与前进位移（`camera z delta = -0.32`），且 NPC 位置同步变化 | PASS | 证明附身态下第一人称移动+视角控制链路生效 |
+
+## 结论
+- `line 102`：**PASS（可勾选）**
+- 备注：运行期控制台仍有基线 `registerSW.js` 404 噪声，已记录于 `dod-102-console.log`，不阻断本条 DoD 验收。

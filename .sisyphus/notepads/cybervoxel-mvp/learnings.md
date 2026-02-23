@@ -356,3 +356,9 @@
 - 对“场景可选/可随机”条目，若 UI 未直接暴露场景切换器，可用 `VITE_FIXED_MAP_INDEX` 走“确定到达”替代证明链路，并在证据中明确写出该判定依据。
 - 运行时用 `config.weather -> weather tuple -> blockTypes` 三段映射（如 `tupleNames: cyberNeon/cyberGrid/cyberSteel`）可以形成比纯截图更可审计的“地形方块归属”证据。
 - 端口漂移在本仓库是高频现象；本轮再次验证“请求端口 + 实际端口”双写是 final-qa 复盘可追溯性的关键字段。
+
+## 2026-02-23 DoD line 102（附身 + 第一人称控制）
+
+- 若需稳定证明“附身后第一人称控制”，可在同一轮 Playwright 中直接走运行时控制链路（`possessionController` + `moveController.positionMove/viewDirectionMove`），并同时采集 camera 与 NPC 位置/朝向增量，形成可审计闭环。
+- “任意 NPC”证据建议固定为“同一轮至少 2 个不同 npcId 成功附身并保持 `possessedId===targetId`”，避免只验证最近 NPC 导致覆盖不足。
+- DoD 收口文本需同时写明 `请求端口 -> 实际端口`、`tsc/build 退出码` 与截图/console/network 路径，便于最终审计回放。

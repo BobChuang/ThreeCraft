@@ -1,0 +1,541 @@
+node_modules/.pnpm/@types+node@17.0.45/node_modules/@types/node/globals.d.ts(72,13): error TS2403: Subsequent variable declarations must have the same type.  Variable 'AbortSignal' must be of type '{ new (): AbortSignal; prototype: AbortSignal; abort(reason?: any): AbortSignal; timeout(milliseconds: number): AbortSignal; }', but here has type '{ new (): AbortSignal; prototype: AbortSignal; }'.
+src/controller/game-controller/index.ts(38,2): error TS2564: Property 'hasChange' has no initializer and is not definitely assigned in the constructor.
+src/controller/game-controller/index.ts(40,26): error TS7006: Parameter 'host' implicitly has an 'any' type.
+src/controller/game-controller/index.ts(58,19): error TS7006: Parameter 'args' implicitly has an 'any' type.
+src/controller/game-controller/index.ts(66,21): error TS7031: Binding element 'vertical' implicitly has an 'any' type.
+src/controller/game-controller/index.ts(66,31): error TS7031: Binding element 'horizontal' implicitly has an 'any' type.
+src/controller/game-controller/index.ts(99,19): error TS18049: 'collision.obj.face' is possibly 'null' or 'undefined'.
+src/controller/game-controller/index.ts(100,19): error TS18049: 'collision.obj.face' is possibly 'null' or 'undefined'.
+src/controller/game-controller/index.ts(101,19): error TS18049: 'collision.obj.face' is possibly 'null' or 'undefined'.
+src/controller/game-controller/index.ts(123,19): error TS7006: Parameter 'target' implicitly has an 'any' type.
+src/controller/game-controller/index.ts(132,16): error TS7006: Parameter 'target' implicitly has an 'any' type.
+src/controller/game-controller/index.ts(139,66): error TS2538: Type 'null' cannot be used as an index type.
+src/controller/game-controller/index.ts(140,74): error TS2538: Type 'null' cannot be used as an index type.
+src/controller/game-controller/move-controller/index.ts(17,26): error TS7006: Parameter 'host' implicitly has an 'any' type.
+src/controller/game-controller/move-controller/index.ts(33,17): error TS7031: Binding element 'font' implicitly has an 'any' type.
+src/controller/game-controller/move-controller/index.ts(33,23): error TS7031: Binding element 'left' implicitly has an 'any' type.
+src/controller/game-controller/move-controller/index.ts(33,29): error TS7031: Binding element 'up' implicitly has an 'any' type.
+src/controller/game-controller/move-controller/index.ts(77,130): error TS2339: Property 'obj' does not exist on type 'never'.
+src/controller/game-controller/move-controller/index.ts(89,22): error TS7031: Binding element 'viewHorizontal' implicitly has an 'any' type.
+src/controller/game-controller/move-controller/index.ts(89,38): error TS7031: Binding element 'viewVertical' implicitly has an 'any' type.
+src/controller/index.ts(167,7): error TS2488: Type 'HTMLCollection' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/controller/index.ts(212,14): error TS2339: Property 'xr' does not exist on type 'Navigator'.
+src/controller/index.ts(213,14): error TS2339: Property 'xr' does not exist on type 'Navigator'.
+src/controller/index.ts(214,5): error TS2531: Object is possibly 'null'.
+src/controller/index.ts(234,29): error TS2322: Type 'number' is not assignable to type 'null'.
+src/controller/index.ts(235,34): error TS2322: Type 'number' is not assignable to type 'null'.
+src/controller/index.ts(236,33): error TS2322: Type 'number' is not assignable to type 'null'.
+src/controller/index.ts(237,45): error TS2322: Type 'number' is not assignable to type 'null'.
+src/controller/index.ts(247,98): error TS2538: Type 'null' cannot be used as an index type.
+src/controller/index.ts(259,3): error TS2531: Object is possibly 'null'.
+src/controller/index.ts(263,3): error TS2531: Object is possibly 'null'.
+src/controller/index.ts(305,3): error TS2531: Object is possibly 'null'.
+src/controller/index.ts(324,16): error TS2531: Object is possibly 'null'.
+src/controller/index.ts(363,3): error TS2531: Object is possibly 'null'.
+src/controller/index.ts(635,61): error TS2531: Object is possibly 'null'.
+src/controller/log/splay/index.ts(106,9): error TS18047: 'cur.right' is possibly 'null'.
+src/controller/log/splay/index.ts(108,23): error TS2345: Argument of type 'K | null' is not assignable to parameter of type 'K'.
+  'K' could be instantiated with an arbitrary type which could be unrelated to 'K | null'.
+src/controller/log/splay/index.ts(110,5): error TS2322: Type 'SNode<K, V> | null' is not assignable to type 'SNode<K, V>'.
+  Type 'null' is not assignable to type 'SNode<K, V>'.
+src/controller/log/splay/index.ts(112,9): error TS18047: 'cur.left' is possibly 'null'.
+src/controller/MultiPlay/index.ts(5,65): error TS2306: File '/Users/zhangganhui/skills/game/ThreeCraft/src/utils/types/multiPlayer/server.d.ts' is not a module.
+src/controller/MultiPlay/index.ts(50,18): error TS7031: Binding element 'onConnect' implicitly has an 'any' type.
+src/controller/MultiPlay/index.ts(50,29): error TS7031: Binding element 'onDisconnect' implicitly has an 'any' type.
+src/controller/MultiPlay/index.ts(50,43): error TS7031: Binding element 'onCreateRoom' implicitly has an 'any' type.
+src/controller/MultiPlay/index.ts(50,57): error TS7031: Binding element 'onJoinRoom' implicitly has an 'any' type.
+src/controller/MultiPlay/index.ts(50,69): error TS7031: Binding element 'onPlayerChange' implicitly has an 'any' type.
+src/controller/MultiPlay/index.ts(50,85): error TS7031: Binding element 'onDissolve' implicitly has an 'any' type.
+src/controller/MultiPlay/index.ts(54,39): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/controller/MultiPlay/index.ts(56,39): error TS7006: Parameter 'd' implicitly has an 'any' type.
+src/controller/MultiPlay/index.ts(60,37): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/controller/MultiPlay/index.ts(68,37): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/controller/MultiPlay/index.ts(76,37): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/controller/MultiPlay/index.ts(80,33): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/controller/MultiPlay/index.ts(87,5): error TS2531: Object is possibly 'null'.
+src/controller/MultiPlay/index.ts(94,36): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/controller/MultiPlay/index.ts(107,33): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/controller/MultiPlay/index.ts(141,17): error TS7006: Parameter 'userName' implicitly has an 'any' type.
+src/controller/MultiPlay/index.ts(143,3): error TS2531: Object is possibly 'null'.
+src/controller/MultiPlay/index.ts(149,15): error TS7006: Parameter 'userName' implicitly has an 'any' type.
+src/controller/MultiPlay/index.ts(149,25): error TS7006: Parameter 'roomId' implicitly has an 'any' type.
+src/controller/MultiPlay/index.ts(187,3): error TS2531: Object is possibly 'null'.
+src/controller/MultiPlay/players.ts(9,2): error TS2564: Property 'scene' has no initializer and is not definitely assigned in the constructor.
+src/controller/MultiPlay/players.ts(31,7): error TS7006: Parameter 'roomId' implicitly has an 'any' type.
+src/controller/MultiPlay/players.ts(34,3): error TS2322: Type '(Player | null)[]' is not assignable to type 'Player[]'.
+  Type 'Player | null' is not assignable to type 'Player'.
+    Type 'null' is not assignable to type 'Player'.
+src/controller/MultiPlay/players.ts(51,4): error TS2322: Type 'null' is not assignable to type 'Player'.
+src/controller/MultiPlay/players.ts(56,15): error TS7006: Parameter 'playerName' implicitly has an 'any' type.
+src/controller/MultiPlay/players.ts(59,3): error TS2322: Type 'null' is not assignable to type 'string'.
+src/controller/MultiPlay/players.ts(62,3): error TS2322: Type 'null' is not assignable to type 'Player'.
+src/core/audio/index.ts(8,2): error TS2564: Property 'core' has no initializer and is not definitely assigned in the constructor.
+src/core/audio/index.ts(10,2): error TS2564: Property 'support' has no initializer and is not definitely assigned in the constructor.
+src/core/audio/index.ts(12,14): error TS7006: Parameter 'core' implicitly has an 'any' type.
+src/core/audio/index.ts(18,21): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+  No index signature with a parameter of type 'string' was found on type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+src/core/audio/index.ts(21,5): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+  No index signature with a parameter of type 'string' was found on type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+src/core/audio/index.ts(23,21): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+  No index signature with a parameter of type 'string' was found on type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+src/core/audio/index.ts(26,5): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+  No index signature with a parameter of type 'string' was found on type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+src/core/audio/index.ts(31,7): error TS7006: Parameter 'action' implicitly has an 'any' type.
+src/core/audio/index.ts(31,15): error TS7006: Parameter 'type' implicitly has an 'any' type.
+src/core/audio/index.ts(32,8): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+src/core/audio/index.ts(33,37): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+src/core/audio/index.ts(33,67): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+src/core/block-action/index.ts(11,14): error TS7006: Parameter 'core' implicitly has an 'any' type.
+src/core/block-action/index.ts(20,8): error TS18048: 'oldBlock' is possibly 'undefined'.
+src/core/block-action/index.ts(21,141): error TS18048: 'oldBlock' is possibly 'undefined'.
+src/core/block-action/index.ts(24,66): error TS18048: 'oldBlock' is possibly 'undefined'.
+src/core/block-action/index.ts(24,66): error TS2538: Type 'undefined' cannot be used as an index type.
+src/core/block-action/index.ts(24,110): error TS18048: 'oldBlock' is possibly 'undefined'.
+src/core/block-action/index.ts(25,66): error TS18048: 'oldBlock' is possibly 'undefined'.
+src/core/block-action/index.ts(25,66): error TS2538: Type 'undefined' cannot be used as an index type.
+src/core/block-action/index.ts(33,54): error TS2538: Type 'null' cannot be used as an index type.
+src/core/block-action/index.ts(46,13): error TS7006: Parameter 'x' implicitly has an 'any' type.
+src/core/block-action/index.ts(46,16): error TS7006: Parameter 'z' implicitly has an 'any' type.
+src/core/collision/index.ts(106,34): error TS7031: Binding element 'posX' implicitly has an 'any' type.
+src/core/collision/index.ts(106,40): error TS7031: Binding element 'posY' implicitly has an 'any' type.
+src/core/collision/index.ts(106,46): error TS7031: Binding element 'posZ' implicitly has an 'any' type.
+src/core/collision/index.ts(106,52): error TS7031: Binding element 'dirX' implicitly has an 'any' type.
+src/core/collision/index.ts(106,58): error TS7031: Binding element 'dirY' implicitly has an 'any' type.
+src/core/collision/index.ts(106,64): error TS7031: Binding element 'dirZ' implicitly has an 'any' type.
+src/core/collision/index.ts(106,70): error TS7031: Binding element 'boundingBox' implicitly has an 'any' type.
+src/core/collision/index.ts(106,83): error TS7031: Binding element 'access' implicitly has an 'any' type.
+src/core/collision/index.ts(106,91): error TS7031: Binding element 'log' implicitly has an 'any' type.
+src/core/collision/index.ts(141,49): error TS7031: Binding element 'posX' implicitly has an 'any' type.
+src/core/collision/index.ts(141,55): error TS7031: Binding element 'posY' implicitly has an 'any' type.
+src/core/collision/index.ts(141,61): error TS7031: Binding element 'posZ' implicitly has an 'any' type.
+src/core/collision/index.ts(141,67): error TS7031: Binding element 'font' implicitly has an 'any' type.
+src/core/collision/index.ts(141,73): error TS7031: Binding element 'left' implicitly has an 'any' type.
+src/core/collision/index.ts(141,79): error TS7031: Binding element 'up' implicitly has an 'any' type.
+src/core/collision/index.ts(141,83): error TS7031: Binding element 'core' implicitly has an 'any' type.
+src/core/collision/index.ts(141,89): error TS7031: Binding element 'log' implicitly has an 'any' type.
+src/core/collision/index.ts(141,94): error TS7031: Binding element 'access' implicitly has an 'any' type.
+src/core/collision/index.ts(170,48): error TS18049: 'collision.obj.face' is possibly 'null' or 'undefined'.
+src/core/collision/index.ts(171,48): error TS18049: 'collision.obj.face' is possibly 'null' or 'undefined'.
+src/core/collision/index.ts(172,48): error TS18049: 'collision.obj.face' is possibly 'null' or 'undefined'.
+src/core/collision/index.ts(175,45): error TS2339: Property 'dispose' does not exist on type 'Object3D<Event>'.
+src/core/collision/index.ts(188,45): error TS7031: Binding element 'posX' implicitly has an 'any' type.
+src/core/collision/index.ts(188,51): error TS7031: Binding element 'posY' implicitly has an 'any' type.
+src/core/collision/index.ts(188,57): error TS7031: Binding element 'posZ' implicitly has an 'any' type.
+src/core/collision/index.ts(188,63): error TS7031: Binding element 'font' implicitly has an 'any' type.
+src/core/collision/index.ts(188,69): error TS7031: Binding element 'left' implicitly has an 'any' type.
+src/core/collision/index.ts(188,75): error TS7031: Binding element 'up' implicitly has an 'any' type.
+src/core/collision/index.ts(188,79): error TS7031: Binding element 'core' implicitly has an 'any' type.
+src/core/collision/index.ts(188,85): error TS7031: Binding element 'log' implicitly has an 'any' type.
+src/core/collision/index.ts(206,6): error TS7034: Variable 'fstColX' implicitly has type 'any' in some locations where its type cannot be determined.
+src/core/collision/index.ts(207,6): error TS7034: Variable 'fstColY' implicitly has type 'any' in some locations where its type cannot be determined.
+src/core/collision/index.ts(208,6): error TS7034: Variable 'fstColZ' implicitly has type 'any' in some locations where its type cannot be determined.
+src/core/collision/index.ts(226,22): error TS7005: Variable 'fstColX' implicitly has an 'any' type.
+src/core/collision/index.ts(226,68): error TS7005: Variable 'fstColX' implicitly has an 'any' type.
+src/core/collision/index.ts(228,4): error TS2739: Type '{ posX: number; }' is missing the following properties from type '{ posX: number; posY: number; posZ: number; }': posY, posZ
+src/core/collision/index.ts(244,22): error TS7005: Variable 'fstColY' implicitly has an 'any' type.
+src/core/collision/index.ts(244,68): error TS7005: Variable 'fstColY' implicitly has an 'any' type.
+src/core/collision/index.ts(246,4): error TS2739: Type '{ posY: number; }' is missing the following properties from type '{ posX: number; posY: number; posZ: number; }': posX, posZ
+src/core/collision/index.ts(262,22): error TS7005: Variable 'fstColZ' implicitly has an 'any' type.
+src/core/collision/index.ts(262,68): error TS7005: Variable 'fstColZ' implicitly has an 'any' type.
+src/core/collision/index.ts(264,4): error TS2739: Type '{ posZ: number; }' is missing the following properties from type '{ posX: number; posY: number; posZ: number; }': posX, posY
+src/core/collision/index.ts(270,45): error TS2339: Property 'dispose' does not exist on type 'Object3D<Event>'.
+src/core/collision/index.ts(276,37): error TS7031: Binding element 'posX' implicitly has an 'any' type.
+src/core/collision/index.ts(276,43): error TS7031: Binding element 'posY' implicitly has an 'any' type.
+src/core/collision/index.ts(276,49): error TS7031: Binding element 'posZ' implicitly has an 'any' type.
+src/core/collision/index.ts(276,55): error TS7031: Binding element 'font' implicitly has an 'any' type.
+src/core/collision/index.ts(276,61): error TS7031: Binding element 'left' implicitly has an 'any' type.
+src/core/collision/index.ts(276,67): error TS7031: Binding element 'up' implicitly has an 'any' type.
+src/core/collision/index.ts(276,71): error TS7031: Binding element 'core' implicitly has an 'any' type.
+src/core/player/index.ts(59,13): error TS7006: Parameter 'delta' implicitly has an 'any' type.
+src/core/player/index.ts(78,14): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/core/player/index.ts(82,14): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/core/terrain/generate/generateFragSync.ts(9,31): error TS7006: Parameter 'fragment' implicitly has an 'any' type.
+src/core/terrain/generate/generateFragSync.ts(9,41): error TS7006: Parameter 'typeIdx' implicitly has an 'any' type.
+src/core/terrain/generate/generateFragSync.ts(9,50): error TS7006: Parameter 'x' implicitly has an 'any' type.
+src/core/terrain/generate/generateFragSync.ts(9,53): error TS7006: Parameter 'y' implicitly has an 'any' type.
+src/core/terrain/generate/generateFragSync.ts(9,56): error TS7006: Parameter 'z' implicitly has an 'any' type.
+src/core/terrain/generate/generateFragSync.ts(33,46): error TS2538: Type 'null' cannot be used as an index type.
+src/core/terrain/generate/generateFragSync.ts(54,4): error TS2322: Type 'null' is not assignable to type 'InstancedMesh<BufferGeometry, Material | Material[]> | undefined'.
+src/core/terrain/generate/generateFragSync.ts(65,66): error TS2345: Argument of type 'null' is not assignable to parameter of type 'number'.
+src/core/terrain/generate/generateFragSync.ts(70,21): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+  No index signature with a parameter of type 'string' was found on type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+src/core/terrain/generate/generateFragSync.ts(78,85): error TS2345: Argument of type 'null' is not assignable to parameter of type 'number'.
+src/core/terrain/generate/generateFragSync.ts(81,23): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+  No index signature with a parameter of type 'string' was found on type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+src/core/terrain/generate/generateFragSync.ts(88,124): error TS2345: Argument of type 'null' is not assignable to parameter of type 'number'.
+src/core/terrain/generate/generateFragSync.ts(104,72): error TS2345: Argument of type 'null' is not assignable to parameter of type 'number'.
+src/core/terrain/generate/generateFragSync.ts(106,5): error TS18048: 'blockFragment.cloudPos' is possibly 'undefined'.
+src/core/terrain/generate/generateFragSync.ts(115,24): error TS18048: 'block' is possibly 'undefined'.
+src/core/terrain/generate/generateFragSync.ts(115,24): error TS2538: Type 'undefined' cannot be used as an index type.
+src/core/terrain/generate/generateFragSync.ts(115,55): error TS18048: 'block' is possibly 'undefined'.
+src/core/terrain/generate/generateFragSync.ts(116,24): error TS18048: 'block' is possibly 'undefined'.
+src/core/terrain/generate/generateFragSync.ts(116,24): error TS2538: Type 'undefined' cannot be used as an index type.
+src/core/terrain/generate/generateFragSync.ts(116,55): error TS18048: 'block' is possibly 'undefined'.
+src/core/terrain/generate/generateFragSync.ts(117,24): error TS18048: 'block' is possibly 'undefined'.
+src/core/terrain/generate/generateFragSync.ts(117,24): error TS2538: Type 'undefined' cannot be used as an index type.
+src/core/terrain/generate/generateFragSync.ts(117,55): error TS18048: 'block' is possibly 'undefined'.
+src/core/terrain/generate/generateFragSync.ts(133,35): error TS2538: Type 'undefined' cannot be used as an index type.
+src/core/terrain/generate/generateFragSync.ts(140,57): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+  No index signature with a parameter of type 'string' was found on type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+src/core/terrain/generate/generateFragSync.ts(151,79): error TS18048: 'blockFragment.cloudPos' is possibly 'undefined'.
+src/core/terrain/generate/generateFragSync.ts(152,23): error TS18048: 'blockFragment.cloudPos' is possibly 'undefined'.
+src/core/terrain/generate/generateFragSync.ts(153,23): error TS18048: 'blockFragment.cloudPos' is possibly 'undefined'.
+src/core/terrain/generate/generateFragSync.ts(153,54): error TS18048: 'blockFragment.cloudPos' is possibly 'undefined'.
+src/core/terrain/generate/generateFragSync.ts(153,89): error TS18048: 'blockFragment.cloudPos' is possibly 'undefined'.
+src/core/terrain/generate/index.ts(19,14): error TS7006: Parameter 'terrain' implicitly has an 'any' type.
+src/core/terrain/generate/index.ts(21,3): error TS2322: Type 'null' is not assignable to type '{ seed: number; cloudSeed: number; treeSeed: number; }'.
+src/core/terrain/generate/index.ts(26,10): error TS7006: Parameter 'seed' implicitly has an 'any' type.
+src/core/terrain/generate/index.ts(26,16): error TS7006: Parameter 'cloudSeed' implicitly has an 'any' type.
+src/core/terrain/generate/index.ts(26,27): error TS7006: Parameter 'treeSeed' implicitly has an 'any' type.
+src/core/terrain/generate/index.ts(31,13): error TS7006: Parameter 'num' implicitly has an 'any' type.
+src/core/terrain/generate/index.ts(47,17): error TS7031: Binding element 'stx' implicitly has an 'any' type.
+src/core/terrain/generate/index.ts(47,22): error TS7031: Binding element 'edx' implicitly has an 'any' type.
+src/core/terrain/generate/index.ts(47,27): error TS7031: Binding element 'stz' implicitly has an 'any' type.
+src/core/terrain/generate/index.ts(47,32): error TS7031: Binding element 'edz' implicitly has an 'any' type.
+src/core/terrain/generate/index.ts(47,37): error TS7031: Binding element 'fragmentSize' implicitly has an 'any' type.
+src/core/terrain/generate/index.ts(47,51): error TS7031: Binding element 'thread' implicitly has an 'any' type.
+src/core/terrain/generate/index.ts(109,16): error TS7031: Binding element 'stx' implicitly has an 'any' type.
+src/core/terrain/generate/index.ts(109,21): error TS7031: Binding element 'edx' implicitly has an 'any' type.
+src/core/terrain/generate/index.ts(109,26): error TS7031: Binding element 'stz' implicitly has an 'any' type.
+src/core/terrain/generate/index.ts(109,31): error TS7031: Binding element 'edz' implicitly has an 'any' type.
+src/core/terrain/generate/index.ts(109,36): error TS7031: Binding element 'fragmentSize' implicitly has an 'any' type.
+src/core/terrain/generate/index.ts(109,50): error TS7031: Binding element 'thread' implicitly has an 'any' type.
+src/core/terrain/generate/worker.ts(4,31): error TS7006: Parameter 'fragment' implicitly has an 'any' type.
+src/core/terrain/generate/worker.ts(4,41): error TS7006: Parameter 'typeIdx' implicitly has an 'any' type.
+src/core/terrain/generate/worker.ts(4,50): error TS7006: Parameter 'x' implicitly has an 'any' type.
+src/core/terrain/generate/worker.ts(4,53): error TS7006: Parameter 'y' implicitly has an 'any' type.
+src/core/terrain/generate/worker.ts(4,56): error TS7006: Parameter 'z' implicitly has an 'any' type.
+src/core/terrain/generate/worker.ts(35,3): error TS7008: Member 'blockTypes' implicitly has an 'any' type.
+src/core/terrain/generate/worker.ts(36,3): error TS7008: Member 'weatherTypes' implicitly has an 'any' type.
+src/core/terrain/generate/worker.ts(59,5): error TS2322: Type 'null' is not assignable to type 'Group'.
+src/core/terrain/generate/worker.ts(67,6): error TS2322: Type 'null' is not assignable to type 'InstancedMesh<BufferGeometry, Material | Material[]> | undefined'.
+src/core/terrain/generate/worker.ts(114,7): error TS18048: 'blockFragment.cloudPos' is possibly 'undefined'.
+src/core/terrain/generate/worker.ts(124,26): error TS18048: 'block' is possibly 'undefined'.
+src/core/terrain/generate/worker.ts(124,26): error TS2538: Type 'undefined' cannot be used as an index type.
+src/core/terrain/generate/worker.ts(124,57): error TS18048: 'block' is possibly 'undefined'.
+src/core/terrain/generate/worker.ts(125,26): error TS18048: 'block' is possibly 'undefined'.
+src/core/terrain/generate/worker.ts(125,26): error TS2538: Type 'undefined' cannot be used as an index type.
+src/core/terrain/generate/worker.ts(125,57): error TS18048: 'block' is possibly 'undefined'.
+src/core/terrain/generate/worker.ts(126,26): error TS18048: 'block' is possibly 'undefined'.
+src/core/terrain/generate/worker.ts(126,26): error TS2538: Type 'undefined' cannot be used as an index type.
+src/core/terrain/generate/worker.ts(126,57): error TS18048: 'block' is possibly 'undefined'.
+src/core/terrain/generate/worker.ts(142,37): error TS2538: Type 'undefined' cannot be used as an index type.
+src/core/terrain/index.ts(12,2): error TS2564: Property 'seed' has no initializer and is not definitely assigned in the constructor.
+src/core/terrain/index.ts(14,2): error TS2564: Property 'cloudSeed' has no initializer and is not definitely assigned in the constructor.
+src/core/terrain/index.ts(16,2): error TS2564: Property 'treeSeed' has no initializer and is not definitely assigned in the constructor.
+src/core/terrain/index.ts(20,2): error TS2564: Property 'size' has no initializer and is not definitely assigned in the constructor.
+src/core/terrain/index.ts(23,2): error TS2564: Property 'fragmentSize' has no initializer and is not definitely assigned in the constructor.
+src/core/terrain/index.ts(25,2): error TS2564: Property 'originX' has no initializer and is not definitely assigned in the constructor.
+src/core/terrain/index.ts(27,2): error TS2564: Property 'originZ' has no initializer and is not definitely assigned in the constructor.
+src/core/terrain/index.ts(29,2): error TS2564: Property 'thread' has no initializer and is not definitely assigned in the constructor.
+src/core/terrain/index.ts(32,2): error TS2564: Property 'blockFragments' has no initializer and is not definitely assigned in the constructor.
+src/core/terrain/index.ts(34,14): error TS7006: Parameter 'core' implicitly has an 'any' type.
+src/core/terrain/index.ts(42,3): error TS2322: Type 'null' is not assignable to type 'number'.
+src/core/terrain/index.ts(43,3): error TS2322: Type 'null' is not assignable to type 'number'.
+src/core/terrain/index.ts(44,3): error TS2322: Type 'null' is not assignable to type 'number'.
+src/core/terrain/index.ts(60,6): error TS2322: Type 'null' is not assignable to type 'number'.
+src/core/terrain/index.ts(61,6): error TS2322: Type 'null' is not assignable to type 'number'.
+src/core/terrain/index.ts(62,6): error TS2322: Type 'null' is not assignable to type 'Group'.
+src/core/terrain/index.ts(153,15): error TS7006: Parameter 'ev' implicitly has an 'any' type.
+src/core/terrain/index.ts(182,6): error TS18048: 'dd.instancedMesh' is possibly 'undefined'.
+src/core/terrain/index.ts(195,59): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+  No index signature with a parameter of type 'string' was found on type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+src/core/terrain/index.ts(206,68): error TS18048: 'd.cloudPos' is possibly 'undefined'.
+src/core/terrain/index.ts(207,24): error TS18048: 'd.cloudPos' is possibly 'undefined'.
+src/core/terrain/index.ts(208,24): error TS18048: 'd.cloudPos' is possibly 'undefined'.
+src/core/terrain/index.ts(208,43): error TS18048: 'd.cloudPos' is possibly 'undefined'.
+src/core/terrain/index.ts(208,66): error TS18048: 'd.cloudPos' is possibly 'undefined'.
+src/core/terrain/index.ts(225,17): error TS7006: Parameter 'x' implicitly has an 'any' type.
+src/core/terrain/index.ts(225,20): error TS7006: Parameter 'z' implicitly has an 'any' type.
+src/core/terrain/index.ts(230,62): error TS2345: Argument of type 'null' is not assignable to parameter of type 'number'.
+src/core/terrain/index.ts(234,11): error TS7006: Parameter 'x' implicitly has an 'any' type.
+src/core/terrain/index.ts(234,14): error TS7006: Parameter 'z' implicitly has an 'any' type.
+src/core/terrain/index.ts(234,17): error TS7006: Parameter 'y' implicitly has an 'any' type.
+src/core/terrain/index.ts(239,13): error TS7006: Parameter 'x' implicitly has an 'any' type.
+src/core/terrain/index.ts(239,16): error TS7006: Parameter 'z' implicitly has an 'any' type.
+src/index.ts(3,31): error TS2345: Argument of type 'HTMLElement | null' is not assignable to parameter of type 'HTMLElement'.
+  Type 'null' is not assignable to type 'HTMLElement'.
+src/ui/action/index.ts(15,2): error TS2564: Property 'gamepad' has no initializer and is not definitely assigned in the constructor.
+src/ui/action/index.ts(48,3): error TS2531: Object is possibly 'null'.
+src/ui/action/index.ts(53,3): error TS2531: Object is possibly 'null'.
+src/ui/action/index.ts(59,3): error TS2531: Object is possibly 'null'.
+src/ui/action/index.ts(63,20): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/ui/action/index.ts(68,15): error TS7006: Parameter 'timeout' implicitly has an 'any' type.
+src/ui/action/mobile/index.ts(12,2): error TS2564: Property 'joyStick' has no initializer and is not definitely assigned in the constructor.
+src/ui/action/mobile/index.ts(14,2): error TS2564: Property 'jumpButton' has no initializer and is not definitely assigned in the constructor.
+src/ui/action/mobile/index.ts(16,2): error TS2564: Property 'removeBlockButton' has no initializer and is not definitely assigned in the constructor.
+src/ui/action/mobile/index.ts(18,2): error TS2564: Property 'createBlockButton' has no initializer and is not definitely assigned in the constructor.
+src/ui/action/mobile/index.ts(20,2): error TS2564: Property 'openMenuButton' has no initializer and is not definitely assigned in the constructor.
+src/ui/action/mobile/index.ts(22,2): error TS2564: Property 'jumpDownButton' has no initializer and is not definitely assigned in the constructor.
+src/ui/action/mobile/index.ts(24,2): error TS2564: Property 'actionWallpaper' has no initializer and is not definitely assigned in the constructor.
+src/ui/action/mobile/index.ts(26,22): error TS7051: Parameter has a name but no type. Did you mean 'arg0: Event'?
+src/ui/action/mobile/index.ts(28,26): error TS7051: Parameter has a name but no type. Did you mean 'arg0: Event'?
+src/ui/action/mobile/index.ts(30,29): error TS7051: Parameter has a name but no type. Did you mean 'arg0: Event'?
+src/ui/action/mobile/index.ts(131,7): error TS2488: Type 'HTMLCollection' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/ui/action/mobile/index.ts(142,27): error TS7006: Parameter 'self' implicitly has an 'any' type.
+src/ui/action/mobile/index.ts(143,10): error TS7006: Parameter 'args' implicitly has an 'any' type.
+src/ui/action/mobile/index.ts(148,30): error TS7006: Parameter 'self' implicitly has an 'any' type.
+src/ui/action/mobile/index.ts(149,10): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/ui/action/mobile/index.ts(170,30): error TS7006: Parameter 'self' implicitly has an 'any' type.
+src/ui/action/mobile/index.ts(171,10): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/ui/action/mobile/index.ts(184,10): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/ui/action/mobile/index.ts(191,31): error TS7006: Parameter 'dir' implicitly has an 'any' type.
+src/ui/action/mobile/index.ts(191,36): error TS7006: Parameter 'self' implicitly has an 'any' type.
+src/ui/action/mobile/index.ts(192,10): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/ui/action/mobile/index.ts(199,33): error TS7006: Parameter 'act' implicitly has an 'any' type.
+src/ui/action/mobile/index.ts(199,38): error TS7006: Parameter 'self' implicitly has an 'any' type.
+src/ui/action/mobile/index.ts(200,10): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/ui/action/mobile/joy-stick/index.ts(25,12): error TS7051: Parameter has a name but no type. Did you mean 'arg0: unknown'?
+src/ui/action/mobile/joy-stick/index.ts(27,31): error TS7006: Parameter 'jConfig' implicitly has an 'any' type.
+src/ui/action/mobile/joy-stick/index.ts(27,40): error TS7006: Parameter 'emitFun' implicitly has an 'any' type.
+src/ui/action/mobile/joy-stick/index.ts(35,3): error TS2322: Type 'CanvasRenderingContext2D | null' is not assignable to type 'CanvasRenderingContext2D'.
+  Type 'null' is not assignable to type 'CanvasRenderingContext2D'.
+src/ui/action/mobile/joy-stick/index.ts(84,15): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/ui/action/ps/index.ts(19,3): error TS2322: Type 'null' is not assignable to type 'Gamepad'.
+src/ui/action/ps/index.ts(24,14): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/ui/action/ps/index.ts(72,15): error TS7006: Parameter 'timeout' implicitly has an 'any' type.
+src/ui/action/ps/index.ts(76,16): error TS2339: Property 'vibrationActuator' does not exist on type 'Gamepad'.
+src/ui/action/ps/index.ts(82,33): error TS2339: Property 'vibrationActuator' does not exist on type 'Gamepad'.
+src/ui/action/xbox/index.ts(19,3): error TS2322: Type 'null' is not assignable to type 'Gamepad'.
+src/ui/action/xbox/index.ts(24,14): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/ui/action/xbox/index.ts(72,15): error TS7006: Parameter 'timeout' implicitly has an 'any' type.
+src/ui/action/xbox/index.ts(76,16): error TS2339: Property 'vibrationActuator' does not exist on type 'Gamepad'.
+src/ui/action/xbox/index.ts(82,33): error TS2339: Property 'vibrationActuator' does not exist on type 'Gamepad'.
+src/ui/bag/bagbox/index.ts(25,31): error TS7006: Parameter 'host' implicitly has an 'any' type.
+src/ui/bag/bagbox/index.ts(28,7): error TS2488: Type 'HTMLCollection' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/ui/bag/bagbox/index.ts(30,3): error TS2322: Type 'HTMLElement | null' is not assignable to type 'HTMLElement'.
+  Type 'null' is not assignable to type 'HTMLElement'.
+src/ui/bag/bagbox/index.ts(31,3): error TS2322: Type 'HTMLElement | null' is not assignable to type 'HTMLElement'.
+  Type 'null' is not assignable to type 'HTMLElement'.
+src/ui/bag/bagbox/index.ts(32,3): error TS2322: Type 'HTMLElement | null' is not assignable to type 'HTMLElement'.
+  Type 'null' is not assignable to type 'HTMLElement'.
+src/ui/bag/bagbox/index.ts(42,7): error TS2488: Type 'HTMLCollection' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/ui/bag/bagbox/index.ts(45,65): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+  No index signature with a parameter of type 'string' was found on type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+src/ui/bag/bagbox/index.ts(47,7): error TS2488: Type 'HTMLCollection' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/ui/bag/bagbox/index.ts(51,43): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+  No index signature with a parameter of type 'string' was found on type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+src/ui/bag/bagbox/index.ts(57,7): error TS2488: Type 'HTMLCollection' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/ui/bag/bagbox/index.ts(61,26): error TS7006: Parameter 'idx' implicitly has an 'any' type.
+src/ui/bag/bagbox/index.ts(62,7): error TS2488: Type 'HTMLCollection' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/ui/bag/bagbox/index.ts(69,3): error TS2531: Object is possibly 'null'.
+src/ui/bag/bagbox/index.ts(98,33): error TS7006: Parameter 'host' implicitly has an 'any' type.
+src/ui/bag/bagbox/index.ts(99,10): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/ui/bag/bagbox/index.ts(101,32): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/ui/bag/bagbox/index.ts(112,36): error TS7006: Parameter 'host' implicitly has an 'any' type.
+src/ui/bag/bagbox/index.ts(113,10): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/ui/bag/bagbox/index.ts(115,32): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/ui/bag/bagbox/index.ts(123,34): error TS7006: Parameter 'host' implicitly has an 'any' type.
+src/ui/bag/bagbox/index.ts(124,10): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/ui/bag/index.ts(11,2): error TS2564: Property 'type' has no initializer and is not definitely assigned in the constructor.
+src/ui/bag/index.ts(13,2): error TS2564: Property 'items' has no initializer and is not definitely assigned in the constructor.
+src/ui/bag/index.ts(21,2): error TS2564: Property 'itemsElem' has no initializer and is not definitely assigned in the constructor.
+src/ui/bag/index.ts(23,2): error TS2564: Property 'available' has no initializer and is not definitely assigned in the constructor.
+src/ui/bag/index.ts(29,7): error TS2488: Type 'HTMLCollection' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/ui/bag/index.ts(33,3): error TS2322: Type 'null' is not assignable to type 'BagPcPlugin | BagMobilePlugin | BagXboxPlugin | BagPsPlugin'.
+src/ui/bag/index.ts(74,24): error TS2488: Type 'HTMLCollection' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/ui/bag/index.ts(84,76): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ acaciaLeaves: { name: string; block3d: any; textureTypes: string[]; textureImg: Texture; material: MeshStandardMaterial; accessible: boolean; step: string; break: string; }; ... 56 more ...; cyberAsphalt: { ...; }; }'.
+src/ui/bag/index.ts(84,99): error TS2538: Type 'null' cannot be used as an index type.
+src/ui/bag/index.ts(86,3): error TS2322: Type '(number | null)[]' is not assignable to type 'number[]'.
+  Type 'number | null' is not assignable to type 'number'.
+    Type 'null' is not assignable to type 'number'.
+src/ui/bag/index.ts(91,7): error TS2488: Type 'HTMLCollection' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/ui/bag/index.ts(124,20): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/ui/bag/mobile/index.ts(9,2): error TS2564: Property 'bagItemsElem' has no initializer and is not definitely assigned in the constructor.
+src/ui/bag/mobile/index.ts(19,41): error TS7006: Parameter 'host' implicitly has an 'any' type.
+src/ui/bag/mobile/index.ts(25,7): error TS2488: Type 'HTMLCollection' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/ui/bag/mobile/index.ts(35,27): error TS2488: Type 'HTMLCollection' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/ui/bag/mobile/index.ts(64,35): error TS7006: Parameter 'host' implicitly has an 'any' type.
+src/ui/bag/mobile/index.ts(65,10): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/ui/bag/mobile/index.ts(68,32): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/ui/bag/mobile/index.ts(81,10): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/ui/bag/ps/index.ts(10,2): error TS2564: Property 'bagItemsElem' has no initializer and is not definitely assigned in the constructor.
+src/ui/bag/ps/index.ts(18,41): error TS7006: Parameter 'host' implicitly has an 'any' type.
+src/ui/bag/ps/index.ts(23,7): error TS2488: Type 'HTMLCollection' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/ui/bag/ps/index.ts(32,14): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/ui/bag/xbox/index.ts(10,2): error TS2564: Property 'bagItemsElem' has no initializer and is not definitely assigned in the constructor.
+src/ui/bag/xbox/index.ts(18,41): error TS7006: Parameter 'host' implicitly has an 'any' type.
+src/ui/bag/xbox/index.ts(23,7): error TS2488: Type 'HTMLCollection' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/ui/bag/xbox/index.ts(32,14): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/ui/crosshair/index.ts(6,2): error TS2564: Property 'available' has no initializer and is not definitely assigned in the constructor.
+src/ui/crosshair/index.ts(12,7): error TS2488: Type 'HTMLCollection' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/ui/fps/index.ts(7,2): error TS2564: Property 'available' has no initializer and is not definitely assigned in the constructor.
+src/ui/fps/index.ts(16,7): error TS2488: Type 'HTMLCollection' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/ui/menu/index.ts(17,31): error TS7006: Parameter 'controller' implicitly has an 'any' type.
+src/ui/menu/index.ts(20,7): error TS2488: Type 'HTMLCollection' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/ui/menu/index.ts(25,3): error TS2322: Type 'HTMLElement | null' is not assignable to type 'HTMLElement'.
+  Type 'null' is not assignable to type 'HTMLElement'.
+src/ui/menu/index.ts(26,3): error TS2322: Type 'HTMLElement | null' is not assignable to type 'HTMLElement'.
+  Type 'null' is not assignable to type 'HTMLElement'.
+src/ui/menu/index.ts(34,7): error TS2488: Type 'HTMLCollection' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/ui/menu/index.ts(80,12): error TS7006: Parameter 'info' implicitly has an 'any' type.
+src/ui/menu/index.ts(82,7): error TS2488: Type 'NodeListOf<Element>' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/ui/menu/index.ts(95,3): error TS2531: Object is possibly 'null'.
+src/ui/menu/index.ts(96,3): error TS2531: Object is possibly 'null'.
+src/ui/menu/index.ts(102,3): error TS2531: Object is possibly 'null'.
+src/ui/menu/index.ts(103,3): error TS2531: Object is possibly 'null'.
+src/ui/menu/index.ts(133,3): error TS18047: 'singlePlayerGame' is possibly 'null'.
+src/ui/menu/index.ts(139,3): error TS18047: 'multiPlayerGame' is possibly 'null'.
+src/ui/menu/index.ts(148,8): error TS18047: 'files' is possibly 'null'.
+src/ui/menu/index.ts(149,17): error TS18047: 'files' is possibly 'null'.
+src/ui/menu/index.ts(167,3): error TS18047: 'loadArchiveStorage' is possibly 'null'.
+src/ui/menu/index.ts(180,3): error TS18047: 'loadArchiveCancel' is possibly 'null'.
+src/ui/menu/index.ts(188,3): error TS18047: 'gameSetting' is possibly 'null'.
+src/ui/menu/index.ts(194,3): error TS18047: 'help' is possibly 'null'.
+src/ui/menu/index.ts(200,3): error TS18047: 'about' is possibly 'null'.
+src/ui/menu/index.ts(207,4): error TS18047: 'chromeRecommend' is possibly 'null'.
+src/ui/menu/index.ts(208,4): error TS18047: 'chromeRecommend' is possibly 'null'.
+src/ui/menu/index.ts(214,19): error TS7031: Binding element 'back' implicitly has an 'any' type.
+src/ui/menu/index.ts(242,4): error TS18047: 'ipRow' is possibly 'null'.
+src/ui/menu/index.ts(247,4): error TS18047: 'ipRow' is possibly 'null'.
+src/ui/menu/index.ts(262,6): error TS18047: 'cancelLinkServer' is possibly 'null'.
+src/ui/menu/index.ts(263,6): error TS18047: 'chooseRoom' is possibly 'null'.
+src/ui/menu/index.ts(270,6): error TS18047: 'cancelLinkServer' is possibly 'null'.
+src/ui/menu/index.ts(271,6): error TS18047: 'chooseRoom' is possibly 'null'.
+src/ui/menu/index.ts(282,3): error TS18047: 'cancelLinkServer' is possibly 'null'.
+src/ui/menu/index.ts(285,4): error TS18047: 'chooseRoom' is possibly 'null'.
+src/ui/menu/index.ts(286,4): error TS18047: 'cancelLinkServer' is possibly 'null'.
+src/ui/menu/index.ts(290,4): error TS2531: Object is possibly 'null'.
+src/ui/menu/index.ts(294,3): error TS18047: 'chooseRoom' is possibly 'null'.
+src/ui/menu/index.ts(299,3): error TS18047: 'backMenu' is possibly 'null'.
+src/ui/menu/index.ts(306,4): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Menu'.
+src/ui/menu/index.ts(310,23): error TS7031: Binding element 'back' implicitly has an 'any' type.
+src/ui/menu/index.ts(353,18): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/ui/menu/index.ts(357,5): error TS18047: 'createRoomButton' is possibly 'null'.
+src/ui/menu/index.ts(358,5): error TS18047: 'dissolveRoomButton' is possibly 'null'.
+src/ui/menu/index.ts(363,5): error TS18047: 'roomNameContent' is possibly 'null'.
+src/ui/menu/index.ts(364,5): error TS18047: 'playerNameContent' is possibly 'null'.
+src/ui/menu/index.ts(365,5): error TS18047: 'startGameButton' is possibly 'null'.
+src/ui/menu/index.ts(367,16): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/ui/menu/index.ts(375,5): error TS18047: 'joinRoomButton' is possibly 'null'.
+src/ui/menu/index.ts(376,5): error TS18047: 'exitRoomButton' is possibly 'null'.
+src/ui/menu/index.ts(381,5): error TS18047: 'roomNameContent' is possibly 'null'.
+src/ui/menu/index.ts(382,5): error TS18047: 'playerNameContent' is possibly 'null'.
+src/ui/menu/index.ts(387,30): error TS18047: 'd' is possibly 'null'.
+src/ui/menu/index.ts(389,6): error TS18047: 'createRoomButton' is possibly 'null'.
+src/ui/menu/index.ts(390,6): error TS18047: 'roomNameContent' is possibly 'null'.
+src/ui/menu/index.ts(391,12): error TS18047: 'joinRoomButton' is possibly 'null'.
+src/ui/menu/index.ts(392,5): error TS18047: 'playerNameContent' is possibly 'null'.
+src/ui/menu/index.ts(403,30): error TS18047: 'd' is possibly 'null'.
+src/ui/menu/index.ts(406,6): error TS18047: 'createRoomButton' is possibly 'null'.
+src/ui/menu/index.ts(407,6): error TS18047: 'roomNameContent' is possibly 'null'.
+src/ui/menu/index.ts(408,12): error TS18047: 'joinRoomButton' is possibly 'null'.
+src/ui/menu/index.ts(409,5): error TS18047: 'playerNameContent' is possibly 'null'.
+src/ui/menu/index.ts(419,29): error TS18047: 'd' is possibly 'null'.
+src/ui/menu/index.ts(420,4): error TS18047: 'roomNameContent' is possibly 'null'.
+src/ui/menu/index.ts(421,4): error TS18047: 'playerNameContent' is possibly 'null'.
+src/ui/menu/index.ts(422,4): error TS18047: 'createRoomButton' is possibly 'null'.
+src/ui/menu/index.ts(428,29): error TS18047: 'd' is possibly 'null'.
+src/ui/menu/index.ts(429,4): error TS18047: 'roomNameContent' is possibly 'null'.
+src/ui/menu/index.ts(430,4): error TS18047: 'playerNameContent' is possibly 'null'.
+src/ui/menu/index.ts(431,4): error TS18047: 'joinRoomButton' is possibly 'null'.
+src/ui/menu/index.ts(436,3): error TS18047: 'createRoomButton' is possibly 'null'.
+src/ui/menu/index.ts(441,3): error TS18047: 'dissolveRoomButton' is possibly 'null'.
+src/ui/menu/index.ts(443,4): error TS18047: 'roomNameContent' is possibly 'null'.
+src/ui/menu/index.ts(444,4): error TS18047: 'playerNameContent' is possibly 'null'.
+src/ui/menu/index.ts(445,4): error TS18047: 'dissolveRoomButton' is possibly 'null'.
+src/ui/menu/index.ts(448,3): error TS18047: 'startGameButton' is possibly 'null'.
+src/ui/menu/index.ts(452,3): error TS18047: 'joinRoomButton' is possibly 'null'.
+src/ui/menu/index.ts(457,3): error TS18047: 'exitRoomButton' is possibly 'null'.
+src/ui/menu/index.ts(459,4): error TS18047: 'playerNameContent' is possibly 'null'.
+src/ui/menu/index.ts(460,4): error TS18047: 'exitRoomButton' is possibly 'null'.
+src/ui/menu/index.ts(461,4): error TS18047: 'joinRoomButton' is possibly 'null'.
+src/ui/menu/index.ts(469,3): error TS18047: 'backMenu' is possibly 'null'.
+src/ui/menu/index.ts(472,4): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Menu'.
+src/ui/menu/index.ts(477,18): error TS7031: Binding element 'back' implicitly has an 'any' type.
+src/ui/menu/index.ts(583,3): error TS18047: 'backMenu' is possibly 'null'.
+src/ui/menu/index.ts(585,4): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Menu'.
+src/ui/menu/index.ts(590,3): error TS18047: 'fovRange.nextElementSibling' is possibly 'null'.
+src/ui/menu/index.ts(593,4): error TS18047: 'fovRange.nextElementSibling' is possibly 'null'.
+src/ui/menu/index.ts(599,3): error TS18047: 'fogRange.nextElementSibling' is possibly 'null'.
+src/ui/menu/index.ts(603,4): error TS18047: 'fogRange.nextElementSibling' is possibly 'null'.
+src/ui/menu/index.ts(608,3): error TS18047: 'stageRange.nextElementSibling' is possibly 'null'.
+src/ui/menu/index.ts(611,4): error TS18047: 'stageRange.nextElementSibling' is possibly 'null'.
+src/ui/menu/index.ts(630,3): error TS18047: 'opRange.nextElementSibling' is possibly 'null'.
+src/ui/menu/index.ts(633,4): error TS18047: 'opRange.nextElementSibling' is possibly 'null'.
+src/ui/menu/index.ts(638,3): error TS18047: 'volumeRange.nextElementSibling' is possibly 'null'.
+src/ui/menu/index.ts(641,4): error TS18047: 'volumeRange.nextElementSibling' is possibly 'null'.
+src/ui/menu/index.ts(650,4): error TS2531: Object is possibly 'null'.
+src/ui/menu/index.ts(686,4): error TS2531: Object is possibly 'null'.
+src/ui/menu/index.ts(722,3): error TS18047: 'backGameButton' is possibly 'null'.
+src/ui/menu/index.ts(729,4): error TS18047: 'backGameVRButton' is possibly 'null'.
+src/ui/menu/index.ts(730,4): error TS18047: 'backGameVRButton' is possibly 'null'.
+src/ui/menu/index.ts(731,4): error TS18047: 'backGameVRButton' is possibly 'null'.
+src/ui/menu/index.ts(740,3): error TS18047: 'settingGameButton' is possibly 'null'.
+src/ui/menu/index.ts(746,3): error TS18047: 'help' is possibly 'null'.
+src/ui/menu/index.ts(752,3): error TS18047: 'about' is possibly 'null'.
+src/ui/menu/index.ts(758,3): error TS18047: 'fullScreen' is possibly 'null'.
+src/ui/menu/index.ts(762,23): error TS2551: Property 'mozExitFullscreen' does not exist on type 'Document'. Did you mean 'exitFullscreen'?
+src/ui/menu/index.ts(762,51): error TS2551: Property 'mozExitFullscreen' does not exist on type 'Document'. Did you mean 'exitFullscreen'?
+src/ui/menu/index.ts(763,23): error TS2551: Property 'webkitExitFullscreen' does not exist on type 'Document'. Did you mean 'exitFullscreen'?
+src/ui/menu/index.ts(763,54): error TS2551: Property 'webkitExitFullscreen' does not exist on type 'Document'. Did you mean 'exitFullscreen'?
+src/ui/menu/index.ts(764,29): error TS2551: Property 'requestFullScreen' does not exist on type 'HTMLElement'. Did you mean 'requestFullscreen'?
+src/ui/menu/index.ts(764,62): error TS2551: Property 'requestFullScreen' does not exist on type 'HTMLElement'. Did you mean 'requestFullscreen'?
+src/ui/menu/index.ts(765,27): error TS2551: Property 'mozRequestFullScreen' does not exist on type 'HTMLElement'. Did you mean 'requestFullscreen'?
+src/ui/menu/index.ts(765,63): error TS2551: Property 'mozRequestFullScreen' does not exist on type 'HTMLElement'. Did you mean 'requestFullscreen'?
+src/ui/menu/index.ts(766,27): error TS2551: Property 'webkitRequestFullScreen' does not exist on type 'HTMLElement'. Did you mean 'requestFullscreen'?
+src/ui/menu/index.ts(766,66): error TS2551: Property 'webkitRequestFullScreen' does not exist on type 'HTMLElement'. Did you mean 'requestFullscreen'?
+src/ui/menu/index.ts(770,3): error TS18047: 'saveGameButton' is possibly 'null'.
+src/ui/menu/index.ts(772,4): error TS2322: Type 'BlockLog[]' is not assignable to type 'never[]'.
+  Type 'BlockLog' is not assignable to type 'never'.
+src/ui/menu/index.ts(779,3): error TS18047: 'cheatModeButton' is possibly 'null'.
+src/ui/menu/index.ts(780,3): error TS18047: 'cheatModeButton' is possibly 'null'.
+src/ui/menu/index.ts(783,4): error TS18047: 'cheatModeButton' is possibly 'null'.
+src/ui/menu/index.ts(787,3): error TS18047: 'fpsModeButton' is possibly 'null'.
+src/ui/menu/index.ts(788,3): error TS18047: 'fpsModeButton' is possibly 'null'.
+src/ui/menu/index.ts(793,4): error TS18047: 'fpsModeButton' is possibly 'null'.
+src/ui/menu/index.ts(797,3): error TS18047: 'exitGameButton' is possibly 'null'.
+src/ui/menu/index.ts(805,15): error TS7031: Binding element 'back' implicitly has an 'any' type.
+src/ui/menu/index.ts(817,46): error TS7006: Parameter 'pre' implicitly has an 'any' type.
+src/ui/menu/index.ts(817,51): error TS7006: Parameter 'd' implicitly has an 'any' type.
+src/ui/menu/index.ts(823,47): error TS7006: Parameter 'pre' implicitly has an 'any' type.
+src/ui/menu/index.ts(823,52): error TS7006: Parameter 'd' implicitly has an 'any' type.
+src/ui/menu/index.ts(842,47): error TS7006: Parameter 'pre' implicitly has an 'any' type.
+src/ui/menu/index.ts(842,52): error TS7006: Parameter 'd' implicitly has an 'any' type.
+src/ui/menu/index.ts(850,3): error TS18047: 'backMenu' is possibly 'null'.
+src/ui/menu/index.ts(852,4): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Menu'.
+src/ui/menu/index.ts(857,16): error TS7031: Binding element 'back' implicitly has an 'any' type.
+src/ui/menu/index.ts(878,3): error TS18047: 'backMenu' is possibly 'null'.
+src/ui/menu/index.ts(880,4): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Menu'.
+src/utils/deep-clone/index.ts(3,27): error TS7006: Parameter 'source' implicitly has an 'any' type.
+src/utils/deep-clone/index.ts(4,8): error TS7034: Variable 'copyedObjs' implicitly has type 'any[]' in some locations where its type cannot be determined.
+src/utils/deep-clone/index.ts(5,28): error TS7006: Parameter 'target' implicitly has an 'any' type.
+src/utils/deep-clone/index.ts(10,8): error TS7005: Variable 'copyedObjs' implicitly has an 'any[]' type.
+src/utils/deep-clone/index.ts(11,12): error TS7005: Variable 'copyedObjs' implicitly has an 'any[]' type.
+src/utils/deep-clone/index.ts(20,8): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+src/utils/deep-clone/index.ts(23,4): error TS7053: Element implicitly has an 'any' type because expression of type 'string' can't be used to index type '{}'.
+  No index signature with a parameter of type 'string' was found on type '{}'.
+src/utils/deep-copy/index.ts(2,26): error TS7006: Parameter 'source' implicitly has an 'any' type.
+src/utils/deep-copy/index.ts(2,34): error TS7006: Parameter 'target' implicitly has an 'any' type.
+src/utils/deep-copy/index.ts(3,8): error TS7034: Variable 'copyedObjs' implicitly has type 'any[]' in some locations where its type cannot be determined.
+src/utils/deep-copy/index.ts(5,28): error TS7006: Parameter 'sourceItem' implicitly has an 'any' type.
+src/utils/deep-copy/index.ts(5,40): error TS7006: Parameter 'targetItem' implicitly has an 'any' type.
+src/utils/deep-copy/index.ts(12,10): error TS7005: Variable 'copyedObjs' implicitly has an 'any[]' type.
+src/utils/deep-copy/index.ts(13,25): error TS7005: Variable 'copyedObjs' implicitly has an 'any[]' type.
+src/utils/download/index.ts(2,30): error TS7006: Parameter 'jsonString' implicitly has an 'any' type.
+src/utils/get-dir/index.ts(2,24): error TS7006: Parameter 'o' implicitly has an 'any' type.
+src/utils/types/multiPlayer/info.d.ts(6,11): error TS2304: Cannot find name 'actionBlockEvent'.
+src/utils/types/multiPlayer/server.d.ts(86,42): error TS2304: Cannot find name 'EToD'.
+src/utils/types/multiPlayer/server.d.ts(88,48): error TS2304: Cannot find name 'GetDataTypeOfEventName'.
+src/utils/types/multiPlayer/server.d.ts(91,15): error TS2304: Cannot find name 'addRESPrefix'.
+src/utils/types/multiPlayer/server.d.ts(91,83): error TS2304: Cannot find name 'addRESPrefix'.
+src/utils/types/multiPlayer/server.d.ts(91,100): error TS2304: Cannot find name 'GetDataTypeOfEventName'.
+src/utils/types/multiPlayer/server.d.ts(91,123): error TS2304: Cannot find name 'addRESPrefix'.
+src/utils/types/multiPlayer/server.d.ts(96,27): error TS2304: Cannot find name 'Server'.
+src/utils/types/multiPlayer/server.d.ts(97,27): error TS2304: Cannot find name 'Socket'.
+src/utils/types/server.d.ts(28,14): error TS2552: Cannot find name 'UserInfo'. Did you mean 'iUserInfo'?
+src/utils/types/server.d.ts(35,14): error TS2552: Cannot find name 'UserInfo'. Did you mean 'iUserInfo'?
+src/utils/types/server.d.ts(42,14): error TS2304: Cannot find name 'UserInfo'.
+src/utils/types/server.d.ts(64,61): error TS2304: Cannot find name 'RoomInfo'.
+src/utils/types/server.d.ts(81,42): error TS2304: Cannot find name 'EToD'.
+src/utils/types/server.d.ts(83,48): error TS2304: Cannot find name 'GetDataTypeOfEventName'.
+src/utils/types/server.d.ts(86,15): error TS2304: Cannot find name 'addRESPrefix'.
+src/utils/types/server.d.ts(86,83): error TS2304: Cannot find name 'addRESPrefix'.
+src/utils/types/server.d.ts(86,100): error TS2304: Cannot find name 'GetDataTypeOfEventName'.
+src/utils/types/server.d.ts(86,123): error TS2304: Cannot find name 'addRESPrefix'.
+src/utils/types/server.d.ts(91,27): error TS2304: Cannot find name 'Server'.
+src/utils/types/server.d.ts(92,27): error TS2304: Cannot find name 'Socket'.

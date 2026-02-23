@@ -1,0 +1,15 @@
+
+> three-craft@1.0.0 dev /Users/zhangganhui/skills/game/ThreeCraft
+> vite --host 127.0.0.1 --port 4173
+
+Port 4173 is in use, trying another one...
+Port 4174 is in use, trying another one...
+Port 4175 is in use, trying another one...
+Port 4176 is in use, trying another one...
+
+  vite v2.9.18 dev server running at:
+
+  > Local: http://127.0.0.1:4177/
+
+  ready in 106ms.
+

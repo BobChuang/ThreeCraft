@@ -1,0 +1,5 @@
+Total messages: 3 (Errors: 1, Warnings: 0)
+
+[ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:4177/registerSW.js:0
+[LOG] [vite] connecting... @ http://127.0.0.1:4177/@vite/client:183
+[LOG] [vite] connected. @ http://127.0.0.1:4177/@vite/client:211
