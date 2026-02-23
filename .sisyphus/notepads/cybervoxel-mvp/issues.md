@@ -253,3 +253,8 @@
 - 本次仓库“新增/修改文件”仅包含 PNG 证据文件（7 个），无 `.ts/.tsx/.js/.jsx/.mts/.cts` 代码文件；因此无法在本轮形成“新增代码问题”样本。
 - `pnpm exec tsc --noEmit` 仍失败（exit code 2），错误来自历史代码与类型基线；按门禁规则 F2 结论必须维持不通过。
 - `pnpm build` 可通过（exit code 0），但仍出现既有 non-module 提示：`<script src="/registerSW.js"> ... can't be bundled without type="module"`，记录为非阻塞基线噪声。
+
+## 2026-02-23 F2（收口同步）
+
+- 收口同步复跑结果仍被 `pnpm exec tsc --noEmit` 基线错误阻断（exit code 2），因此 F2 只能维持不通过。
+- `pnpm build` 本轮仍通过（exit code 0），并继续出现既有 `registerSW.js` non-module warning；该 warning 非本任务新增问题。
