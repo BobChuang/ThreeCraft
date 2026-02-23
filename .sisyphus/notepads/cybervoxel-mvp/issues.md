@@ -258,3 +258,9 @@
 
 - 收口同步复跑结果仍被 `pnpm exec tsc --noEmit` 基线错误阻断（exit code 2），因此 F2 只能维持不通过。
 - `pnpm build` 本轮仍通过（exit code 0），并继续出现既有 `registerSW.js` non-module warning；该 warning 非本任务新增问题。
+
+## 2026-02-23 F3（manual QA rerun）
+
+- 本轮主场景与 Classic 两个 dev 会话均出现端口占用漂移（`4173->4175`、`4190->4191`），需在所有 QA 证据文本中强制双写端口避免追溯歧义。
+- 运行态 `window.controller` 未稳定暴露 `possessionController/simulationEngine/worldPersistenceController`，导致附身/生存/持久化集成项与边界注入项无法通过可审计接口验证。
+- 依然存在仓库基线噪声：`registerSW.js` 404（运行态）与 non-module warning（构建态），本轮已记录为非新增回归。

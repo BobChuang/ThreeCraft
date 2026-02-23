@@ -2273,7 +2273,7 @@ Wave FINAL（验证 — 所有任务完成后，4 个并行）：
       对客户端运行 `pnpm exec tsc --noEmit`。审查所有新增/修改文件：`as any`/`@ts-ignore`、空 catch、生产代码中的 console.log、注释掉的代码、未使用的导入。检查模块化代码强制规则：无文件超过 200 LOC（非 prompt），无 `utils.ts` 大杂烩，`index.ts` 仅作入口点。检查 AI 产物：过多注释、过度抽象、通用变量名。
       输出：`构建 [通过/失败] | 文件 [N 通过/N 问题] | LOC 规则 [通过/失败] | 结论`
 
-- [ ] F3. **真实手动 QA** — `unspecified-high`（+ `playwright` skill）
+- [x] F3. **真实手动 QA** — `unspecified-high`（+ `playwright` skill）
       从干净状态开始。执行每个任务的每个 QA 场景 — 按确切步骤执行，收集证据。测试跨任务集成（NPC AI + 附身 + 生存 + 单机持久化）。测试边界情况：空背包死亡、同时尝试附身、快速方块编辑、NPC 路径失效。测试向后兼容性：加载 Classic 场景，正常游玩。保存到 `.sisyphus/evidence/final-qa/`。
       输出：`场景 [N/N 通过] | 集成 [N/N] | 边界用例 [N 已测] | 向后兼容 [通过/失败] | 结论`
 

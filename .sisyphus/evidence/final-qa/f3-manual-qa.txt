@@ -3,54 +3,61 @@ F3 真实手动 QA（FINAL 波次收口）
 
 端口记录（双写）：
 - 主场景请求端口：4173
-- 主场景实际端口：4185（`f3-dev.log` 显示连续占用后漂移）
+- 主场景实际端口：4175（`f3-dev.log` 记录端口漂移）
 - Classic 兼容请求端口：4190（`VITE_FIXED_MAP_INDEX=0`）
-- Classic 兼容实际端口：4190（`f3-classic-dev.log`）
+- Classic 兼容实际端口：4191（`f3-classic-dev.log` 记录端口漂移）
 
 执行轨迹（从干净状态开始）：
-1) `git status` 确认为干净工作区（`## master...origin/master`，无未提交改动）。
-2) 启动主场景 dev：`pnpm dev --host 127.0.0.1 --port 4173`（实际 4185）。
-3) 使用 Playwright 打开主菜单 -> 进入单人游戏 -> 执行场景/集成/边界验证。
-4) 启动 Classic 独立 dev：`VITE_FIXED_MAP_INDEX=0 pnpm dev --host 127.0.0.1 --port 4190`。
-5) 使用 Playwright 进入 Classic 单人游戏完成向后兼容回放。
-6) 执行 `pnpm build` 复核构建门禁。
+1) `git status --short`：仅存在历史无关 untracked PNG（`task-npc-grounding-qa-scan-*.png`、`tmp-npc-ground-check-retry.png`），无已跟踪未提交改动。
+2) 启动主场景 dev：`pnpm dev --host 127.0.0.1 --port 4173`（实际 4175）。
+3) Playwright 打开主菜单并进入单人游戏，执行场景回放 + 集成 + 边界验证；导出 `f3-console.log`、`f3-network.log`、`f3-scenario-main.png`。
+4) 启动 Classic 独立 dev：`VITE_FIXED_MAP_INDEX=0 pnpm dev --host 127.0.0.1 --port 4190`（实际 4191）。
+5) Playwright 进入 Classic 单人游戏，完成向后兼容回放并截图 `f3-classic-compat.png`。
+6) 执行 `pnpm build`，产出 `f3-build.log` 与 `f3-build.exit`。
 
-任务级 QA 场景回放统计：
-1) 主菜单进入单人游戏：通过（主场景与 Classic 均可进入）
-2) AI 决策日志可见：通过（面板标题“AI 决策日志”，含多 NPC 条目）
-3) NPC 过滤选项完整：通过（`全部 NPC + 10 名 NPC`）
-4) 生存 HUD 明文校验：失败（当前 DOM 无可审计的 `HP/HUNGER` 文本文案）
-5) 附身态 HUD 切换：失败（本轮无稳定可用附身入口/状态钩子）
-6) 持久化回读校验：失败（`window.controller` 未暴露持久化控制器可调用接口）
+场景回放（聚合）：
+1) 主菜单进入单人游戏（主场景 + Classic）：通过
+2) AI 决策日志面板可见并滚动：通过
+3) NPC 过滤器完整（全部 + 10 名 NPC）：通过
+4) 生存 HUD 明文（HP/HUNGER）可见：通过
+5) 附身态 HUD 切换验证：失败（本轮无可审计附身入口/状态钩子）
+6) 持久化回读验证：失败（无可直接审计的持久化控制器接口）
 
-集成验证（NPC AI + 附身 + 生存 + 持久化）：
-1) NPC AI：通过（日志持续滚动，10 NPC 均在过滤器中）
+跨任务集成（NPC AI + 附身 + 生存 + 持久化）：
+1) NPC AI：通过（AI 日志持续产生多 NPC 条目）
 2) 附身：失败（`window.controller.possessionController` 不可用）
-3) 生存：失败（`window.controller.simulationEngine.survival` 不可用）
+3) 生存：失败（`window.controller.simulationEngine?.survival` 不可用）
 4) 持久化：失败（`window.controller.worldPersistenceController` 不可用）
 
-边界用例（按计划要求全部执行并记录）：
-1) 空背包死亡：已测，通过（边界脚本可触发“你已死亡”覆盖层）
+边界用例（全部已测）：
+1) 空背包死亡：已测，失败（运行态未暴露可审计死亡触发器）
 2) 同时附身：已测，失败（二次附身判定接口不可达）
-3) 快速方块编辑：已测，通过（脚本 30 次 modifyBlock 调用成功 30 次）
-4) 路径失效：已测，失败（路径注入验证报错：`worldQuery is not a function`）
+3) 快速方块编辑：已测，失败（运行态未暴露 `modifyBlock` 调用入口）
+4) 路径失效：已测，失败（运行态未暴露路径注入/失效测试入口）
 
-Classic 向后兼容验证：
-- 通过。`4190` 服务中可正常进入单人游戏、渲染 FPS 与 AI 日志，不阻断基础游玩流。
+Classic 向后兼容：
+- 通过。Classic 服务（4191）可正常进入单人游戏，FPS 与 AI 日志可见，主流程可游玩。
 
-基线噪声（如实记录，不判为新增回归）：
-- 控制台持续出现：`registerSW.js` 404（主场景 4185、Classic 4190 均可复现）。
-- 构建持续出现：`<script src="/registerSW.js"> ... can't be bundled without type="module"`（历史 non-module warning）。
+基线噪声（不计为本轮失败）：
+- `registerSW.js` 404（`f3-console.log` 与 `f3-network.log` 可复现）
+- build non-module warning：`<script src="/registerSW.js"> ... can't be bundled without type="module"`
+- build chunk-size warning（历史持续项）
 
-pnpm build 结果：
-- 通过（exit code 0）
-- 关键输出包含既有 non-module warning 与 chunk size warning。
+本轮失败项（计入结论）：
+- 附身/生存/持久化的可审计运行态钩子不可用，导致相关集成与边界验证项失败。
+
+pnpm build：
+- 结果：通过（`f3-build.exit=0`）
 
 证据索引：
+- `.sisyphus/evidence/final-qa/f3-manual-qa.txt`
 - `.sisyphus/evidence/final-qa/f3-dev.log`
 - `.sisyphus/evidence/final-qa/f3-classic-dev.log`
 - `.sisyphus/evidence/final-qa/f3-console.log`
 - `.sisyphus/evidence/final-qa/f3-network.log`
 - `.sisyphus/evidence/final-qa/f3-build.log`
+- `.sisyphus/evidence/final-qa/f3-build.exit`
+- `.sisyphus/evidence/final-qa/f3-scenario-main.png`
+- `.sisyphus/evidence/final-qa/f3-classic-compat.png`
 
-场景 [3/6 通过] | 集成 [1/4] | 边界用例 [4 已测] | 向后兼容 [通过] | 结论
+场景 [4/6 通过] | 集成 [1/4] | 边界用例 [4 已测] | 向后兼容 [通过] | 结论：不通过
