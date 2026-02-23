@@ -282,3 +282,9 @@
 - Playwright 在 WebGL 会话中仍偶发 `Target crashed`；本轮通过“重开页面后单脚本完成关键验证”规避了分步骤长会话崩溃风险。
 - 运行期控制台继续存在仓库基线 `registerSW.js` 404 噪声（见 `dod-102-console.log`），已按历史非阻断问题记录。
 - `pnpm exec tsc --noEmit` 在本轮仍为基线失败（exit 2）；`pnpm build` 通过（exit 0），已分别落盘为 `dod-102-tsc.log` / `dod-102-build.log`。
+
+## 2026-02-23 DoD line 103（观察者/上帝模式返回）
+
+- 本轮 `pnpm dev --host 127.0.0.1 --port 4173` 发生端口漂移到 `4178`，需在证据中持续双写端口映射以保证回放可追溯。
+- Playwright 控制台仍出现仓库既有 `registerSW.js` 404（见 `dod-103-console.log`），按历史非阻断噪声记录。
+- `pnpm exec tsc --noEmit` 依旧是基线失败（`TSC_EXIT_CODE=2`），但 `pnpm build` 通过（`BUILD_EXIT_CODE=0`）；line103 结论依赖功能链路证据，不以全仓 tsc 清零为前提。

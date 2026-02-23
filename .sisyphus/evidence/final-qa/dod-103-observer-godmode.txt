@@ -1,0 +1,49 @@
+# DoD Line 103 独立验收（玩家可以切换观察者/上帝模式并返回）
+
+## 本轮范围
+- 仅验证并判定计划 `line 103`：`玩家可以切换观察者/上帝模式并返回`
+- 未修改 `src/**` 业务源码（本轮为证据刷新）
+
+## 端口映射（强制记录）
+- 请求端口：`4173`
+- 实际端口：`4178`
+- 证据来源：`.sisyphus/evidence/final-qa/dod-103-dev.log`
+
+## 代码路径复核（只读）
+- `src/controller/observer/observer-controller.ts`
+  - `handleKeyDown` 监听 `g/G` -> `toggleObserverMode()`
+  - `enterObserverMode()` 切到观察者（UI 指示 `观察者模式`）
+  - `exitObserverMode()` 返回普通模式并恢复控制（UI 指示 `普通`）
+
+## 新鲜 QA 证据（本轮 Playwright）
+1. 打开 `http://127.0.0.1:4178/`，点击“单人游戏”进入同一会话。
+2. 记录模式指示器 `#observer-mode-indicator`：初始为 `普通`。
+3. 按 `g` 进入观察者/上帝模式：指示器变为 `观察者模式`。
+4. 再按 `g` 返回普通模式：指示器回到 `普通`。
+
+### 状态转换（显式）
+- `普通 -> 观察者模式 -> 普通`
+- Playwright 原始返回：`{"transition":"普通 -> 观察者模式 -> 普通","pass":true}`
+
+## 证据文件
+- 文本结论：`.sisyphus/evidence/final-qa/dod-103-observer-godmode.txt`
+- 截图（观察者态）：`.sisyphus/evidence/final-qa/dod-103-observer-godmode.png`
+- 开发日志：`.sisyphus/evidence/final-qa/dod-103-dev.log`
+- 控制台：`.sisyphus/evidence/final-qa/dod-103-console.log`
+- 网络：`.sisyphus/evidence/final-qa/dod-103-network.log`
+
+## 构建/类型检查（本轮重跑）
+- `pnpm exec tsc --noEmit` -> `TSC_EXIT_CODE=2`（失败，仓库历史基线类型噪声）
+  - 日志：`.sisyphus/evidence/final-qa/dod-103-tsc.log`
+- `pnpm build` -> `BUILD_EXIT_CODE=0`（通过）
+  - 日志：`.sisyphus/evidence/final-qa/dod-103-build.log`
+
+## 判定表
+| sub-claim | evidence | pass/fail | reason |
+|---|---|---|---|
+| 可切换到观察者/上帝模式 | 同一会话中按 `g` 后 `#observer-mode-indicator` 从 `普通` 变为 `观察者模式` | PASS | 观察者态可显式进入 |
+| 可从观察者返回普通模式 | 同一会话中再次按 `g` 后指示器从 `观察者模式` 回到 `普通` | PASS | 返回链路可显式完成 |
+
+## 结论
+- `line 103`：**PASS（可勾选）**
+- 备注：运行期控制台仍有基线 `registerSW.js` 404 噪声，已记录于 `dod-103-console.log`，不阻断本条 DoD 验收。

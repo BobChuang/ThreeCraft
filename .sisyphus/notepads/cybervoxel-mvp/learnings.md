@@ -362,3 +362,8 @@
 - 若需稳定证明“附身后第一人称控制”，可在同一轮 Playwright 中直接走运行时控制链路（`possessionController` + `moveController.positionMove/viewDirectionMove`），并同时采集 camera 与 NPC 位置/朝向增量，形成可审计闭环。
 - “任意 NPC”证据建议固定为“同一轮至少 2 个不同 npcId 成功附身并保持 `possessedId===targetId`”，避免只验证最近 NPC 导致覆盖不足。
 - DoD 收口文本需同时写明 `请求端口 -> 实际端口`、`tsc/build 退出码` 与截图/console/network 路径，便于最终审计回放。
+
+## 2026-02-23 DoD line 103（观察者/上帝模式返回）
+
+- 观察者模式验收可直接用 `#observer-mode-indicator` 做最小可审计链路：同会话按 `g` 验证 `普通 -> 观察者模式 -> 普通`，无需改动业务源码。
+- line103 收口建议固定证据组合为 `txt + png + dev/console/network + tsc/build`，并在文本里显式记录端口映射（本轮 `4173 -> 4178`）。
