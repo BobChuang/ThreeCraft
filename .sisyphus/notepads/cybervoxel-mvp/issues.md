@@ -247,3 +247,9 @@
 ## 2026-02-23 NPC 嵌地最终验收闭环（阻断项）
 
 - 本轮 Playwright 在截图成功落盘后，执行 `browser_console_messages` 时再次出现 `Target crashed`；该崩溃发生于证据采集后段，未阻断本次 PASS 结论，但仍属自动化稳定性风险。
+
+## 2026-02-23 F2（代码质量审查，收口复核）
+
+- 本次仓库“新增/修改文件”仅包含 PNG 证据文件（7 个），无 `.ts/.tsx/.js/.jsx/.mts/.cts` 代码文件；因此无法在本轮形成“新增代码问题”样本。
+- `pnpm exec tsc --noEmit` 仍失败（exit code 2），错误来自历史代码与类型基线；按门禁规则 F2 结论必须维持不通过。
+- `pnpm build` 可通过（exit code 0），但仍出现既有 non-module 提示：`<script src="/registerSW.js"> ... can't be bundled without type="module"`，记录为非阻塞基线噪声。
