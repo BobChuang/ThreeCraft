@@ -1,0 +1,59 @@
+DoD line 106 verification (死亡后在复活泉重生；物品掉落在死亡位置)
+
+Date: 2026-02-23
+Requested dev URL: http://127.0.0.1:4173
+Actual dev URL: http://127.0.0.1:4182
+Port mapping: 4173 -> 4182
+
+Scope
+- Verify both clauses in one coherent single-player run:
+  1) death -> respawn at revival spring
+  2) inventory items drop at death position and remain there after respawn
+
+Deterministic runtime procedure (Playwright, one coherent run set)
+1) Enter single-player session (`单人游戏`).
+2) Set player/runtime observer to a deterministic death target away from respawn point:
+   - target set: `{ x: 35, y: 25, z: 35 }`
+3) Record baseline world-drop IDs.
+4) Add deterministic inventory item for death-drop proof:
+   - `addInventoryItem('player-local', 'synth-ration', 2)`
+5) Force death condition:
+   - `simulation.survival.setState('player-local', { hp: 0, ... })`
+6) Verify death overlay:
+   - death message: `你已死亡`
+7) Pre-respawn assertion (same run):
+   - `deathState.position = { x: 35, y: 21.763199999999994, z: 35 }`
+   - new drops since baseline: `1`
+   - new drops near death position (<=0.6): `1`
+   - drop types near death: `["synth-ration"]`
+8) Click respawn button (`#death-respawn-btn`).
+9) Post-respawn assertion (same run):
+   - player dead state: `false`
+   - expected respawn position: `{ x: 0, y: 5, z: 0 }`
+   - camera position after respawn: `{ x: 0, y: 4.602400000000001, z: 0 }`
+   - at revival spring check: `true`
+   - new drops after respawn: `1`
+   - new drops still near death position (<=0.6): `1`
+   - drop types still near death: `["synth-ration"]`
+
+Clause verdicts
+- Clause A (死亡后在复活泉重生): PASS
+- Clause B (物品掉落在死亡位置): PASS
+
+Overall verdict for line 106
+- PASS (line 106 can be checked)
+
+Artifacts
+- Screenshot: `.sisyphus/evidence/final-qa/dod-106-respawn-drop.png`
+- Dev log: `.sisyphus/evidence/final-qa/dod-106-dev.log`
+
+Build/typecheck verification (this run)
+- `pnpm exec tsc --noEmit` => exit code 2
+  - log: `.sisyphus/evidence/final-qa/dod-106-tsc.log`
+- `pnpm build` => exit code 0
+  - log: `.sisyphus/evidence/final-qa/dod-106-build.log`
+
+Noise separation (explicit)
+- Baseline runtime noise: `registerSW.js` 404 / non-module related warning remains pre-existing.
+- This baseline noise is NOT the blocker in this run.
+- DoD 106 verdict is based on the deterministic runtime state checks above.

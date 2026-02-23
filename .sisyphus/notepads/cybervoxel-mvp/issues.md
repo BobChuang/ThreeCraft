@@ -294,3 +294,14 @@
 - 本轮 `pnpm dev --host 127.0.0.1 --port 4173` 再次端口漂移到 `4181`，证据文件需继续强制记录“请求端口 + 实际端口”。
 - Playwright 控制台存在仓库基线 `registerSW.js` 404（非阻断）；此外一次早期 QA 脚本错误动态导入 `/src/controller/config.ts` 产生额外控制台报错，已与功能结论隔离记录。
 - `pnpm exec tsc --noEmit` 本轮仍为基线失败（exit code 2），`pnpm build` 通过（exit code 0）；line104 结论按运行态交互证据判定，不以全仓 tsc 清零为前提。
+
+## 2026-02-23 DoD line 105（HP/HUNGER/怪物攻击）
+
+- 本轮 line105 黑盒验收阻断于“采集恢复饥饿值”条款：未能在无运行态钩子条件下稳定形成“食物消费 -> HUNGER 数值上升”的同轮可审计前后证据。
+- 其余两条（HUD 可见、怪物攻击降低 HP）已可观测；但因条款 #2 未完成，line105 必须保持未勾选。
+- 本轮 `pnpm exec tsc --noEmit` 仍为仓库基线失败（exit code 2），`pnpm build` 通过（exit code 0）；`registerSW.js` 相关噪声继续按历史非阻断问题记录。
+
+## 2026-02-23 DoD line 106（死亡重生 + 掉落位置）
+
+- `pnpm exec tsc --noEmit` 本轮仍因仓库历史类型基线失败（exit code 2）；`pnpm build` 通过（exit code 0）。
+- 运行态仍有既有基线噪声 `registerSW.js` 404 / non-module warning；已在证据中与 line106 功能结论显式分离。
